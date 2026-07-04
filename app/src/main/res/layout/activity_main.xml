@@ -1,0 +1,97 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:orientation="vertical"
+    android:background="#0D0D0D"
+    android:gravity="center_horizontal"
+    android:padding="24dp">
+
+    <!-- Top bar: App title + Info button -->
+    <RelativeLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginBottom="16dp">
+
+        <LinearLayout
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:orientation="vertical"
+            android:layout_centerVertical="true">
+
+            <TextView
+                android:id="@+id/tvAppTitle"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="🏍️ KoveMirror"
+                android:textColor="#FFFFFF"
+                android:textSize="22sp"
+                android:textStyle="bold" />
+
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="@string/header_subtitle"
+                android:textColor="#7777AA"
+                android:textSize="12sp"
+                android:layout_marginTop="2dp" />
+        </LinearLayout>
+
+
+    </RelativeLayout>
+
+    <!-- Spacer -->
+    <View
+        android:layout_width="match_parent"
+        android:layout_height="1dp"
+        android:background="#1A1A2E"
+        android:layout_marginBottom="32dp" />
+
+    <!-- Status indicator -->
+    <TextView
+        android:id="@+id/tvStatus"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="@string/status_ready"
+        android:textColor="#AAAAAA"
+        android:textSize="16sp"
+        android:layout_marginBottom="8dp" />
+
+    <!-- Trial Time indicator -->
+    <TextView
+        android:id="@+id/tvTrialTime"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:textColor="#FFCA28"
+        android:textSize="14sp"
+        android:layout_marginBottom="32dp" />
+
+    <!-- Bluetooth device selector -->
+    <TextView
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:text="@string/label_select_bt_device"
+        android:textColor="#888888"
+        android:textSize="13sp"
+        android:layout_marginBottom="8dp" />
+
+    <Spinner
+        android:id="@+id/spBtDevices"
+        android:layout_width="match_parent"
+        android:layout_height="48dp"
+        android:background="#1A1A2E"
+        android:popupBackground="#1A1A2E"
+        android:layout_marginBottom="40dp" />
+
+    <!-- Start / Stop button -->
+    <Button
+        android:id="@+id/btnStartStop"
+        android:layout_width="match_parent"
+        android:layout_height="64dp"
+        android:text="@string/btn_start_mirroring"
+        android:textSize="18sp"
+        android:textColor="#FFFFFF"
+        android:background="#2E7D32"
+        android:textStyle="bold" />
+
+</LinearLayout>
