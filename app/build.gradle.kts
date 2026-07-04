@@ -48,6 +48,4 @@ dependencies {
     implementation("com.google.android.material:material:1.11.0")
     implementation("androidx.constraintlayout:constraintlayout:2.1.4")
     implementation("androidx.lifecycle:lifecycle-service:2.7.0")
-    implementation("androidx.security:security-crypto:1.1.0-alpha06")
-    implementation("com.android.billingclient:billing-ktx:7.1.1")
 }

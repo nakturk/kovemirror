@@ -77,31 +77,10 @@ class MirrorService : Service() {
     private var wifiNetworkCallback: ConnectivityManager.NetworkCallback? = null
     private var tcpServerStarted = false
 
-    private lateinit var trialManager: TrialManager
-    private lateinit var billingManager: BillingManager
-    private val trialHandler = Handler(Looper.getMainLooper())
-    private val trialRunnable = object : Runnable {
-        override fun run() {
-            trialManager.addUsageMs(1000)
-            if (!billingManager.isAccessGranted()) {
-                DebugLogger.warning("Trial expired and no active subscription. Stopping service.")
-                val intent = Intent(this@MirrorService, PaywallActivity::class.java).apply {
-                    addFlags(Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_CLEAR_TASK)
-                }
-                startActivity(intent)
-                stopSelf()
-                return
-            }
-            trialHandler.postDelayed(this, 1000)
-        }
-    }
-
     // ─── Lifecycle ───────────────────────────────────────────────
 
     override fun onCreate() {
         super.onCreate()
-        trialManager = TrialManager(this)
-        billingManager = (application as KoveApplication).billingManager
         runningInstance = this
         createNotificationChannel()
         DebugLogger.info("🚀 MirrorService oluşturuldu")
@@ -151,12 +130,6 @@ class MirrorService : Service() {
     // ─── Mirroring logic ─────────────────────────────────────────
 
     private fun startMirroring(resultCode: Int, data: Intent) {
-        if (!billingManager.isAccessGranted()) {
-            stopSelf()
-            return
-        }
-        trialHandler.postDelayed(trialRunnable, 1000)
-
         try {
             DebugLogger.info(getString(R.string.log_mirroring_starting))
             DebugLogger.info("   Video Port: ${TcpServer.PORT_VIDEO}")
@@ -253,7 +226,6 @@ class MirrorService : Service() {
     }
 
     private fun stopMirroring() {
-        trialHandler.removeCallbacks(trialRunnable)
         DebugLogger.info(getString(R.string.log_stopping_mirroring))
         bleManager?.disconnect()
         bleManager = null

@@ -18,10 +18,7 @@ import androidx.appcompat.app.AlertDialog
 import androidx.appcompat.app.AppCompatActivity
 import androidx.core.app.ActivityCompat
 import androidx.core.content.ContextCompat
-import androidx.lifecycle.lifecycleScope
 import com.kove.mirror.databinding.ActivityMainBinding
-import kotlinx.coroutines.flow.collectLatest
-import kotlinx.coroutines.launch
 
 class MainActivity : AppCompatActivity() {
 
@@ -31,45 +28,20 @@ class MainActivity : AppCompatActivity() {
     }
 
     private lateinit var binding: ActivityMainBinding
-    private lateinit var trialManager: TrialManager
-    private lateinit var billingManager: BillingManager
     private var isStreaming = false
     private var titleClickCount = 0
     private var titleClickTime = 0L
 
     private val uiHandler = Handler(Looper.getMainLooper())
-    private val trialUpdater = object : Runnable {
-        override fun run() {
-            updateTrialTime()
-            if (isStreaming) {
-                if (!billingManager.isAccessGranted()) {
-                    stopMirroring()
-                    startActivity(Intent(this@MainActivity, PaywallActivity::class.java))
-                } else {
-                    uiHandler.postDelayed(this, 1000)
-                }
-            }
-        }
-    }
 
     override fun onCreate(savedInstanceState: Bundle?) {
         CrashHandler.init(this)
         DebugLogger.initFile(getExternalFilesDir(null))
         super.onCreate(savedInstanceState)
-        
-        trialManager = TrialManager(this)
-        billingManager = (application as KoveApplication).billingManager
-
         binding = ActivityMainBinding.inflate(layoutInflater)
         setContentView(binding.root)
         
         checkSecurityConstraints()
-
-        lifecycleScope.launch {
-            billingManager.subStatus.collectLatest { status ->
-                updateTrialTime() // Refresh UI based on status
-            }
-        }
 
         setupBluetoothSpinner()
         setupButtons()
@@ -83,46 +55,12 @@ class MainActivity : AppCompatActivity() {
     override fun onResume() {
         super.onResume()
         refreshWifiStatus()
-        updateTrialTime()
     }
 
     // ─── Setup ───────────────────────────────────────────────────
 
     private fun setupButtons() {
         binding.btnStartStop.setOnClickListener { onStartStopClick() }
-        
-        binding.tvAppTitle.setOnClickListener {
-            val now = System.currentTimeMillis()
-            if (now - titleClickTime > 1000) {
-                titleClickCount = 0
-            }
-            titleClickTime = now
-            titleClickCount++
-            if (titleClickCount >= 7) {
-                titleClickCount = 0
-                trialManager.resetTrialForDeveloper()
-                updateTrialTime()
-                Toast.makeText(this, "Trial Developer Mode Reset!", Toast.LENGTH_SHORT).show()
-            }
-        }
-    }
-    
-    private fun updateTrialTime() {
-        if (billingManager.subStatus.value == SubStatus.ACTIVE) {
-            binding.tvTrialTime.visibility = View.GONE
-            return
-        }
-        
-        binding.tvTrialTime.visibility = View.VISIBLE
-        val remaining = trialManager.getRemainingTrialMs()
-        val minutes = (remaining / 1000) / 60
-        val seconds = (remaining / 1000) % 60
-        binding.tvTrialTime.text = String.format("Kalan Deneme Süresi: %02d:%02d", minutes, seconds)
-        if (remaining <= 0) {
-            binding.tvTrialTime.setTextColor(Color.parseColor("#EF5350"))
-        } else {
-            binding.tvTrialTime.setTextColor(Color.parseColor("#FFCA28"))
-        }
     }
 
     // ─── WiFi Status ─────────────────────────────────────────────
@@ -144,10 +82,6 @@ class MainActivity : AppCompatActivity() {
 
     private fun onStartStopClick() {
         if (!isStreaming) {
-            if (!billingManager.isAccessGranted()) {
-                startActivity(Intent(this, PaywallActivity::class.java))
-                return
-            }
 
             val ip = NetworkUtils.getWifiIpAddress(this)
             if (ip.startsWith("0.0") || ip == "null") {
@@ -199,7 +133,6 @@ class MainActivity : AppCompatActivity() {
                 DebugLogger.success(getString(R.string.log_permission_granted))
                 try {
                     MirrorService.startService(this, resultCode, data)
-                    uiHandler.post(trialUpdater)
                 } catch (e: Exception) {
                     val errMsg = getString(R.string.log_service_start_failed, e.message ?: "")
                     DebugLogger.error(errMsg)
@@ -213,11 +146,9 @@ class MainActivity : AppCompatActivity() {
     }
 
     private fun stopMirroring() {
-        uiHandler.removeCallbacks(trialUpdater)
         MirrorService.stopService(this)
         DebugLogger.info(getString(R.string.log_stopped_by_user))
         resetToStopped()
-        updateTrialTime()
     }
 
     private fun resetToStopped() {
