@@ -99,11 +99,11 @@ class MirrorService : Service() {
                     if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) {
                         startForeground(
                             NOTIF_ID,
-                            buildNotif("⏳ TFT bağlantısı bekleniyor..."),
+                            buildNotif(getString(R.string.notif_waiting_tft)),
                             ServiceInfo.FOREGROUND_SERVICE_TYPE_MEDIA_PROJECTION
                         )
                     } else {
-                        startForeground(NOTIF_ID, buildNotif("⏳ TFT bağlantısı bekleniyor..."))
+                        startForeground(NOTIF_ID, buildNotif(getString(R.string.notif_waiting_tft)))
                     }
                     startMirroring(code, data)
                 } else {
@@ -131,7 +131,7 @@ class MirrorService : Service() {
 
     private fun startMirroring(resultCode: Int, data: Intent) {
         try {
-            DebugLogger.info("▶️ Yansıtma başlatılıyor...")
+            DebugLogger.info(getString(R.string.log_mirroring_starting))
             DebugLogger.info("   Video Port: ${TcpServer.PORT_VIDEO}")
             DebugLogger.info("   Control Port: ${TcpServer.PORT_CONTROL}")
             DebugLogger.info("   Heartbeat Port: ${TcpServer.PORT_HEARTBEAT}")
@@ -155,7 +155,7 @@ class MirrorService : Service() {
                 }
                 bleManager?.connect(savedMac)
             } else {
-                DebugLogger.warning("⚠️ Bluetooth MAC adresi seçilmemiş, BLE tetikleme devre dışı")
+                DebugLogger.warning(getString(R.string.log_bt_mac_not_selected))
             }
 
             // 3) WiFi Ağına bağlan — Bağlanınca TCP Server asenkron olarak tetiklenecek
@@ -188,7 +188,7 @@ class MirrorService : Service() {
             width  = TFT_WIDTH,
             height = TFT_HEIGHT,
             onConnected = { os ->
-                DebugLogger.success("🚀 TFT Video bağlandı, encoder başlatılıyor...")
+                DebugLogger.success(getString(R.string.log_tft_video_connected))
                 try {
                     val encoder = ProjectionEncoder(projection, TFT_WIDTH, TFT_HEIGHT, padding = TFT_PADDING)
                     projectionEncoder = encoder
@@ -202,13 +202,13 @@ class MirrorService : Service() {
                 } catch (e: Exception) {
                     DebugLogger.error("❌ Encoder start hatası: ${e.message}")
                 }
-                updateNotif("🔴 TFT bağlı — Stream aktif")
+                updateNotif(getString(R.string.notif_tft_connected))
             },
             onDisconnected = {
-                DebugLogger.warning("🔌 TFT koptu — yeniden bağlantı bekleniyor...")
+                DebugLogger.warning(getString(R.string.log_tft_disconnected_waiting))
                 projectionEncoder?.stop()
                 projectionEncoder = null
-                updateNotif("🟡 TFT bekleniyor (port ${TcpServer.PORT_VIDEO})")
+                updateNotif(getString(R.string.notif_waiting_tft_port, TcpServer.PORT_VIDEO))
             }
         )
         tcpServer = server
@@ -226,7 +226,7 @@ class MirrorService : Service() {
     }
 
     private fun stopMirroring() {
-        DebugLogger.info("⏹️ Yansıtma durduruluyor...")
+        DebugLogger.info(getString(R.string.log_stopping_mirroring))
         bleManager?.disconnect()
         bleManager = null
         unbindFromWifiNetwork()
@@ -237,7 +237,7 @@ class MirrorService : Service() {
         tcpServerStarted = false
         mediaProjection?.stop()
         mediaProjection = null
-        DebugLogger.info("⏹️ Tümü durduruldu")
+        DebugLogger.info(getString(R.string.log_all_stopped))
     }
 
     private fun bindToWifiNetwork() {
@@ -253,11 +253,11 @@ class MirrorService : Service() {
                     try {
                         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
                             connectivityManager.bindProcessToNetwork(network)
-                            DebugLogger.success("🔗 Uygulama süreci başarıyla WiFi ağına bağlandı (bindProcessToNetwork)")
+                            DebugLogger.success(getString(R.string.log_wifi_bound_process))
                         } else {
                             @Suppress("DEPRECATION")
                             ConnectivityManager.setProcessDefaultNetwork(network)
-                            DebugLogger.success("🔗 Uygulama süreci başarıyla WiFi ağına bağlandı (setProcessDefaultNetwork)")
+                            DebugLogger.success(getString(R.string.log_wifi_bound_process_legacy))
                         }
                         Handler(Looper.getMainLooper()).post {
                             startTcpServer()
@@ -276,7 +276,7 @@ class MirrorService : Service() {
                             @Suppress("DEPRECATION")
                             ConnectivityManager.setProcessDefaultNetwork(null)
                         }
-                        DebugLogger.warning("🔌 WiFi ağ bağlantısı koptu, ağ bağı kaldırıldı")
+                        DebugLogger.warning(getString(R.string.log_wifi_lost))
                     } catch (e: Exception) {
                         DebugLogger.error("❌ Ağ bağı kaldırılırken hata: ${e.message}")
                     }
@@ -285,7 +285,7 @@ class MirrorService : Service() {
 
             wifiNetworkCallback = callback
             connectivityManager.requestNetwork(request, callback)
-            DebugLogger.info("📡 WiFi ağı aranıyor ve süreç bağlanmaya hazırlanıyor...")
+            DebugLogger.info(getString(R.string.log_searching_wifi))
         } catch (e: Exception) {
             DebugLogger.error("❌ bindToWifiNetwork hatası: ${e.message}")
         }
@@ -306,7 +306,7 @@ class MirrorService : Service() {
                 @Suppress("DEPRECATION")
                 ConnectivityManager.setProcessDefaultNetwork(null)
             }
-            DebugLogger.info("🔌 WiFi ağ bağı temizlendi")
+            DebugLogger.info(getString(R.string.log_wifi_unbound))
         } catch (e: Exception) {
             DebugLogger.error("❌ unbindFromWifiNetwork hatası: ${e.message}")
         }
@@ -321,10 +321,10 @@ class MirrorService : Service() {
             PendingIntent.FLAG_UPDATE_CURRENT or PendingIntent.FLAG_IMMUTABLE
         )
         return NotificationCompat.Builder(this, CHANNEL_ID)
-            .setContentTitle("🏍️ KoveMirror")
+            .setContentTitle("🏍️ " + getString(R.string.app_name))
             .setContentText(status)
             .setSmallIcon(android.R.drawable.ic_menu_send)
-            .addAction(android.R.drawable.ic_media_pause, "Durdur", stopPi)
+            .addAction(android.R.drawable.ic_media_pause, getString(R.string.notif_action_stop), stopPi)
             .setOngoing(true)
             .build()
     }
@@ -337,9 +337,9 @@ class MirrorService : Service() {
     private fun createNotificationChannel() {
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
             val ch = NotificationChannel(
-                CHANNEL_ID, "KoveMirror Yansıtma",
+                CHANNEL_ID, getString(R.string.notif_channel_name),
                 NotificationManager.IMPORTANCE_LOW
-            ).apply { description = "Kove TFT ekran yansıtma servisi" }
+            ).apply { description = getString(R.string.notif_channel_description) }
             (getSystemService(NOTIFICATION_SERVICE) as NotificationManager)
                 .createNotificationChannel(ch)
         }

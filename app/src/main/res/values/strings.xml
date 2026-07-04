@@ -1,3 +1,85 @@
 <resources>
+    <!-- App Details -->
     <string name="app_name">KoveMirror</string>
+    <string name="header_subtitle">Kove TFT Full Screen Mirroring</string>
+    
+    <!-- UI Labels -->
+    <string name="label_ip_address_listening">📱 Phone IP (listening on port 17818):</string>
+    <string name="label_tft_target_address">↑ Address for TFT connection</string>
+    <string name="label_bt_device_trigger">🔵 TFT Bluetooth Device (to trigger WiFi):</string>
+    <string name="label_bt_device_subtext">Select your motorcycle\'s TFT screen from paired devices</string>
+    <string name="label_resolution_padding_settings">🖥️ TFT Resolution and Margin Settings:</string>
+    <string name="label_resolution">Resolution: </string>
+    <string name="label_padding">Margin (Top/Bottom): </string>
+    <string name="label_debug_log">📋 Debug Log</string>
+    <string name="label_log_legend">🟢Success  🔴Error  🟠Warning  🔵Data  🟣💓Heartbeat  ⚪Info</string>
+    
+    <!-- WiFi States -->
+    <string name="wifi_waiting">Waiting for WiFi...</string>
+    <string name="wifi_gateway">Gateway: --</string>
+    <string name="wifi_not_connected_status">⚠️ WiFi not connected</string>
+    <string name="wifi_connected_status">✅ WiFi: %1$s</string>
+    <string name="wifi_gateway_tbox">🏍️ Gateway (TBox): %1$s</string>
+    
+    <!-- BT States / Spinner Options -->
+    <string name="bt_not_supported">Bluetooth Not Supported</string>
+    <string name="bt_off">Bluetooth Off</string>
+    <string name="bt_permission_missing">Permission Missing</string>
+    <string name="bt_no_paired_devices">No paired devices</string>
+    
+    <!-- Status Messages -->
+    <string name="status_ready">⏸ Ready</string>
+    <string name="status_stream_active">🔴 Stream active</string>
+    <string name="status_stopped">⏹ Stopped</string>
+    
+    <!-- Resolution Info -->
+    <string name="res_info_default">Portrait 600×1024 (shape=6) — Kove TFT standard portrait</string>
+    <string name="res_info_format">Target: %1$d×%2$d | Margin: %3$dpx</string>
+    
+    <!-- Button Actions -->
+    <string name="btn_start_mirroring">▶  Start Mirroring</string>
+    <string name="btn_stop_mirroring">⏹  Stop</string>
+    
+    <!-- Log Messages (User orientation) -->
+    <string name="log_crash_detected">🔥 CRASH DETECTED ON DEVICE:</string>
+    <string name="log_app_started">🏍️ KoveMirror v1.0 started</string>
+    <string name="log_step_1">1. Connect to motorcycle WiFi</string>
+    <string name="log_step_2">2. Phone IP will appear above</string>
+    <string name="log_step_3">3. Press the \'Start\' button</string>
+    <string name="log_step_4">4. Debug log will populate once TFT connects</string>
+    <string name="log_wifi_not_connected">⚠️ WiFi not connected — connect to motorcycle hotspot</string>
+    <string name="log_phone_ip">📡 Phone IP: %1$s</string>
+    <string name="log_gateway">🏍️ Gateway   : %1$s</string>
+    <string name="log_target_resolution">🖥️ TFT target resolution: %1$d×%2$d | Margin: %3$dpx</string>
+    <string name="log_request_screen_capture">🔐 Requesting screen capture permission...</string>
+    <string name="log_permission_granted">✅ Permission granted — starting MirrorService</string>
+    <string name="log_service_start_failed">❌ Failed to start service: %1$s</string>
+    <string name="log_screen_capture_denied">❌ Screen capture permission denied</string>
+    <string name="log_stopped_by_user">⏹️ Stopped by user</string>
+    <string name="log_bt_permissions_missing">⚠️ Bluetooth permissions missing, cannot list devices</string>
+    <string name="log_selected_bt">🔗 Selected Bluetooth: %1$s (%2$s)</string>
+    <string name="log_bt_permissions_granted">✅ Bluetooth permissions granted</string>
+    <string name="log_bt_permissions_denied">⚠️ Some Bluetooth permissions denied</string>
+    <string name="log_padding_updated_on_the_fly">🔄 Margin dynamically updated: %1$dpx</string>
+    
+    <!-- Notification & Service -->
+    <string name="notif_waiting_tft">⏳ Waiting for TFT connection...</string>
+    <string name="notif_tft_connected">🔴 TFT connected — Stream active</string>
+    <string name="notif_waiting_tft_port">🟡 Waiting for TFT (port %1$d)</string>
+    <string name="notif_action_stop">Stop</string>
+    <string name="notif_channel_name">KoveMirror Mirroring</string>
+    <string name="notif_channel_description">Kove TFT screen mirroring service</string>
+    
+    <!-- MirrorService Logs -->
+    <string name="log_mirroring_starting">▶️ Starting mirroring...</string>
+    <string name="log_bt_mac_not_selected">⚠️ Bluetooth MAC address not selected, BLE trigger disabled</string>
+    <string name="log_searching_wifi">📡 Searching for WiFi network and binding process...</string>
+    <string name="log_wifi_bound_process">🔗 Application process successfully bound to WiFi network (bindProcessToNetwork)</string>
+    <string name="log_wifi_bound_process_legacy">🔗 Application process successfully bound to WiFi network (setProcessDefaultNetwork)</string>
+    <string name="log_wifi_lost">🔌 WiFi network connection lost, unbound network</string>
+    <string name="log_wifi_unbound">🔌 WiFi network binding cleared</string>
+    <string name="log_tft_video_connected">🚀 TFT Video connected, starting encoder...</string>
+    <string name="log_tft_disconnected_waiting">🔌 TFT disconnected — waiting for reconnection...</string>
+    <string name="log_stopping_mirroring">⏹️ Stopping mirroring...</string>
+    <string name="log_all_stopped">⏹️ All stopped</string>
 </resources>

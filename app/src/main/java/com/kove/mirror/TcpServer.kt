@@ -396,7 +396,7 @@ class TcpServer(
         // 3. Command 18 (262 bytes)
         val emailHeader = byteArrayOf(0x01, 0x12, 0x00, 0x00, 0x01, 0x00)
         val emailBody = ByteArray(256)
-        val emailStrBytes = "nakturk@yahoo.com".toByteArray(StandardCharsets.UTF_8)
+        val emailStrBytes = "yahoo@yahoo.com".toByteArray(StandardCharsets.UTF_8)
         System.arraycopy(emailStrBytes, 0, emailBody, 0, minOf(emailStrBytes.size, 256))
         os.write(emailHeader)
         os.write(emailBody)

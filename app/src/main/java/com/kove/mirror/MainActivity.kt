@@ -56,7 +56,7 @@ class MainActivity : AppCompatActivity() {
 
         val savedCrash = CrashHandler.getSavedCrash(this)
         if (savedCrash != null) {
-            log(LogLevel.ERROR, "🔥 CİHAZDA ÇÖKME TESPİT EDİLDİ:")
+            log(LogLevel.ERROR, getString(R.string.log_crash_detected))
             savedCrash.lines().forEach { line ->
                 if (line.isNotBlank()) {
                     log(LogLevel.ERROR, "   $line")
@@ -65,14 +65,14 @@ class MainActivity : AppCompatActivity() {
             log(LogLevel.ERROR, "─────────────────────────────────")
         }
 
-        log(LogLevel.INFO, "🏍️ KoveMirror v1.0 başlatıldı")
+        log(LogLevel.INFO, getString(R.string.log_app_started))
         log(LogLevel.INFO, "─────────────────────────────────")
         refreshNetwork()
         log(LogLevel.INFO, "─────────────────────────────────")
-        log(LogLevel.INFO, "1. Motosiklet WiFi'sine bağlanın")
-        log(LogLevel.INFO, "2. Telefon IP'si yukarıda görünecek")
-        log(LogLevel.INFO, "3. 'Başlat' butonuna basın")
-        log(LogLevel.INFO, "4. TFT bağlanınca debug log dolacak")
+        log(LogLevel.INFO, getString(R.string.log_step_1))
+        log(LogLevel.INFO, getString(R.string.log_step_2))
+        log(LogLevel.INFO, getString(R.string.log_step_3))
+        log(LogLevel.INFO, getString(R.string.log_step_4))
         log(LogLevel.INFO, "─────────────────────────────────")
 
         checkBluetoothPermissions()
@@ -100,30 +100,30 @@ class MainActivity : AppCompatActivity() {
 
         // ── Header ──
         root.addView(card("#1A1A2E") {
-            addView(label("🏍️ KoveMirror", 20f, Color.WHITE, Typeface.BOLD))
-            addView(label("Kove TFT Tam Ekran Yansıtma", 12f, Color.parseColor("#7777AA")))
+            addView(label("🏍️ " + getString(R.string.app_name), 20f, Color.WHITE, Typeface.BOLD))
+            addView(label(getString(R.string.header_subtitle), 12f, Color.parseColor("#7777AA")))
         })
 
         // ── Network info ──
         tvIp      = label("0.0.0.0",    16f, Color.parseColor("#4CAF50"), Typeface.BOLD)
-        tvSsid    = label("WiFi bekleniyor...", 12f, Color.parseColor("#AAAAAA"))
-        tvGateway = label("Gateway: --", 11f, Color.parseColor("#666666"))
-        tvStatus  = label("⏸ Hazır", 12f, Color.parseColor("#AAAAAA"))
+        tvSsid    = label(getString(R.string.wifi_waiting), 12f, Color.parseColor("#AAAAAA"))
+        tvGateway = label(getString(R.string.wifi_gateway), 11f, Color.parseColor("#666666"))
+        tvStatus  = label(getString(R.string.status_ready), 12f, Color.parseColor("#AAAAAA"))
 
         root.addView(marginTop(card("#0F2010") {
-            addView(label("📱 Telefon IP (port 17818'de dinliyor):", 11f, Color.parseColor("#888888")))
+            addView(label(getString(R.string.label_ip_address_listening), 11f, Color.parseColor("#888888")))
             addView(tvIp)
             addView(tvSsid)
             addView(tvGateway)
-            addView(label("↑ TFT bağlanacak adres", 10f, Color.parseColor("#555555")))
+            addView(label(getString(R.string.label_tft_target_address), 10f, Color.parseColor("#555555")))
         }, 8))
 
         // ── Bluetooth (TFT BLE Activation) ──
         spBtDevices = Spinner(this)
         root.addView(marginTop(card("#101A2E") {
-            addView(label("🔵 TFT Bluetooth Cihazı (WiFi'yi tetiklemek için):", 11f, Color.parseColor("#888888")))
+            addView(label(getString(R.string.label_bt_device_trigger), 11f, Color.parseColor("#888888")))
             addView(spBtDevices)
-            addView(label("Eşleşmiş cihazlardan motosikletinizin TFT ekranını seçin", 10f, Color.parseColor("#555555")))
+            addView(label(getString(R.string.label_bt_device_subtext), 10f, Color.parseColor("#555555")))
         }, 8))
 
         // ── Resolution & Padding ──
@@ -147,16 +147,16 @@ class MainActivity : AppCompatActivity() {
                 val pad = padStr.toIntOrNull() ?: 0
                 if (isStreaming) {
                     MirrorService.updatePadding(pad)
-                    log(LogLevel.INFO, "🔄 Kenar boşluğu anlık olarak güncellendi: ${pad}px")
+                    log(LogLevel.INFO, getString(R.string.log_padding_updated_on_the_fly, pad))
                 }
             }
             override fun onNothingSelected(parent: AdapterView<*>?) {}
         }
         
-        tvResInfo = label("Dikey 600×1024 (shape=6) — Kove TFT standart dikey", 10f, Color.parseColor("#555555"))
+        tvResInfo = label(getString(R.string.res_info_default), 10f, Color.parseColor("#555555"))
 
         root.addView(marginTop(card("#0D1020") {
-            addView(label("🖥️ TFT Çözünürlük ve Kenar Boşluğu Ayarları:", 11f, Color.parseColor("#888888")))
+            addView(label(getString(R.string.label_resolution_padding_settings), 11f, Color.parseColor("#888888")))
             
             // Çözünürlük Satırı
             val resRow = LinearLayout(this@MainActivity).apply {
@@ -164,7 +164,7 @@ class MainActivity : AppCompatActivity() {
                 gravity = Gravity.CENTER_VERTICAL
                 setPadding(0, 4, 0, 4)
             }
-            resRow.addView(label("Çözünürlük: ", 12f, Color.WHITE))
+            resRow.addView(label(getString(R.string.label_resolution), 12f, Color.WHITE))
             resRow.addView(spWidth)
             resRow.addView(label(" × ", 12f, Color.WHITE))
             resRow.addView(spHeight)
@@ -176,7 +176,7 @@ class MainActivity : AppCompatActivity() {
                 gravity = Gravity.CENTER_VERTICAL
                 setPadding(0, 4, 0, 4)
             }
-            padRow.addView(label("Kenar Boşluğu (Top/Bottom): ", 12f, Color.WHITE))
+            padRow.addView(label(getString(R.string.label_padding), 12f, Color.WHITE))
             padRow.addView(spPadding)
             addView(padRow)
             
@@ -185,7 +185,7 @@ class MainActivity : AppCompatActivity() {
 
         // ── Start/Stop button ──
         btnStart = Button(this).apply {
-            text = "▶  Yansıtmayı Başlat"
+            text = getString(R.string.btn_start_mirroring)
             textSize = 16f
             setTextColor(Color.WHITE)
             setBackgroundColor(Color.parseColor("#2E7D32"))
@@ -200,7 +200,7 @@ class MainActivity : AppCompatActivity() {
         root.addView(marginTop(LinearLayout(this).apply {
             orientation = LinearLayout.HORIZONTAL
             gravity = Gravity.CENTER_VERTICAL
-            addView(label("📋 Debug Log", 12f, Color.parseColor("#888888")).also {
+            addView(label(getString(R.string.label_debug_log), 12f, Color.parseColor("#888888")).also {
                 (it.layoutParams as LinearLayout.LayoutParams).weight = 1f
                 it.layoutParams = LinearLayout.LayoutParams(0, -2, 1f)
             })
@@ -209,7 +209,7 @@ class MainActivity : AppCompatActivity() {
 
         // ── Legend ──
         root.addView(label(
-            "🟢Başarı  🔴Hata  🟠Uyarı  🔵Veri  🟣💓Heartbeat  ⚪Bilgi",
+            getString(R.string.label_log_legend),
             9f, Color.parseColor("#444444")
         ))
 
@@ -270,17 +270,17 @@ class MainActivity : AppCompatActivity() {
 
         tvIp.text      = ip
         tvSsid.text    = "📶 $ssid"
-        tvGateway.text = "🏍️ Gateway (TBox): $gw"
+        tvGateway.text = getString(R.string.wifi_gateway_tbox, gw)
 
         if (ip.startsWith("0.0") || ip == "null") {
             tvIp.setTextColor(Color.parseColor("#EF5350"))
-            tvStatus.text = "⚠️ WiFi bağlı değil"
-            log(LogLevel.WARNING, "⚠️ WiFi bağlı değil — motosiklet hotspot'una bağlanın")
+            tvStatus.text = getString(R.string.wifi_not_connected_status)
+            log(LogLevel.WARNING, getString(R.string.log_wifi_not_connected))
         } else {
             tvIp.setTextColor(Color.parseColor("#4CAF50"))
-            tvStatus.text = "✅ WiFi: $ssid"
-            log(LogLevel.SUCCESS, "📡 Telefon IP: $ip")
-            log(LogLevel.INFO,    "🏍️ Gateway   : $gw")
+            tvStatus.text = getString(R.string.wifi_connected_status, ssid)
+            log(LogLevel.SUCCESS, getString(R.string.log_phone_ip, ip))
+            log(LogLevel.INFO,    getString(R.string.log_gateway, gw))
         }
     }
 
@@ -300,8 +300,8 @@ class MainActivity : AppCompatActivity() {
             MirrorService.TFT_HEIGHT  = h
             MirrorService.TFT_PADDING = pad
             
-            tvResInfo.text = "Hedef: ${w}×${h} | Boşluk: ${pad}px"
-            log(LogLevel.INFO, "🖥️ TFT hedef çözünürlüğü: ${w}×${h} | Kenar Boşluğu: ${pad}px")
+            tvResInfo.text = getString(R.string.res_info_format, w, h, pad)
+            log(LogLevel.INFO, getString(R.string.log_target_resolution, w, h, pad))
             requestScreenCapture()
         } else {
             stopMirroring()
@@ -310,7 +310,7 @@ class MainActivity : AppCompatActivity() {
 
     private fun requestScreenCapture() {
         val pm = getSystemService(MEDIA_PROJECTION_SERVICE) as MediaProjectionManager
-        log(LogLevel.INFO, "🔐 Ekran yakalama izni isteniyor...")
+        log(LogLevel.INFO, getString(R.string.log_request_screen_capture))
         @Suppress("DEPRECATION")
         startActivityForResult(pm.createScreenCaptureIntent(), REQ_SCREEN_CAPTURE)
     }
@@ -321,33 +321,34 @@ class MainActivity : AppCompatActivity() {
         if (requestCode == REQ_SCREEN_CAPTURE) {
             if (resultCode == Activity.RESULT_OK && data != null) {
                 isStreaming = true
-                btnStart.text = "⏹  Durdur"
+                btnStart.text = getString(R.string.btn_stop_mirroring)
                 btnStart.setBackgroundColor(Color.parseColor("#B71C1C"))
-                tvStatus.text = "🔴 Stream aktif"
-                log(LogLevel.SUCCESS, "✅ İzin alındı — MirrorService başlatılıyor")
+                tvStatus.text = getString(R.string.status_stream_active)
+                log(LogLevel.SUCCESS, getString(R.string.log_permission_granted))
                 try {
                     MirrorService.startService(this, resultCode, data)
                 } catch (e: Exception) {
-                    log(LogLevel.ERROR, "❌ Servis başlatılamadı: ${e.message}")
-                    Toast.makeText(this, "Servis başlatılamadı: ${e.message}", Toast.LENGTH_LONG).show()
+                    val errMsg = getString(R.string.log_service_start_failed, e.message ?: "")
+                    log(LogLevel.ERROR, errMsg)
+                    Toast.makeText(this, errMsg, Toast.LENGTH_LONG).show()
                     isStreaming = false
-                    btnStart.text = "▶  Yansıtmayı Başlat"
+                    btnStart.text = getString(R.string.btn_start_mirroring)
                     btnStart.setBackgroundColor(Color.parseColor("#2E7D32"))
-                    tvStatus.text = "⏹ Durduruldu"
+                    tvStatus.text = getString(R.string.status_stopped)
                 }
             } else {
-                log(LogLevel.ERROR, "❌ Ekran yakalama izni reddedildi")
+                log(LogLevel.ERROR, getString(R.string.log_screen_capture_denied))
             }
         }
     }
 
     private fun stopMirroring() {
         isStreaming = false
-        btnStart.text = "▶  Yansıtmayı Başlat"
+        btnStart.text = getString(R.string.btn_start_mirroring)
         btnStart.setBackgroundColor(Color.parseColor("#2E7D32"))
-        tvStatus.text = "⏹ Durduruldu"
+        tvStatus.text = getString(R.string.status_stopped)
         MirrorService.stopService(this)
-        log(LogLevel.INFO, "⏹️ Kullanıcı tarafından durduruldu")
+        log(LogLevel.INFO, getString(R.string.log_stopped_by_user))
     }
 
     // ─── Log append ──────────────────────────────────────────────
@@ -418,26 +419,26 @@ class MainActivity : AppCompatActivity() {
     private fun updateBluetoothDevicesSpinner() {
         val adapter = BluetoothAdapter.getDefaultAdapter()
         if (adapter == null) {
-            spBtDevices.adapter = ArrayAdapter(this, android.R.layout.simple_spinner_item, arrayOf("Bluetooth Desteklenmiyor"))
+            spBtDevices.adapter = ArrayAdapter(this, android.R.layout.simple_spinner_item, arrayOf(getString(R.string.bt_not_supported)))
             return
         }
         
         if (!adapter.isEnabled) {
-            spBtDevices.adapter = ArrayAdapter(this, android.R.layout.simple_spinner_item, arrayOf("Bluetooth Kapalı"))
+            spBtDevices.adapter = ArrayAdapter(this, android.R.layout.simple_spinner_item, arrayOf(getString(R.string.bt_off)))
             return
         }
         
         val bonded = try {
             adapter.bondedDevices
         } catch (e: SecurityException) {
-            log(LogLevel.WARNING, "⚠️ Bluetooth izinleri eksik, cihaz listelenemedi")
-            spBtDevices.adapter = ArrayAdapter(this, android.R.layout.simple_spinner_item, arrayOf("İzin Eksik"))
+            log(LogLevel.WARNING, getString(R.string.log_bt_permissions_missing))
+            spBtDevices.adapter = ArrayAdapter(this, android.R.layout.simple_spinner_item, arrayOf(getString(R.string.bt_permission_missing)))
             return
         }
         
         val names = bonded.map { "${it.name} (${it.address})" }.toMutableList()
         if (names.isEmpty()) {
-            names.add("Eşleşmiş cihaz yok")
+            names.add(getString(R.string.bt_no_paired_devices))
         }
         
         spBtDevices.adapter = ArrayAdapter(this, android.R.layout.simple_spinner_item, names.toTypedArray())
@@ -456,7 +457,7 @@ class MainActivity : AppCompatActivity() {
                 if (position < bonded.size) {
                     val dev = bonded.toList()[position]
                     getSharedPreferences("kove_prefs", MODE_PRIVATE).edit().putString("bt_mac", dev.address).apply()
-                    log(LogLevel.INFO, "🔗 Seçilen Bluetooth: ${dev.name} (${dev.address})")
+                    log(LogLevel.INFO, getString(R.string.log_selected_bt, dev.name ?: "Unknown", dev.address))
                 }
             }
             override fun onNothingSelected(parent: AdapterView<*>?) {}
@@ -467,10 +468,10 @@ class MainActivity : AppCompatActivity() {
         super.onRequestPermissionsResult(requestCode, permissions, grantResults)
         if (requestCode == 999) {
             if (grantResults.all { it == PackageManager.PERMISSION_GRANTED }) {
-                log(LogLevel.SUCCESS, "✅ Bluetooth izinleri alındı")
+                log(LogLevel.SUCCESS, getString(R.string.log_bt_permissions_granted))
                 updateBluetoothDevicesSpinner()
             } else {
-                log(LogLevel.WARNING, "⚠️ Bazı Bluetooth izinleri reddedildi")
+                log(LogLevel.WARNING, getString(R.string.log_bt_permissions_denied))
             }
         }
     }

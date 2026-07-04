@@ -1,0 +1,85 @@
+<resources>
+    <!-- App Details -->
+    <string name="app_name">KoveMirror</string>
+    <string name="header_subtitle">Kove TFT Tam Ekran Yansıtma</string>
+    
+    <!-- UI Labels -->
+    <string name="label_ip_address_listening">📱 Telefon IP (port 17818\'de dinliyor):</string>
+    <string name="label_tft_target_address">↑ TFT bağlanacak adres</string>
+    <string name="label_bt_device_trigger">🔵 TFT Bluetooth Cihazı (WiFi\'yi tetiklemek için):</string>
+    <string name="label_bt_device_subtext">Eşleşmiş cihazlardan motosikletinizin TFT ekranını seçin</string>
+    <string name="label_resolution_padding_settings">🖥️ TFT Çözünürlük ve Kenar Boşluğu Ayarları:</string>
+    <string name="label_resolution">Çözünürlük: </string>
+    <string name="label_padding">Kenar Boşluğu (Top/Bottom): </string>
+    <string name="label_debug_log">📋 Debug Log</string>
+    <string name="label_log_legend">🟢Başarı  🔴Hata  🟠Uyarı  🔵Veri  🟣💓Heartbeat  ⚪Bilgi</string>
+    
+    <!-- WiFi States -->
+    <string name="wifi_waiting">WiFi bekleniyor...</string>
+    <string name="wifi_gateway">Gateway: --</string>
+    <string name="wifi_not_connected_status">⚠️ WiFi bağlı değil</string>
+    <string name="wifi_connected_status">✅ WiFi: %1$s</string>
+    <string name="wifi_gateway_tbox">🏍️ Gateway (TBox): %1$s</string>
+    
+    <!-- BT States / Spinner Options -->
+    <string name="bt_not_supported">Bluetooth Desteklenmiyor</string>
+    <string name="bt_off">Bluetooth Kapalı</string>
+    <string name="bt_permission_missing">İzin Eksik</string>
+    <string name="bt_no_paired_devices">Eşleşmiş cihaz yok</string>
+    
+    <!-- Status Messages -->
+    <string name="status_ready">⏸ Hazır</string>
+    <string name="status_stream_active">🔴 Stream aktif</string>
+    <string name="status_stopped">⏹ Durduruldu</string>
+    
+    <!-- Resolution Info -->
+    <string name="res_info_default">Dikey 600×1024 (shape=6) — Kove TFT standart dikey</string>
+    <string name="res_info_format">Hedef: %1$d×%2$d | Boşluk: %3$dpx</string>
+    
+    <!-- Button Actions -->
+    <string name="btn_start_mirroring">▶  Yansıtmayı Başlat</string>
+    <string name="btn_stop_mirroring">⏹  Durdur</string>
+    
+    <!-- Log Messages (User orientation) -->
+    <string name="log_crash_detected">🔥 CİHAZDA ÇÖKME TESPİT EDİLDİ:</string>
+    <string name="log_app_started">🏍️ KoveMirror v1.0 başlatıldı</string>
+    <string name="log_step_1">1. Motosiklet WiFi\'sine bağlanın</string>
+    <string name="log_step_2">2. Telefon IP\'si yukarıda görünecek</string>
+    <string name="log_step_3">3. \'Başlat\' butonuna basın</string>
+    <string name="log_step_4">4. TFT bağlanınca debug log dolacak</string>
+    <string name="log_wifi_not_connected">⚠️ WiFi bağlı değil — motosiklet hotspot\'una bağlanın</string>
+    <string name="log_phone_ip">📡 Telefon IP: %1$s</string>
+    <string name="log_gateway">🏍️ Gateway   : %1$s</string>
+    <string name="log_target_resolution">🖥️ TFT hedef çözünürlüğü: %1$d×%2$d | Kenar Boşluğu: %3$dpx</string>
+    <string name="log_request_screen_capture">🔐 Ekran yakalama izni isteniyor...</string>
+    <string name="log_permission_granted">✅ İzin alındı — MirrorService başlatılıyor</string>
+    <string name="log_service_start_failed">❌ Servis başlatılamadı: %1$s</string>
+    <string name="log_screen_capture_denied">❌ Ekran yakalama izni reddedildi</string>
+    <string name="log_stopped_by_user">⏹️ Kullanıcı tarafından durduruldu</string>
+    <string name="log_bt_permissions_missing">⚠️ Bluetooth izinleri eksik, cihaz listelenemedi</string>
+    <string name="log_selected_bt">🔗 Seçilen Bluetooth: %1$s (%2$s)</string>
+    <string name="log_bt_permissions_granted">✅ Bluetooth izinleri alındı</string>
+    <string name="log_bt_permissions_denied">⚠️ Bazı Bluetooth izinleri reddedildi</string>
+    <string name="log_padding_updated_on_the_fly">🔄 Kenar boşluğu anlık olarak güncellendi: %1$dpx</string>
+    
+    <!-- Notification & Service -->
+    <string name="notif_waiting_tft">⏳ TFT bağlantısı bekleniyor...</string>
+    <string name="notif_tft_connected">🔴 TFT bağlı — Stream aktif</string>
+    <string name="notif_waiting_tft_port">🟡 TFT bekleniyor (port %1$d)</string>
+    <string name="notif_action_stop">Durdur</string>
+    <string name="notif_channel_name">KoveMirror Yansıtma</string>
+    <string name="notif_channel_description">Kove TFT ekran yansıtma servisi</string>
+    
+    <!-- MirrorService Logs -->
+    <string name="log_mirroring_starting">▶️ Yansıtma başlatılıyor...</string>
+    <string name="log_bt_mac_not_selected">⚠️ Bluetooth MAC adresi seçilmemiş, BLE tetikleme devre dışı</string>
+    <string name="log_searching_wifi">📡 WiFi ağı aranıyor ve süreç bağlanmaya hazırlanıyor...</string>
+    <string name="log_wifi_bound_process">🔗 Uygulama süreci başarıyla WiFi ağına bağlandı (bindProcessToNetwork)</string>
+    <string name="log_wifi_bound_process_legacy">🔗 Uygulama süreci başarıyla WiFi ağına bağlandı (setProcessDefaultNetwork)</string>
+    <string name="log_wifi_lost">🔌 WiFi ağ bağlantısı koptu, ağ bağı kaldırıldı</string>
+    <string name="log_wifi_unbound">🔌 WiFi ağ bağı temizlendi</string>
+    <string name="log_tft_video_connected">🚀 TFT Video bağlandı, encoder başlatılıyor...</string>
+    <string name="log_tft_disconnected_waiting">🔌 TFT koptu — yeniden bağlantı bekleniyor...</string>
+    <string name="log_stopping_mirroring">⏹️ Yansıtma durduruluyor...</string>
+    <string name="log_all_stopped">⏹️ Tümü durduruldu</string>
+</resources>
