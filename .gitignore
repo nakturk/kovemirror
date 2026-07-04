@@ -1,0 +1,19 @@
+# Gradle
+.gradle/
+build/
+app/build/
+.navigation/
+
+# IDE & Local config
+.idea/
+*.iml
+local.properties
+
+# Logs and private debug interactive logs
+*.log
+kove_mirror_log.txt
+thinkerride_logs/
+
+# Bug reports and zip archives
+*.zip
+*.tar.gz
