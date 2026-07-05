@@ -74,27 +74,61 @@
         android:popupBackground="#1A1A2E"
         android:layout_marginBottom="40dp" />
 
+    <!-- Spacer -->
+    <View
+        android:layout_width="match_parent"
+        android:layout_height="1dp"
+        android:background="#1A1A2E"
+        android:layout_marginBottom="16dp" />
+
     <!-- Start / Stop button -->
     <Button
         android:id="@+id/btnStartStop"
         android:layout_width="match_parent"
-        android:layout_height="64dp"
+        android:layout_height="56dp"
         android:text="@string/btn_start_mirroring"
-        android:textSize="18sp"
+        android:textSize="16sp"
         android:textColor="#FFFFFF"
         android:background="#2E7D32"
         android:textStyle="bold"
-        android:layout_marginBottom="16dp"/>
+        android:layout_marginBottom="8dp"/>
 
     <!-- Share Logs button -->
     <Button
         android:id="@+id/btnShareLogs"
         android:layout_width="match_parent"
-        android:layout_height="48dp"
+        android:layout_height="40dp"
         android:text="@string/btn_share_logs"
         android:textSize="14sp"
         android:textColor="#FFFFFF"
         android:background="#1976D2"
-        android:textStyle="bold" />
+        android:textStyle="bold"
+        android:layout_marginBottom="16dp" />
+
+    <!-- Debug Log Terminal -->
+    <TextView
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:text="Debug Terminal"
+        android:textColor="#888888"
+        android:textSize="12sp"
+        android:layout_marginBottom="4dp" />
+
+    <ScrollView
+        android:id="@+id/svDebug"
+        android:layout_width="match_parent"
+        android:layout_height="0dp"
+        android:layout_weight="1"
+        android:background="#000000"
+        android:padding="8dp">
+
+        <TextView
+            android:id="@+id/tvDebugLog"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:textColor="#00FF00"
+            android:textSize="10sp"
+            android:fontFamily="monospace" />
+    </ScrollView>
 
 </LinearLayout>

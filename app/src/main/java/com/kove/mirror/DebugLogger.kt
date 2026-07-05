@@ -33,9 +33,9 @@ object DebugLogger {
                 // Her başlatıldığında temizle
                 if (logFile?.exists() == true) logFile?.delete()
                 logFile?.createNewFile()
-                info("📂 Log dosyası oluşturuldu: ${logFile?.absolutePath}")
+                info("📂 Log file created: ${logFile?.absolutePath}")
             } catch (e: Exception) {
-                android.util.Log.e("KoveMirror", "Log dosyası oluşturma hatası", e)
+                android.util.Log.e("KoveMirror", "Log file creation error", e)
             }
         }
     }

@@ -62,6 +62,26 @@ class MainActivity : AppCompatActivity() {
     private fun setupButtons() {
         binding.btnStartStop.setOnClickListener { onStartStopClick() }
         binding.btnShareLogs.setOnClickListener { shareLogs() }
+
+        // Setup Debug Terminal
+        DebugLogger.addListener { entry ->
+            uiHandler.post {
+                val currentText = binding.tvDebugLog.text.toString()
+                val lines = currentText.split("\n")
+                // Keep only last 100 lines to prevent memory issues
+                val newText = if (lines.size > 100) {
+                    lines.drop(lines.size - 100).joinToString("\n") + "\n[${entry.timestamp}] ${entry.message}"
+                } else {
+                    currentText + (if (currentText.isNotEmpty()) "\n" else "") + "[${entry.timestamp}] ${entry.message}"
+                }
+                binding.tvDebugLog.text = newText
+                
+                // Auto-scroll to bottom
+                binding.svDebug.post {
+                    binding.svDebug.fullScroll(View.FOCUS_DOWN)
+                }
+            }
+        }
     }
 
     private fun shareLogs() {

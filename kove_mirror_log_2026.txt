@@ -1,0 +1,431 @@
+[20:20:48.812] [INFO] 📂 Log dosyası oluşturuldu: /storage/emulated/0/Android/data/com.kove.mirror/files/kove_mirror_log.txt
+[20:20:48.824] [INFO] 🏍️ KoveMirror v1.0 started
+[20:20:48.850] [INFO] 🔗 Selected Bluetooth: CQKY_c9f47160f (E0:03:63:AD:00:01)
+[20:24:01.736] [INFO] 🖥️ TFT target resolution: 600×1024 | Margin: 0px
+[20:24:01.739] [INFO] 🔐 Requesting screen capture permission...
+[20:24:05.428] [SUCCESS] ✅ Permission granted — starting MirrorService
+[20:24:05.437] [INFO] 🚀 MirrorService oluşturuldu
+[20:24:05.439] [INFO] ▶️ Starting mirroring...
+[20:24:05.439] [INFO]    Video Port: 15456
+[20:24:05.439] [INFO]    Control Port: 17818
+[20:24:05.439] [INFO]    Heartbeat Port: 15457
+[20:24:05.444] [INFO] 🔵 Bluetooth BLE bağlantısı başlatılıyor: E0:03:63:AD:00:01
+[20:24:05.448] [INFO] 📡 Searching for WiFi network and binding process...
+[20:24:05.449] [SUCCESS] 🔗 Application process successfully bound to WiFi network (bindProcessToNetwork)
+[20:24:05.450] [INFO] 🔌 TCP Server başlatılıyor, bind IP: 192.168.10.2
+[20:24:05.452] [SUCCESS] ✅ Video ServerSocket açıldı → PORT 15456
+[20:24:05.452] [SUCCESS] ✅ Control ServerSocket açıldı → PORT 17818
+[20:24:05.452] [SUCCESS] ✅ Heartbeat ServerSocket açıldı → PORT 15457
+[20:24:05.452] [INFO] ─────────────────────────────
+[20:24:05.452] [INFO] 📡 Telefon IP  : 192.168.10.2
+[20:24:05.452] [INFO] 🏍️ Gateway(TBox): 0.0.0.0
+[20:24:05.453] [INFO] 🔌 Dinlenen portlar: Video=15456, Control=17818, Heartbeat=15457
+[20:24:05.453] [INFO] ─────────────────────────────
+[20:24:05.453] [INFO] Motosiklet WiFi'sine bağlanın ve TFT'nin
+[20:24:05.453] [INFO] bu IP:portlara bağlanmasını bekleyin.
+[20:24:05.640] [SUCCESS] 🔌 TFT Control bağlandı! → 192.168.10.1:57854
+[20:24:05.641] [INFO] 📤 TFT'ye TUC GET sorgusu gönderiliyor...
+[20:24:05.641] [INFO] 👂 TFT→Telefon control reader başlatıldı
+[20:24:05.644] [DATA] 📥 TFT→Tel (Control-17818): [EE FD 00 00 00 49 7B 22 6D 73 67 5F 69 64 22 3A 32 37 2C 22 (+60B)] toplam=80 byte
+[20:24:05.645] [INFO]    [ASCII Text]: I{"msg_id":27,"func":"TUC","act":"SEND","tuc":"7000071f69c11cc9","tucs":1}
+[20:24:05.745] [INFO] 📤 Control port binary el sıkışma paketleri gönderildi
+[20:24:05.746] [SUCCESS] ✅ Control el sıkışması başarıyla tamamlandı!
+[20:24:05.774] [INFO] 🟢 Bluetooth bağlandı, servisler keşfediliyor...
+[20:24:05.777] [INFO] 🔍 Tüm BLE Servisleri Taranıyor...
+[20:24:05.778] [INFO]   [Servis] 00001801-0000-1000-8000-00805f9b34fb
+[20:24:05.778] [INFO]     -> [Char] 00002a05-0000-1000-8000-00805f9b34fb (Props: 32)
+[20:24:05.778] [INFO]   [Servis] 00001800-0000-1000-8000-00805f9b34fb
+[20:24:05.778] [INFO]     -> [Char] 00002a00-0000-1000-8000-00805f9b34fb (Props: 2)
+[20:24:05.778] [INFO]     -> [Char] 00002a01-0000-1000-8000-00805f9b34fb (Props: 2)
+[20:24:05.778] [INFO]     -> [Char] 00002a04-0000-1000-8000-00805f9b34fb (Props: 2)
+[20:24:05.778] [INFO]     -> [Char] 00002aa6-0000-1000-8000-00805f9b34fb (Props: 2)
+[20:24:05.778] [INFO]   [Servis] 0000e0ff-3c17-d293-8e48-14fe2e4da212
+[20:24:05.778] [INFO]     -> [Char] 0000ffe1-0000-1000-8000-00805f9b34fb (Props: 12)
+[20:24:05.778] [INFO]     -> [Char] 0000ffe2-0000-1000-8000-00805f9b34fb (Props: 16)
+[20:24:05.778] [INFO]     -> [Char] 0000ffe3-0000-1000-8000-00805f9b34fb (Props: 30)
+[20:24:05.778] [INFO]   [Servis] 0000180a-0000-1000-8000-00805f9b34fb
+[20:24:05.778] [INFO]     -> [Char] 00002a29-0000-1000-8000-00805f9b34fb (Props: 2)
+[20:24:05.778] [INFO]     -> [Char] 00002a24-0000-1000-8000-00805f9b34fb (Props: 2)
+[20:24:05.778] [INFO]     -> [Char] 00002a25-0000-1000-8000-00805f9b34fb (Props: 2)
+[20:24:05.779] [INFO]     -> [Char] 00002a27-0000-1000-8000-00805f9b34fb (Props: 2)
+[20:24:05.779] [INFO]     -> [Char] 00002a26-0000-1000-8000-00805f9b34fb (Props: 2)
+[20:24:05.779] [INFO]     -> [Char] 00002a28-0000-1000-8000-00805f9b34fb (Props: 2)
+[20:24:05.779] [INFO]     -> [Char] 00002a23-0000-1000-8000-00805f9b34fb (Props: 2)
+[20:24:05.779] [INFO]     -> [Char] 00002a2a-0000-1000-8000-00805f9b34fb (Props: 2)
+[20:24:05.779] [INFO]     -> [Char] 00002a50-0000-1000-8000-00805f9b34fb (Props: 2)
+[20:24:05.779] [INFO]   [Servis] 0000180f-0000-1000-8000-00805f9b34fb
+[20:24:05.779] [INFO]     -> [Char] 00002a19-0000-1000-8000-00805f9b34fb (Props: 18)
+[20:24:05.779] [INFO] 🔓 BLE Servisleri bulundu (Orijinal). Dinleme başlatılıyor...
+[20:24:05.813] [DATA] 📥 TFT→Tel (Control-17818): [01 02 00 00 04 06 55 43 3D 32 30 32 35 30 32 31 37 31 35 35 (+1016B)] toplam=1036 byte
+[20:24:05.813] [INFO]    [ASCII Text]: UC=202502171551189951_DA=260228_FL=01_SV=2.0.4_TUC=7000071f69c11cc9_CV=1CQKY60FAC920241501_250414_2.0.1CQKYMTC60FAC920201_260228_01_2.0.4CQKYMTC60FAC920201_250918_01_2.0.38762C92160002_240926_2.1.1
+[20:24:05.815] [DATA] 📥 TFT→Tel (Control-17818): [01 0F 00 00 00 04 00 00 00 08] toplam=10 byte
+[20:24:05.858] [DATA] 📥 TFT→Tel (Control-17818): [01 12 00 00 00 20 45 30 3A 30 33 3A 36 33 3A 41 44 3A 30 30 (+18B)] toplam=38 byte
+[20:24:05.858] [INFO]    [ASCII Text]:  E0:03:63:AD:00:01
+[20:24:06.152] [INFO] ✅ BLE Handshake (Notification) aktif!
+[20:24:06.153] [INFO] 📤 BLE Başlangıç el sıkışma paketleri gönderildi (Saat eşitleme ve Yansıtma Aktif dahil: 2026-07-05 20:24:06)
+[20:24:06.154] [INFO] 📥 TFT -> BLE: {
+	"msg_id":	27,
+	"func":	"PAIR",
+	"act":	"send_pairresult",
+	"result":	1
+}
+[20:24:06.770] [DATA] 📥 TFT→Tel (Control-17818): [02 01 00 00 00 00] toplam=6 byte
+[20:24:07.021] [INFO] 📥 TFT -> BLE: {
+	"msg_id":	10,
+	"item":	1,
+	"current":	0,
+	"max":	0,
+	"average":	0
+}
+[20:24:07.827] [DATA] 📥 TFT→Tel (Control-17818): [02 01 00 00 00 00] toplam=6 byte
+[20:24:08.038] [INFO] 📥 TFT -> BLE: {
+	"msg_id":	10,
+	"item":	2,
+	"total":	3140,
+	"subtotal":	739
+}
+[20:24:08.873] [DATA] 📥 TFT→Tel (Control-17818): [02 01 00 00 00 00] toplam=6 byte
+[20:24:09.040] [INFO] 📥 TFT -> BLE: {
+	"msg_id":	10,
+	"item":	3,
+	"tire_pressure":	0,
+	"remaining_oil":	0,
+	"endurance":	138
+}
+[20:24:09.901] [DATA] 📥 TFT→Tel (Control-17818): [02 01 00 00 00 00] toplam=6 byte
+[20:24:10.805] [DATA] 📥 TFT→Tel (Control-17818): [02 01 00 00 00 00] toplam=6 byte
+[20:24:11.779] [DATA] 📥 TFT→Tel (Control-17818): [02 01 00 00 00 00] toplam=6 byte
+[20:24:12.891] [DATA] 📥 TFT→Tel (Control-17818): [02 01 00 00 00 00] toplam=6 byte
+[20:24:13.873] [DATA] 📥 TFT→Tel (Control-17818): [02 01 00 00 00 00] toplam=6 byte
+[20:24:14.782] [DATA] 📥 TFT→Tel (Control-17818): [02 01 00 00 00 00] toplam=6 byte
+[20:24:15.964] [DATA] 📥 TFT→Tel (Control-17818): [02 01 00 00 00 00] toplam=6 byte
+[20:24:16.875] [DATA] 📥 TFT→Tel (Control-17818): [02 01 00 00 00 00] toplam=6 byte
+[20:24:17.785] [DATA] 📥 TFT→Tel (Control-17818): [02 01 00 00 00 00] toplam=6 byte
+[20:24:18.891] [DATA] 📥 TFT→Tel (Control-17818): [02 01 00 00 00 00] toplam=6 byte
+[20:24:19.843] [DATA] 📥 TFT→Tel (Control-17818): [02 01 00 00 00 00] toplam=6 byte
+[20:24:20.784] [DATA] 📥 TFT→Tel (Control-17818): [02 01 00 00 00 00] toplam=6 byte
+[20:24:21.944] [DATA] 📥 TFT→Tel (Control-17818): [02 01 00 00 00 00] toplam=6 byte
+[20:24:22.888] [DATA] 📥 TFT→Tel (Control-17818): [02 01 00 00 00 00] toplam=6 byte
+[20:24:23.788] [DATA] 📥 TFT→Tel (Control-17818): [02 01 00 00 00 00] toplam=6 byte
+[20:24:24.825] [DATA] 📥 TFT→Tel (Control-17818): [02 01 00 00 00 00] toplam=6 byte
+[20:24:25.855] [DATA] 📥 TFT→Tel (Control-17818): [02 01 00 00 00 00] toplam=6 byte
+[20:24:26.907] [DATA] 📥 TFT→Tel (Control-17818): [02 01 00 00 00 00] toplam=6 byte
+[20:24:27.898] [DATA] 📥 TFT→Tel (Control-17818): [02 01 00 00 00 00] toplam=6 byte
+[20:24:28.864] [DATA] 📥 TFT→Tel (Control-17818): [02 01 00 00 00 00] toplam=6 byte
+[20:24:29.855] [DATA] 📥 TFT→Tel (Control-17818): [02 01 00 00 00 00] toplam=6 byte
+[20:24:30.901] [DATA] 📥 TFT→Tel (Control-17818): [02 01 00 00 00 00] toplam=6 byte
+[20:24:31.901] [DATA] 📥 TFT→Tel (Control-17818): [02 01 00 00 00 00] toplam=6 byte
+[20:24:32.814] [DATA] 📥 TFT→Tel (Control-17818): [02 01 00 00 00 00] toplam=6 byte
+[20:24:33.839] [DATA] 📥 TFT→Tel (Control-17818): [02 01 00 00 00 00] toplam=6 byte
+[20:24:34.888] [DATA] 📥 TFT→Tel (Control-17818): [02 01 00 00 00 00] toplam=6 byte
+[20:24:35.905] [DATA] 📥 TFT→Tel (Control-17818): [02 01 00 00 00 00] toplam=6 byte
+[20:24:36.959] [DATA] 📥 TFT→Tel (Control-17818): [02 01 00 00 00 00] toplam=6 byte
+[20:24:37.842] [DATA] 📥 TFT→Tel (Control-17818): [02 01 00 00 00 00] toplam=6 byte
+[20:24:38.866] [DATA] 📥 TFT→Tel (Control-17818): [02 01 00 00 00 00] toplam=6 byte
+[20:24:39.890] [DATA] 📥 TFT→Tel (Control-17818): [02 01 00 00 00 00] toplam=6 byte
+[20:24:40.910] [DATA] 📥 TFT→Tel (Control-17818): [02 01 00 00 00 00] toplam=6 byte
+[20:24:41.827] [DATA] 📥 TFT→Tel (Control-17818): [02 01 00 00 00 00] toplam=6 byte
+[20:24:42.848] [DATA] 📥 TFT→Tel (Control-17818): [02 01 00 00 00 00] toplam=6 byte
+[20:24:43.872] [DATA] 📥 TFT→Tel (Control-17818): [02 01 00 00 00 00] toplam=6 byte
+[20:24:44.897] [DATA] 📥 TFT→Tel (Control-17818): [02 01 00 00 00 00] toplam=6 byte
+[20:24:45.919] [DATA] 📥 TFT→Tel (Control-17818): [02 01 00 00 00 00] toplam=6 byte
+[20:24:46.879] [DATA] 📥 TFT→Tel (Control-17818): [02 01 00 00 00 00] toplam=6 byte
+[20:24:47.896] [DATA] 📥 TFT→Tel (Control-17818): [02 01 00 00 00 00] toplam=6 byte
+[20:24:48.898] [DATA] 📥 TFT→Tel (Control-17818): [02 01 00 00 00 00] toplam=6 byte
+[20:24:49.946] [DATA] 📥 TFT→Tel (Control-17818): [02 01 00 00 00 00] toplam=6 byte
+[20:24:50.835] [DATA] 📥 TFT→Tel (Control-17818): [02 01 00 00 00 00] toplam=6 byte
+[20:24:51.863] [DATA] 📥 TFT→Tel (Control-17818): [02 01 00 00 00 00] toplam=6 byte
+[20:24:52.882] [DATA] 📥 TFT→Tel (Control-17818): [02 01 00 00 00 00] toplam=6 byte
+[20:24:53.911] [DATA] 📥 TFT→Tel (Control-17818): [02 01 00 00 00 00] toplam=6 byte
+[20:24:54.845] [DATA] 📥 TFT→Tel (Control-17818): [02 01 00 00 00 00] toplam=6 byte
+[20:24:55.869] [DATA] 📥 TFT→Tel (Control-17818): [02 01 00 00 00 00] toplam=6 byte
+[20:24:56.905] [DATA] 📥 TFT→Tel (Control-17818): [02 01 00 00 00 00] toplam=6 byte
+[20:24:57.909] [DATA] 📥 TFT→Tel (Control-17818): [02 01 00 00 00 00] toplam=6 byte
+[20:24:58.971] [DATA] 📥 TFT→Tel (Control-17818): [02 01 00 00 00 00] toplam=6 byte
+[20:24:59.858] [DATA] 📥 TFT→Tel (Control-17818): [02 01 00 00 00 00] toplam=6 byte
+[20:25:00.876] [DATA] 📥 TFT→Tel (Control-17818): [02 01 00 00 00 00] toplam=6 byte
+[20:25:01.899] [DATA] 📥 TFT→Tel (Control-17818): [02 01 00 00 00 00] toplam=6 byte
+[20:25:02.921] [DATA] 📥 TFT→Tel (Control-17818): [02 01 00 00 00 00] toplam=6 byte
+[20:25:03.852] [DATA] 📥 TFT→Tel (Control-17818): [02 01 00 00 00 00] toplam=6 byte
+[20:25:04.876] [DATA] 📥 TFT→Tel (Control-17818): [02 01 00 00 00 00] toplam=6 byte
+[20:25:05.905] [DATA] 📥 TFT→Tel (Control-17818): [02 01 00 00 00 00] toplam=6 byte
+[20:25:06.925] [DATA] 📥 TFT→Tel (Control-17818): [02 01 00 00 00 00] toplam=6 byte
+[20:25:07.946] [DATA] 📥 TFT→Tel (Control-17818): [02 01 00 00 00 00] toplam=6 byte
+[20:25:08.857] [DATA] 📥 TFT→Tel (Control-17818): [02 01 00 00 00 00] toplam=6 byte
+[20:25:09.881] [DATA] 📥 TFT→Tel (Control-17818): [02 01 00 00 00 00] toplam=6 byte
+[20:25:10.839] [DATA] 📥 TFT→Tel (Control-17818): [02 01 00 00 00 00] toplam=6 byte
+[20:25:11.933] [DATA] 📥 TFT→Tel (Control-17818): [02 01 00 00 00 00] toplam=6 byte
+[20:25:12.868] [DATA] 📥 TFT→Tel (Control-17818): [02 01 00 00 00 00] toplam=6 byte
+[20:25:13.835] [DATA] 📥 TFT→Tel (Control-17818): [02 01 00 00 00 00] toplam=6 byte
+[20:25:14.910] [DATA] 📥 TFT→Tel (Control-17818): [02 01 00 00 00 00] toplam=6 byte
+[20:25:15.933] [DATA] 📥 TFT→Tel (Control-17818): [02 01 00 00 00 00] toplam=6 byte
+[20:25:16.959] [DATA] 📥 TFT→Tel (Control-17818): [02 01 00 00 00 00] toplam=6 byte
+[20:25:17.872] [DATA] 📥 TFT→Tel (Control-17818): [02 01 00 00 00 00] toplam=6 byte
+[20:25:18.842] [DATA] 📥 TFT→Tel (Control-17818): [02 01 00 00 00 00] toplam=6 byte
+[20:25:19.919] [DATA] 📥 TFT→Tel (Control-17818): [02 01 00 00 00 00] toplam=6 byte
+[20:25:20.942] [DATA] 📥 TFT→Tel (Control-17818): [02 01 00 00 00 00] toplam=6 byte
+[20:25:21.871] [DATA] 📥 TFT→Tel (Control-17818): [02 01 00 00 00 00] toplam=6 byte
+[20:25:22.900] [DATA] 📥 TFT→Tel (Control-17818): [02 01 00 00 00 00] toplam=6 byte
+[20:25:23.919] [DATA] 📥 TFT→Tel (Control-17818): [02 01 00 00 00 00] toplam=6 byte
+[20:25:24.027] [INFO] 📥 TFT -> BLE: {
+	"msg_id":	10,
+	"item":	3,
+	"tire_pressure":	0,
+	"remaining_oil":	0,
+	"endurance":	137
+}
+[20:25:24.944] [DATA] 📥 TFT→Tel (Control-17818): [02 01 00 00 00 00] toplam=6 byte
+[20:25:25.856] [DATA] 📥 TFT→Tel (Control-17818): [02 01 00 00 00 00] toplam=6 byte
+[20:25:26.915] [DATA] 📥 TFT→Tel (Control-17818): [02 01 00 00 00 00] toplam=6 byte
+[20:25:27.905] [DATA] 📥 TFT→Tel (Control-17818): [02 01 00 00 00 00] toplam=6 byte
+[20:25:28.912] [DATA] 📥 TFT→Tel (Control-17818): [02 01 00 00 00 00] toplam=6 byte
+[20:25:29.975] [DATA] 📥 TFT→Tel (Control-17818): [02 01 00 00 00 00] toplam=6 byte
+[20:25:30.884] [DATA] 📥 TFT→Tel (Control-17818): [02 01 00 00 00 00] toplam=6 byte
+[20:25:31.909] [DATA] 📥 TFT→Tel (Control-17818): [02 01 00 00 00 00] toplam=6 byte
+[20:25:32.968] [DATA] 📥 TFT→Tel (Control-17818): [02 01 00 00 00 00] toplam=6 byte
+[20:25:33.959] [DATA] 📥 TFT→Tel (Control-17818): [02 01 00 00 00 00] toplam=6 byte
+[20:25:34.918] [DATA] 📥 TFT→Tel (Control-17818): [02 01 00 00 00 00] toplam=6 byte
+[20:25:35.893] [DATA] 📥 TFT→Tel (Control-17818): [02 01 00 00 00 00] toplam=6 byte
+[20:25:36.027] [INFO] 📥 TFT -> BLE: {
+	"msg_id":	10,
+	"item":	3,
+	"tire_pressure":	0,
+	"remaining_oil":	0,
+	"endurance":	136
+}
+[20:25:36.861] [DATA] 📥 TFT→Tel (Control-17818): [02 01 00 00 00 00] toplam=6 byte
+[20:25:37.947] [DATA] 📥 TFT→Tel (Control-17818): [02 01 00 00 00 00] toplam=6 byte
+[20:25:38.902] [DATA] 📥 TFT→Tel (Control-17818): [02 01 00 00 00 00] toplam=6 byte
+[20:25:39.921] [DATA] 📥 TFT→Tel (Control-17818): [02 01 00 00 00 00] toplam=6 byte
+[20:25:40.920] [DATA] 📥 TFT→Tel (Control-17818): [02 01 00 00 00 00] toplam=6 byte
+[20:25:41.944] [DATA] 📥 TFT→Tel (Control-17818): [02 01 00 00 00 00] toplam=6 byte
+[20:25:42.967] [DATA] 📥 TFT→Tel (Control-17818): [02 01 00 00 00 00] toplam=6 byte
+[20:25:43.881] [DATA] 📥 TFT→Tel (Control-17818): [02 01 00 00 00 00] toplam=6 byte
+[20:25:44.925] [DATA] 📥 TFT→Tel (Control-17818): [02 01 00 00 00 00] toplam=6 byte
+[20:25:45.863] [DATA] 📥 TFT→Tel (Control-17818): [02 01 00 00 00 00] toplam=6 byte
+[20:25:46.960] [DATA] 📥 TFT→Tel (Control-17818): [02 01 00 00 00 00] toplam=6 byte
+[20:25:47.971] [DATA] 📥 TFT→Tel (Control-17818): [02 01 00 00 00 00] toplam=6 byte
+[20:25:48.925] [DATA] 📥 TFT→Tel (Control-17818): [02 01 00 00 00 00] toplam=6 byte
+[20:25:49.940] [DATA] 📥 TFT→Tel (Control-17818): [02 01 00 00 00 00] toplam=6 byte
+[20:25:50.958] [DATA] 📥 TFT→Tel (Control-17818): [02 01 00 00 00 00] toplam=6 byte
+[20:25:51.981] [DATA] 📥 TFT→Tel (Control-17818): [02 01 00 00 00 00] toplam=6 byte
+[20:25:52.870] [DATA] 📥 TFT→Tel (Control-17818): [02 01 00 00 00 00] toplam=6 byte
+[20:25:53.941] [DATA] 📥 TFT→Tel (Control-17818): [02 01 00 00 00 00] toplam=6 byte
+[20:25:54.872] [DATA] 📥 TFT→Tel (Control-17818): [02 01 00 00 00 00] toplam=6 byte
+[20:25:55.874] [DATA] 📥 TFT→Tel (Control-17818): [02 01 00 00 00 00] toplam=6 byte
+[20:25:56.988] [DATA] 📥 TFT→Tel (Control-17818): [02 01 00 00 00 00] toplam=6 byte
+[20:25:57.920] [DATA] 📥 TFT→Tel (Control-17818): [02 01 00 00 00 00] toplam=6 byte
+[20:25:58.947] [DATA] 📥 TFT→Tel (Control-17818): [02 01 00 00 00 00] toplam=6 byte
+[20:25:59.968] [DATA] 📥 TFT→Tel (Control-17818): [02 01 00 00 00 00] toplam=6 byte
+[20:26:01.011] [DATA] 📥 TFT→Tel (Control-17818): [02 01 00 00 00 00] toplam=6 byte
+[20:26:01.904] [DATA] 📥 TFT→Tel (Control-17818): [02 01 00 00 00 00] toplam=6 byte
+[20:26:02.931] [DATA] 📥 TFT→Tel (Control-17818): [02 01 00 00 00 00] toplam=6 byte
+[20:26:03.960] [DATA] 📥 TFT→Tel (Control-17818): [02 01 00 00 00 00] toplam=6 byte
+[20:26:04.974] [DATA] 📥 TFT→Tel (Control-17818): [02 01 00 00 00 00] toplam=6 byte
+[20:26:05.904] [DATA] 📥 TFT→Tel (Control-17818): [02 01 00 00 00 00] toplam=6 byte
+[20:26:06.931] [DATA] 📥 TFT→Tel (Control-17818): [02 01 00 00 00 00] toplam=6 byte
+[20:26:07.952] [DATA] 📥 TFT→Tel (Control-17818): [02 01 00 00 00 00] toplam=6 byte
+[20:26:09.012] [DATA] 📥 TFT→Tel (Control-17818): [02 01 00 00 00 00] toplam=6 byte
+[20:26:10.032] [DATA] 📥 TFT→Tel (Control-17818): [02 01 00 00 00 00] toplam=6 byte
+[20:26:10.911] [DATA] 📥 TFT→Tel (Control-17818): [02 01 00 00 00 00] toplam=6 byte
+[20:26:11.936] [DATA] 📥 TFT→Tel (Control-17818): [02 01 00 00 00 00] toplam=6 byte
+[20:26:12.960] [DATA] 📥 TFT→Tel (Control-17818): [02 01 00 00 00 00] toplam=6 byte
+[20:26:13.985] [DATA] 📥 TFT→Tel (Control-17818): [02 01 00 00 00 00] toplam=6 byte
+[20:26:14.918] [DATA] 📥 TFT→Tel (Control-17818): [02 01 00 00 00 00] toplam=6 byte
+[20:26:15.960] [DATA] 📥 TFT→Tel (Control-17818): [02 01 00 00 00 00] toplam=6 byte
+[20:26:16.994] [DATA] 📥 TFT→Tel (Control-17818): [02 01 00 00 00 00] toplam=6 byte
+[20:26:18.024] [DATA] 📥 TFT→Tel (Control-17818): [02 01 00 00 00 00] toplam=6 byte
+[20:26:19.029] [DATA] 📥 TFT→Tel (Control-17818): [02 01 00 00 00 00] toplam=6 byte
+[20:26:19.928] [DATA] 📥 TFT→Tel (Control-17818): [02 01 00 00 00 00] toplam=6 byte
+[20:26:20.899] [DATA] 📥 TFT→Tel (Control-17818): [02 01 00 00 00 00] toplam=6 byte
+[20:26:21.971] [DATA] 📥 TFT→Tel (Control-17818): [02 01 00 00 00 00] toplam=6 byte
+[20:26:23.026] [DATA] 📥 TFT→Tel (Control-17818): [02 01 00 00 00 00] toplam=6 byte
+[20:26:23.931] [DATA] 📥 TFT→Tel (Control-17818): [02 01 00 00 00 00] toplam=6 byte
+[20:26:24.089] [INFO] ⏹️ Stopped by user
+[20:26:24.090] [INFO] ⏹️ Stopping mirroring...
+[20:26:24.094] [INFO] 🔴 Bluetooth BLE bağlantısı kesildi
+[20:26:24.095] [INFO] 🔌 WiFi network binding cleared
+[20:26:24.095] [INFO] 🔌 Tüm TCP port sunucuları kapatıldı
+[20:26:24.096] [INFO] 👂 TFT control reader durdu
+[20:26:24.099] [INFO] ⏹️ All stopped
+[20:26:24.102] [WARNING] ⚠️ MediaProjection sistem tarafından durduruldu
+[20:26:24.102] [INFO] ⏹️ Stopping mirroring...
+[20:26:24.102] [INFO] 🔌 WiFi network binding cleared
+[20:26:24.103] [INFO] ⏹️ All stopped
+[20:26:24.103] [INFO] ⏹️ Stopping mirroring...
+[20:26:24.103] [INFO] 🔌 WiFi network binding cleared
+[20:26:24.103] [INFO] ⏹️ All stopped
+[20:26:24.442] [WARNING] 🔌 TFT Control bağlantısı koptu
+[20:26:43.856] [INFO] 🖥️ TFT target resolution: 600×1024 | Margin: 0px
+[20:26:43.858] [INFO] 🔐 Requesting screen capture permission...
+[20:26:47.076] [SUCCESS] ✅ Permission granted — starting MirrorService
+[20:26:47.082] [INFO] 🚀 MirrorService oluşturuldu
+[20:26:47.084] [INFO] ▶️ Starting mirroring...
+[20:26:47.084] [INFO]    Video Port: 15456
+[20:26:47.084] [INFO]    Control Port: 17818
+[20:26:47.084] [INFO]    Heartbeat Port: 15457
+[20:26:47.086] [INFO] 🔵 Bluetooth BLE bağlantısı başlatılıyor: E0:03:63:AD:00:01
+[20:26:47.087] [INFO] 📡 Searching for WiFi network and binding process...
+[20:26:47.089] [SUCCESS] 🔗 Application process successfully bound to WiFi network (bindProcessToNetwork)
+[20:26:47.090] [INFO] 🔌 TCP Server başlatılıyor, bind IP: 192.168.10.2
+[20:26:47.091] [INFO] ─────────────────────────────
+[20:26:47.091] [INFO] 📡 Telefon IP  : 192.168.10.2
+[20:26:47.091] [INFO] 🏍️ Gateway(TBox): 0.0.0.0
+[20:26:47.091] [SUCCESS] ✅ Control ServerSocket açıldı → PORT 17818
+[20:26:47.091] [SUCCESS] ✅ Video ServerSocket açıldı → PORT 15456
+[20:26:47.091] [INFO] 🔌 Dinlenen portlar: Video=15456, Control=17818, Heartbeat=15457
+[20:26:47.091] [INFO] ─────────────────────────────
+[20:26:47.091] [SUCCESS] ✅ Heartbeat ServerSocket açıldı → PORT 15457
+[20:26:47.091] [INFO] Motosiklet WiFi'sine bağlanın ve TFT'nin
+[20:26:47.091] [INFO] bu IP:portlara bağlanmasını bekleyin.
+[20:26:47.471] [INFO] 🟢 Bluetooth bağlandı, servisler keşfediliyor...
+[20:26:47.473] [INFO] 🔍 Tüm BLE Servisleri Taranıyor...
+[20:26:47.473] [INFO]   [Servis] 00001801-0000-1000-8000-00805f9b34fb
+[20:26:47.473] [INFO]     -> [Char] 00002a05-0000-1000-8000-00805f9b34fb (Props: 32)
+[20:26:47.474] [INFO]   [Servis] 00001800-0000-1000-8000-00805f9b34fb
+[20:26:47.474] [INFO]     -> [Char] 00002a00-0000-1000-8000-00805f9b34fb (Props: 2)
+[20:26:47.474] [INFO]     -> [Char] 00002a01-0000-1000-8000-00805f9b34fb (Props: 2)
+[20:26:47.474] [INFO]     -> [Char] 00002a04-0000-1000-8000-00805f9b34fb (Props: 2)
+[20:26:47.474] [INFO]     -> [Char] 00002aa6-0000-1000-8000-00805f9b34fb (Props: 2)
+[20:26:47.474] [INFO]   [Servis] 0000e0ff-3c17-d293-8e48-14fe2e4da212
+[20:26:47.474] [INFO]     -> [Char] 0000ffe1-0000-1000-8000-00805f9b34fb (Props: 12)
+[20:26:47.474] [INFO]     -> [Char] 0000ffe2-0000-1000-8000-00805f9b34fb (Props: 16)
+[20:26:47.474] [INFO]     -> [Char] 0000ffe3-0000-1000-8000-00805f9b34fb (Props: 30)
+[20:26:47.474] [INFO]   [Servis] 0000180a-0000-1000-8000-00805f9b34fb
+[20:26:47.474] [INFO]     -> [Char] 00002a29-0000-1000-8000-00805f9b34fb (Props: 2)
+[20:26:47.474] [INFO]     -> [Char] 00002a24-0000-1000-8000-00805f9b34fb (Props: 2)
+[20:26:47.475] [INFO]     -> [Char] 00002a25-0000-1000-8000-00805f9b34fb (Props: 2)
+[20:26:47.475] [INFO]     -> [Char] 00002a27-0000-1000-8000-00805f9b34fb (Props: 2)
+[20:26:47.475] [INFO]     -> [Char] 00002a26-0000-1000-8000-00805f9b34fb (Props: 2)
+[20:26:47.475] [INFO]     -> [Char] 00002a28-0000-1000-8000-00805f9b34fb (Props: 2)
+[20:26:47.475] [INFO]     -> [Char] 00002a23-0000-1000-8000-00805f9b34fb (Props: 2)
+[20:26:47.475] [INFO]     -> [Char] 00002a2a-0000-1000-8000-00805f9b34fb (Props: 2)
+[20:26:47.475] [INFO]     -> [Char] 00002a50-0000-1000-8000-00805f9b34fb (Props: 2)
+[20:26:47.475] [INFO]   [Servis] 0000180f-0000-1000-8000-00805f9b34fb
+[20:26:47.475] [INFO]     -> [Char] 00002a19-0000-1000-8000-00805f9b34fb (Props: 18)
+[20:26:47.475] [INFO] 🔓 BLE Servisleri bulundu (Orijinal). Dinleme başlatılıyor...
+[20:26:47.577] [SUCCESS] 🔌 TFT Control bağlandı! → 192.168.10.1:58224
+[20:26:47.577] [INFO] 📤 TFT'ye TUC GET sorgusu gönderiliyor...
+[20:26:47.577] [INFO] 👂 TFT→Telefon control reader başlatıldı
+[20:26:47.604] [DATA] 📥 TFT→Tel (Control-17818): [EE FD 00 00 00 49 7B 22 6D 73 67 5F 69 64 22 3A 32 37 2C 22 (+60B)] toplam=80 byte
+[20:26:47.605] [INFO]    [ASCII Text]: I{"msg_id":27,"func":"TUC","act":"SEND","tuc":"7000071f69c11cc9","tucs":1}
+[20:26:47.705] [INFO] 📤 Control port binary el sıkışma paketleri gönderildi
+[20:26:47.705] [SUCCESS] ✅ Control el sıkışması başarıyla tamamlandı!
+[20:26:47.717] [DATA] 📥 TFT→Tel (Control-17818): [01 02 00 00 04 06 55 43 3D 32 30 32 35 30 32 31 37 31 35 35 (+1016B)] toplam=1036 byte
+[20:26:47.717] [INFO]    [ASCII Text]: UC=202502171551189951_DA=260228_FL=01_SV=2.0.4_TUC=7000071f69c11cc9_CV=1CQKY60FAC920241501_250414_2.0.1CQKYMTC60FAC920201_260228_01_2.0.4CQKYMTC60FAC920201_250918_01_2.0.38762C92160002_240926_2.1.1
+[20:26:47.739] [DATA] 📥 TFT→Tel (Control-17818): [01 0F 00 00 00 04 00 00 00 08] toplam=10 byte
+[20:26:47.782] [DATA] 📥 TFT→Tel (Control-17818): [01 12 00 00 00 20 45 30 3A 30 33 3A 36 33 3A 41 44 3A 30 30 (+18B)] toplam=38 byte
+[20:26:47.782] [INFO]    [ASCII Text]:  E0:03:63:AD:00:01
+[20:26:47.846] [INFO] ✅ BLE Handshake (Notification) aktif!
+[20:26:47.847] [INFO] 📤 BLE Başlangıç el sıkışma paketleri gönderildi (Saat eşitleme ve Yansıtma Aktif dahil: 2026-07-05 20:26:47)
+[20:26:47.848] [INFO] 📥 TFT -> BLE: {
+	"msg_id":	27,
+	"func":	"PAIR",
+	"act":	"send_pairresult",
+	"result":	1
+}
+[20:26:48.706] [DATA] 📥 TFT→Tel (Control-17818): [02 01 00 00 00 00] toplam=6 byte
+[20:26:48.839] [INFO] 📥 TFT -> BLE: {
+	"msg_id":	10,
+	"item":	1,
+	"current":	0,
+	"max":	0,
+	"average":	0
+}
+[20:26:49.723] [DATA] 📥 TFT→Tel (Control-17818): [02 01 00 00 00 00] toplam=6 byte
+[20:26:49.861] [INFO] 📥 TFT -> BLE: {
+	"msg_id":	10,
+	"item":	2,
+	"total":	3140,
+	"subtotal":	739
+}
+[20:26:50.756] [DATA] 📥 TFT→Tel (Control-17818): [02 01 00 00 00 00] toplam=6 byte
+[20:26:50.850] [INFO] 📥 TFT -> BLE: {
+	"msg_id":	10,
+	"item":	3,
+	"tire_pressure":	0,
+	"remaining_oil":	0,
+	"endurance":	136
+}
+[20:26:51.668] [DATA] 📥 TFT→Tel (Control-17818): [02 01 00 00 00 00] toplam=6 byte
+[20:26:52.694] [DATA] 📥 TFT→Tel (Control-17818): [02 01 00 00 00 00] toplam=6 byte
+[20:26:53.723] [DATA] 📥 TFT→Tel (Control-17818): [02 01 00 00 00 00] toplam=6 byte
+[20:26:54.747] [DATA] 📥 TFT→Tel (Control-17818): [02 01 00 00 00 00] toplam=6 byte
+[20:26:55.672] [DATA] 📥 TFT→Tel (Control-17818): [02 01 00 00 00 00] toplam=6 byte
+[20:26:56.693] [DATA] 📥 TFT→Tel (Control-17818): [02 01 00 00 00 00] toplam=6 byte
+[20:26:57.723] [DATA] 📥 TFT→Tel (Control-17818): [02 01 00 00 00 00] toplam=6 byte
+[20:26:58.746] [DATA] 📥 TFT→Tel (Control-17818): [02 01 00 00 00 00] toplam=6 byte
+[20:26:59.767] [DATA] 📥 TFT→Tel (Control-17818): [02 01 00 00 00 00] toplam=6 byte
+[20:27:00.679] [DATA] 📥 TFT→Tel (Control-17818): [02 01 00 00 00 00] toplam=6 byte
+[20:27:01.716] [DATA] 📥 TFT→Tel (Control-17818): [02 01 00 00 00 00] toplam=6 byte
+[20:27:02.726] [DATA] 📥 TFT→Tel (Control-17818): [02 01 00 00 00 00] toplam=6 byte
+[20:27:03.751] [DATA] 📥 TFT→Tel (Control-17818): [02 01 00 00 00 00] toplam=6 byte
+[20:27:04.681] [DATA] 📥 TFT→Tel (Control-17818): [02 01 00 00 00 00] toplam=6 byte
+[20:27:05.705] [DATA] 📥 TFT→Tel (Control-17818): [02 01 00 00 00 00] toplam=6 byte
+[20:27:06.730] [DATA] 📥 TFT→Tel (Control-17818): [02 01 00 00 00 00] toplam=6 byte
+[20:27:07.753] [DATA] 📥 TFT→Tel (Control-17818): [02 01 00 00 00 00] toplam=6 byte
+[20:27:08.779] [DATA] 📥 TFT→Tel (Control-17818): [02 01 00 00 00 00] toplam=6 byte
+[20:27:09.689] [DATA] 📥 TFT→Tel (Control-17818): [02 01 00 00 00 00] toplam=6 byte
+[20:27:10.718] [DATA] 📥 TFT→Tel (Control-17818): [02 01 00 00 00 00] toplam=6 byte
+[20:27:11.666] [DATA] 📥 TFT→Tel (Control-17818): [02 01 00 00 00 00] toplam=6 byte
+[20:27:12.716] [DATA] 📥 TFT→Tel (Control-17818): [02 01 00 00 00 00] toplam=6 byte
+[20:27:13.669] [DATA] 📥 TFT→Tel (Control-17818): [02 01 00 00 00 00] toplam=6 byte
+[20:27:14.669] [DATA] 📥 TFT→Tel (Control-17818): [02 01 00 00 00 00] toplam=6 byte
+[20:27:15.740] [DATA] 📥 TFT→Tel (Control-17818): [02 01 00 00 00 00] toplam=6 byte
+[20:27:16.726] [DATA] 📥 TFT→Tel (Control-17818): [02 01 00 00 00 00] toplam=6 byte
+[20:27:17.767] [DATA] 📥 TFT→Tel (Control-17818): [02 01 00 00 00 00] toplam=6 byte
+[20:27:18.675] [DATA] 📥 TFT→Tel (Control-17818): [02 01 00 00 00 00] toplam=6 byte
+[20:27:19.675] [DATA] 📥 TFT→Tel (Control-17818): [02 01 00 00 00 00] toplam=6 byte
+[20:27:20.749] [DATA] 📥 TFT→Tel (Control-17818): [02 01 00 00 00 00] toplam=6 byte
+[20:27:21.774] [DATA] 📥 TFT→Tel (Control-17818): [02 01 00 00 00 00] toplam=6 byte
+[20:27:22.678] [DATA] 📥 TFT→Tel (Control-17818): [02 01 00 00 00 00] toplam=6 byte
+[20:27:23.712] [DATA] 📥 TFT→Tel (Control-17818): [02 01 00 00 00 00] toplam=6 byte
+[20:27:24.700] [DATA] 📥 TFT→Tel (Control-17818): [02 01 00 00 00 00] toplam=6 byte
+[20:27:25.681] [DATA] 📥 TFT→Tel (Control-17818): [02 01 00 00 00 00] toplam=6 byte
+[20:27:26.792] [DATA] 📥 TFT→Tel (Control-17818): [02 01 00 00 00 00] toplam=6 byte
+[20:27:27.713] [DATA] 📥 TFT→Tel (Control-17818): [02 01 00 00 00 00] toplam=6 byte
+[20:27:28.752] [DATA] 📥 TFT→Tel (Control-17818): [02 01 00 00 00 00] toplam=6 byte
+[20:27:29.736] [DATA] 📥 TFT→Tel (Control-17818): [02 01 00 00 00 00] toplam=6 byte
+[20:27:30.771] [DATA] 📥 TFT→Tel (Control-17818): [02 01 00 00 00 00] toplam=6 byte
+[20:27:31.698] [DATA] 📥 TFT→Tel (Control-17818): [02 01 00 00 00 00] toplam=6 byte
+[20:27:32.687] [DATA] 📥 TFT→Tel (Control-17818): [02 01 00 00 00 00] toplam=6 byte
+[20:27:33.689] [DATA] 📥 TFT→Tel (Control-17818): [02 01 00 00 00 00] toplam=6 byte
+[20:27:34.780] [DATA] 📥 TFT→Tel (Control-17818): [02 01 00 00 00 00] toplam=6 byte
+[20:27:35.804] [DATA] 📥 TFT→Tel (Control-17818): [02 01 00 00 00 00] toplam=6 byte
+[20:27:36.724] [DATA] 📥 TFT→Tel (Control-17818): [02 01 00 00 00 00] toplam=6 byte
+[20:27:37.693] [DATA] 📥 TFT→Tel (Control-17818): [02 01 00 00 00 00] toplam=6 byte
+[20:27:38.759] [DATA] 📥 TFT→Tel (Control-17818): [02 01 00 00 00 00] toplam=6 byte
+[20:27:39.845] [DATA] 📥 TFT→Tel (Control-17818): [02 01 00 00 00 00] toplam=6 byte
+[20:27:40.712] [DATA] 📥 TFT→Tel (Control-17818): [02 01 00 00 00 00] toplam=6 byte
+[20:27:41.743] [DATA] 📥 TFT→Tel (Control-17818): [02 01 00 00 00 00] toplam=6 byte
+[20:27:42.807] [DATA] 📥 TFT→Tel (Control-17818): [02 01 00 00 00 00] toplam=6 byte
+[20:27:49.721] [WARNING] 🔌 WiFi network connection lost, unbound network
+[20:27:49.759] [INFO] 👂 TFT control reader durdu
+[20:27:53.052] [SUCCESS] 🔗 Application process successfully bound to WiFi network (bindProcessToNetwork)
+[20:27:53.053] [INFO] 🔄 TCP Server zaten çalışıyor, yeniden başlatılıyor...
+[20:27:53.053] [INFO] 🔌 Tüm TCP port sunucuları kapatıldı
+[20:27:53.070] [INFO] 🔌 TCP Server başlatılıyor, bind IP: 192.168.68.124
+[20:27:53.073] [INFO] ─────────────────────────────
+[20:27:53.073] [SUCCESS] ✅ Video ServerSocket açıldı → PORT 15456
+[20:27:53.073] [INFO] 📡 Telefon IP  : 192.168.68.124
+[20:27:53.073] [INFO] 🏍️ Gateway(TBox): 192.168.68.1
+[20:27:53.073] [INFO] 🔌 Dinlenen portlar: Video=15456, Control=17818, Heartbeat=15457
+[20:27:53.073] [INFO] ─────────────────────────────
+[20:27:53.073] [INFO] Motosiklet WiFi'sine bağlanın ve TFT'nin
+[20:27:53.073] [INFO] bu IP:portlara bağlanmasını bekleyin.
+[20:27:53.074] [SUCCESS] ✅ Heartbeat ServerSocket açıldı → PORT 15457
+[20:27:53.074] [SUCCESS] ✅ Control ServerSocket açıldı → PORT 17818
+[20:27:53.136] [WARNING] 🔌 TFT Control bağlantısı koptu
+[20:28:13.313] [INFO] 🔴 Bluetooth bağlantısı koptu (GATT disconnected)
+[20:33:47.214] [INFO] ⏹️ Stopped by user
+[20:33:47.217] [INFO] ⏹️ Stopping mirroring...
+[20:33:47.219] [INFO] 🔌 WiFi network binding cleared
+[20:33:47.220] [INFO] 🔌 Tüm TCP port sunucuları kapatıldı
+[20:33:47.221] [INFO] ⏹️ All stopped
+[20:33:47.223] [WARNING] ⚠️ MediaProjection sistem tarafından durduruldu
+[20:33:47.223] [INFO] ⏹️ Stopping mirroring...
+[20:33:47.223] [INFO] 🔌 WiFi network binding cleared
+[20:33:47.223] [INFO] ⏹️ All stopped
+[20:33:47.223] [INFO] ⏹️ Stopping mirroring...
+[20:33:47.224] [INFO] 🔌 WiFi network binding cleared
+[20:33:47.224] [INFO] ⏹️ All stopped
