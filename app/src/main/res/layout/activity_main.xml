@@ -83,6 +83,18 @@
         android:textSize="18sp"
         android:textColor="#FFFFFF"
         android:background="#2E7D32"
+        android:textStyle="bold"
+        android:layout_marginBottom="16dp"/>
+
+    <!-- Share Logs button -->
+    <Button
+        android:id="@+id/btnShareLogs"
+        android:layout_width="match_parent"
+        android:layout_height="48dp"
+        android:text="@string/btn_share_logs"
+        android:textSize="14sp"
+        android:textColor="#FFFFFF"
+        android:background="#1976D2"
         android:textStyle="bold" />
 
 </LinearLayout>

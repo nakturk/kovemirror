@@ -61,6 +61,32 @@ class MainActivity : AppCompatActivity() {
 
     private fun setupButtons() {
         binding.btnStartStop.setOnClickListener { onStartStopClick() }
+        binding.btnShareLogs.setOnClickListener { shareLogs() }
+    }
+
+    private fun shareLogs() {
+        val logFile = java.io.File(getExternalFilesDir(null), "kove_mirror_log.txt")
+        if (!logFile.exists()) {
+            Toast.makeText(this, "Log dosyası bulunamadı / Log file not found", Toast.LENGTH_SHORT).show()
+            return
+        }
+
+        try {
+            val uri = androidx.core.content.FileProvider.getUriForFile(
+                this,
+                "${packageName}.fileprovider",
+                logFile
+            )
+
+            val intent = Intent(Intent.ACTION_SEND).apply {
+                type = "text/plain"
+                putExtra(Intent.EXTRA_STREAM, uri)
+                addFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION)
+            }
+            startActivity(Intent.createChooser(intent, "Logları Paylaş / Share Logs"))
+        } catch (e: Exception) {
+            Toast.makeText(this, "Log paylaşılırken hata oluştu: ${e.message}", Toast.LENGTH_SHORT).show()
+        }
     }
 
     // ─── WiFi Status ─────────────────────────────────────────────

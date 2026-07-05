@@ -87,4 +87,5 @@
     <string name="wifi_required_toast">⚠️ Please connect to motorcycle WiFi first</string>
     <string name="label_select_bt_device">Select TFT Bluetooth Device</string>
     <string name="status_connecting">Connecting...</string>
+    <string name="btn_share_logs">Share Logs</string>
 </resources>

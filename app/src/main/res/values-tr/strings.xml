@@ -87,5 +87,5 @@
     <string name="wifi_required_toast">⚠️ Lütfen önce motosiklet WiFi\'sine bağlanın</string>
     <string name="label_select_bt_device">TFT Bluetooth Cihazını Seçin</string>
     <string name="status_connecting">Bağlanıyor...</string>
-
+    <string name="btn_share_logs">Logları Paylaş</string>
 </resources>
