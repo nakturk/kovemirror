@@ -144,19 +144,27 @@ class BleManager(private val context: Context, private val logCallback: (String)
 
         override fun onServicesDiscovered(gatt: BluetoothGatt, status: Int) {
             if (status == BluetoothGatt.GATT_SUCCESS) {
+                logCallback("🔍 Tüm BLE Servisleri Taranıyor...")
+                gatt.services.forEach { s ->
+                    logCallback("  [Servis] ${s.uuid}")
+                    s.characteristics.forEach { c ->
+                        logCallback("    -> [Char] ${c.uuid} (Props: ${c.properties})")
+                    }
+                }
+
                 val service = gatt.getService(SERVICE_UUID)
                 if (service != null) {
                     writeChar = service.getCharacteristic(WRITE_CHAR_UUID)
                     val notifyChar = service.getCharacteristic(NOTIFY_CHAR_UUID)
                     
                     if (writeChar != null && notifyChar != null) {
-                        logCallback("🔓 BLE Servisleri bulundu. Dinleme başlatılıyor...")
+                        logCallback("🔓 BLE Servisleri bulundu (Orijinal). Dinleme başlatılıyor...")
                         enableNotification(gatt, notifyChar)
                     } else {
                         logCallback("❌ Gerekli BLE karakteristikleri bulunamadı")
                     }
                 } else {
-                    // Diğer olası UUID'leri dene
+                    // Diğer olası UUID'leri dene veya dinamik bul
                     tryAlternativeServices(gatt)
                 }
             } else {
@@ -204,6 +212,20 @@ class BleManager(private val context: Context, private val logCallback: (String)
                 }
             }
         }
+
+        // 2026 modeller için dinamik tarama: Herhangi bir serviste FFE1/FFE2 karakteristikleri var mı?
+        logCallback("⚠️ Bilinen servis UUID'leri bulunamadı. Dinamik tarama yapılıyor...")
+        for (service in gatt.services) {
+            val wChar = service.getCharacteristic(WRITE_CHAR_UUID)
+            val nChar = service.getCharacteristic(NOTIFY_CHAR_UUID)
+            if (wChar != null && nChar != null) {
+                writeChar = wChar
+                logCallback("🔓 BLE Servisi Dinamik Olarak Bulundu! (Servis: ${service.uuid}). Dinleme başlatılıyor...")
+                enableNotification(gatt, nChar)
+                return
+            }
+        }
+
         logCallback("❌ Uyumlu bir ThinkerRide BLE servisi bulunamadı")
     }
 
