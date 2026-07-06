@@ -76,6 +76,7 @@ class MirrorService : Service() {
     private var bleManager:        BleManager?        = null
     private var wifiNetworkCallback: ConnectivityManager.NetworkCallback? = null
     private var tcpServerStarted = false
+    private var wakeLock: android.os.PowerManager.WakeLock? = null
 
     // ─── Lifecycle ───────────────────────────────────────────────
 
@@ -135,6 +136,15 @@ class MirrorService : Service() {
             DebugLogger.info("   Video Port: ${TcpServer.PORT_VIDEO}")
             DebugLogger.info("   Control Port: ${TcpServer.PORT_CONTROL}")
             DebugLogger.info("   Heartbeat Port: ${TcpServer.PORT_HEARTBEAT}")
+
+            // Ekranın otomatik kapanmasını engellemek için WakeLock (Arka planda da çalışır)
+            val powerManager = getSystemService(Context.POWER_SERVICE) as android.os.PowerManager
+            @Suppress("DEPRECATION")
+            wakeLock = powerManager.newWakeLock(
+                android.os.PowerManager.SCREEN_BRIGHT_WAKE_LOCK or android.os.PowerManager.ACQUIRE_CAUSES_WAKEUP,
+                "KoveMirror::AlwaysOn"
+            )
+            wakeLock?.acquire()
 
             // 1) MediaProjection (TCP Server'dan önce hazır olmalı)
             val pm = getSystemService(MEDIA_PROJECTION_SERVICE) as MediaProjectionManager
@@ -237,6 +247,13 @@ class MirrorService : Service() {
         tcpServerStarted = false
         mediaProjection?.stop()
         mediaProjection = null
+
+        // WakeLock serbest bırak
+        if (wakeLock?.isHeld == true) {
+            wakeLock?.release()
+        }
+        wakeLock = null
+
         DebugLogger.info(getString(R.string.log_all_stopped))
     }
 
