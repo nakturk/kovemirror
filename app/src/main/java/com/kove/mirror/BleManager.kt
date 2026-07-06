@@ -264,7 +264,7 @@ class BleManager(private val context: Context, private val logCallback: (String)
         }
     }
 
-    private fun sendInitPackets() {
+    fun sendInitPackets() {
         try {
             // 1) Pair info
             val pair = JSONObject().apply {

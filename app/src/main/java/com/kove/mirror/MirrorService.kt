@@ -219,6 +219,16 @@ class MirrorService : Service() {
                 projectionEncoder?.stop()
                 projectionEncoder = null
                 updateNotif(getString(R.string.notif_waiting_tft_port, TcpServer.PORT_VIDEO))
+
+                // Auto-Reconnect mantığı:
+                // Eğer kullanıcı manuel "Stop" basmadıysa ve hala arka planda çalışıyorsak,
+                // TFT'ye BLE üzerinden tekrar "başla" sinyali gönderelim.
+                Handler(Looper.getMainLooper()).postDelayed({
+                    if (tcpServerStarted && bleManager != null) {
+                        DebugLogger.info("🔄 Otomatik yeniden bağlanma (Auto-Reconnect) tetikleniyor...")
+                        bleManager?.sendInitPackets()
+                    }
+                }, 2000)
             }
         )
         tcpServer = server
