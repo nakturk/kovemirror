@@ -1,6 +1,6 @@
-# ThinkerRide (Wuhan Bluestar) TFT Screen Mirroring Protocol Specification
+# TFT Screen Mirroring Protocol Specification
 
-This document details the reverse-engineered communication protocol between Android client applications (e.g. ThinkerRide, KoveMirror, VogeCastTest) and motorcycle TFT dashboard displays manufactured by **Wuhan Bluestar Technology** (widely used in Kove, Voge/Loncin, QJMotor, Colove, etc.).
+This document details the reverse-engineered communication protocol between Android client applications 
 
 ---
 
