@@ -36,17 +36,17 @@ class BleManager(private val context: Context, private val logCallback: (String)
     fun connect(macAddress: String) {
         disconnect()
         targetMac = macAddress
-        logCallback("🔵 Starting Bluetooth BLE connection: $macAddress")
+        logCallback("🔵 Starting Bluetooth BLE connection / Bluetooth BLE bağlantısı başlatılıyor / Bluetooth BLE bağlantısı başlatılıyor: $macAddress")
         
         val adapter = BluetoothAdapter.getDefaultAdapter() ?: run {
-            logCallback("❌ Bluetooth not supported")
+            logCallback("❌ Bluetooth not supported / Bluetooth desteklenmiyor / Bluetooth desteklenmiyor")
             return
         }
         
         val device = try {
             adapter.getRemoteDevice(macAddress)
         } catch (e: Exception) {
-            logCallback("❌ Invalid MAC address: ${e.message}")
+            logCallback("❌ Invalid MAC address / Geçersiz MAC adresi / Geçersiz MAC adresi: ${e.message}")
             return
         }
 
@@ -61,7 +61,7 @@ class BleManager(private val context: Context, private val logCallback: (String)
         writeChar = null
         if (isConnected) {
             isConnected = false
-            logCallback("🔴 Bluetooth BLE connection disconnected")
+            logCallback("🔴 Bluetooth BLE connection disconnected / Bluetooth BLE bağlantısı kesildi / Bluetooth BLE bağlantısı kesildi")
         }
     }
 
@@ -101,13 +101,13 @@ class BleManager(private val context: Context, private val logCallback: (String)
             char.writeType = BluetoothGattCharacteristic.WRITE_TYPE_NO_RESPONSE
             val success = gatt.writeCharacteristic(char)
             if (!success) {
-                logCallback("⚠️ BLE packet write error, retrying in 150ms")
+                logCallback("⚠️ BLE packet write error, retrying in 150ms / BLE paket yazma hatası, 150ms sonra tekrar denenecek / BLE paket yazma hatası, 150ms sonra tekrar denenecek")
                 synchronized(sendQueue) {
                     sendQueue.addFirst(data)
                 }
             }
         } else {
-            logCallback("⚠️ BLE not ready, packet dropped")
+            logCallback("⚠️ BLE not ready, packet dropped / BLE hazır değil, paket atıldı / BLE hazır değil, paket atıldı")
         }
 
         handler.postDelayed({
@@ -126,29 +126,29 @@ class BleManager(private val context: Context, private val logCallback: (String)
             }
             sendJson(json)
         } catch (e: Exception) {
-            logCallback("⚠️ Heartbeat error: ${e.message}")
+            logCallback("⚠️ Heartbeat error / Heartbeat hatası / Heartbeat hatası: ${e.message}")
         }
     }
 
     private val gattCallback = object : BluetoothGattCallback() {
         override fun onConnectionStateChange(gatt: BluetoothGatt, status: Int, newState: Int) {
             if (newState == BluetoothProfile.STATE_CONNECTED) {
-                logCallback("🟢 Bluetooth connected, discovering services...")
+                logCallback("🟢 Bluetooth connected, discovering services... / Bluetooth bağlandı, servisler keşfediliyor... / Bluetooth bağlandı, servisler keşfediliyor...")
                 gatt.discoverServices()
             } else if (newState == BluetoothProfile.STATE_DISCONNECTED) {
                 isConnected = false
-                logCallback("🔴 Bluetooth connection lost (GATT disconnected)")
+                logCallback("🔴 Bluetooth connection lost / Bluetooth bağlantısı koptu (GATT disconnected)")
                 handler.removeCallbacks(heartbeatRunnable)
             }
         }
 
         override fun onServicesDiscovered(gatt: BluetoothGatt, status: Int) {
             if (status == BluetoothGatt.GATT_SUCCESS) {
-                logCallback("🔍 Scanning all BLE services...")
+                logCallback("🔍 Scanning all BLE services... / Tüm BLE Servisleri Taranıyor... / Tüm BLE Servisleri Taranıyor...")
                 gatt.services.forEach { s ->
-                    logCallback("  [Service] ${s.uuid}")
+                    logCallback("  [Service / Servis] ${s.uuid}")
                     s.characteristics.forEach { c ->
-                        logCallback("    -> [Char] ${c.uuid} (Props: ${c.properties})")
+                        logCallback("    -> [Char / Karakteristik] ${c.uuid} (Props: ${c.properties})")
                     }
                 }
 
@@ -158,10 +158,10 @@ class BleManager(private val context: Context, private val logCallback: (String)
                     val notifyChar = service.getCharacteristic(NOTIFY_CHAR_UUID)
                     
                     if (writeChar != null && notifyChar != null) {
-                        logCallback("🔓 BLE Serviceleri found (Original). Starting listener...")
+                        logCallback("🔓 BLE Serviceleri found (Original). Starting listener... / Dinleme başlatılıyor... / Dinleme başlatılıyor...")
                         enableNotification(gatt, notifyChar)
                     } else {
-                        logCallback("❌ Required BLE characteristics not found")
+                        logCallback("❌ Required BLE characteristics not found / Gerekli BLE karakteristikleri bulunamadı / Gerekli BLE karakteristikleri bulunamadı")
                     }
                 } else {
                     // Try other possible UUIDs or dynamic discovery
@@ -174,7 +174,7 @@ class BleManager(private val context: Context, private val logCallback: (String)
 
         override fun onDescriptorWrite(gatt: BluetoothGatt, descriptor: BluetoothGattDescriptor, status: Int) {
             if (status == BluetoothGatt.GATT_SUCCESS) {
-                logCallback("✅ BLE Handshake (Notification) active!")
+                logCallback("✅ BLE Handshake (Notification) active! / BLE Handshake (Notification) aktif! / BLE Handshake (Notification) aktif!")
                 isConnected = true
                 
                 // Sending initialization packets
@@ -183,7 +183,7 @@ class BleManager(private val context: Context, private val logCallback: (String)
                 // Start heartbeat
                 handler.post(heartbeatRunnable)
             } else {
-                logCallback("❌ Descriptor write failed: status=$status")
+                logCallback("❌ Descriptor write failed / Descriptor yazma başarısız / Descriptor yazma başarısız: status=$status")
             }
         }
 
@@ -196,7 +196,7 @@ class BleManager(private val context: Context, private val logCallback: (String)
                 val json = JSONObject(text)
                 // 2026 Kove: Eşleşme (Pair) başarılıysa Yansıtma komutunu şimdi gönder
                 if (json.optInt("msg_id") == 27 && json.optString("act") == "send_pairresult" && json.optInt("result") == 1) {
-                    logCallback("✅ Eşleşme onaylandı, Yansıtma (Mirror) komutları gönderiliyor...")
+                    logCallback("✅ Pairing confirmed, sending Mirror commands... / Eşleşme onaylandı, Yansıtma (Mirror) komutları gönderiliyor...")
                     
                     val mirrorStatus = JSONObject().apply {
                         put("msg_id", 25)
@@ -232,7 +232,7 @@ class BleManager(private val context: Context, private val logCallback: (String)
                 writeChar = service.getCharacteristic(WRITE_CHAR_UUID)
                 val notifyChar = service.getCharacteristic(NOTIFY_CHAR_UUID)
                 if (writeChar != null && notifyChar != null) {
-                    logCallback("🔓 BLE Servicei found (Alternative: $uuid). Starting listener...")
+                    logCallback("🔓 BLE Servicei found (Alternative: $uuid). Starting listener... / Dinleme başlatılıyor... / Dinleme başlatılıyor...")
                     enableNotification(gatt, notifyChar)
                     return
                 }
@@ -240,19 +240,19 @@ class BleManager(private val context: Context, private val logCallback: (String)
         }
 
         // 2026 modeller için dinamik tarama: Herhangi bir serviste FFE1/FFE2 karakteristikleri var mı?
-        logCallback("⚠️ Known service UUIDs not found. Starting dynamic scan...")
+        logCallback("⚠️ Known service UUIDs not found. Starting dynamic scan... / Dinamik tarama yapılıyor... / Dinamik tarama yapılıyor...")
         for (service in gatt.services) {
             val wChar = service.getCharacteristic(WRITE_CHAR_UUID)
             val nChar = service.getCharacteristic(NOTIFY_CHAR_UUID)
             if (wChar != null && nChar != null) {
                 writeChar = wChar
-                logCallback("🔓 BLE Servicei Dinamik Olarak Bulundu! (Service: ${service.uuid}). Starting listener...")
+                logCallback("🔓 BLE Servicei Dinamik Olarak Bulundu! (Service: ${service.uuid}). Starting listener... / Dinleme başlatılıyor... / Dinleme başlatılıyor...")
                 enableNotification(gatt, nChar)
                 return
             }
         }
 
-        logCallback("❌ No compatible ThinkerRide BLE service found")
+        logCallback("❌ No compatible ThinkerRide BLE service found / Uyumlu bir ThinkerRide BLE servisi bulunamadı / Uyumlu bir ThinkerRide BLE servisi bulunamadı")
     }
 
     private fun enableNotification(gatt: BluetoothGatt, characteristic: BluetoothGattCharacteristic) {
@@ -302,9 +302,9 @@ class BleManager(private val context: Context, private val logCallback: (String)
             // 5) ve 6) Yansıtma Durumu Aktif Etme (setMirrorStatus) komutları
             // Artık burada gönderilmiyor! TFT'den "send_pairresult" geldiğinde onCharacteristicChanged içinde gönderilecek.
             
-            logCallback("📤 BLE Başlangıç el sıkışma paketleri gönderildi (Saat eşitleme dahil, Yansıtma komutu onay bekleniyor...)")
+            logCallback("📤 BLE initialization handshake packets sent (waiting for pair confirmation...) / BLE Başlangıç el sıkışma paketleri gönderildi (Saat eşitleme dahil, Yansıtma komutu onay bekleniyor...)")
         } catch (e: Exception) {
-            logCallback("⚠️ Failed to create handshake packets: ${e.message}")
+            logCallback("⚠️ Failed to create handshake packets / El sıkışma paketleri oluşturulamadı / El sıkışma paketleri oluşturulamadı: ${e.message}")
         }
     }
 }

@@ -38,6 +38,10 @@ class MainActivity : AppCompatActivity() {
         CrashHandler.init(this)
         DebugLogger.initFile(getExternalFilesDir(null))
         super.onCreate(savedInstanceState)
+        
+        // Ekranın kapanmasını engelle (Keep screen on)
+        window.addFlags(android.view.WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON)
+        
         binding = ActivityMainBinding.inflate(layoutInflater)
         setContentView(binding.root)
         

@@ -125,7 +125,7 @@ class TcpServer(
         videoOutputStream = null
         controlOutputStream = null
 
-        DebugLogger.info("🔌 All TCP port servers closed")
+        DebugLogger.info("🔌 All TCP port servers closed / Tüm TCP port sunucuları kapatıldı / Tüm TCP port sunucuları kapatıldı")
     }
 
     fun isClientConnected(): Boolean = connected.get() &&
@@ -142,7 +142,7 @@ class TcpServer(
             bytesSent.addAndGet(data.size.toLong())
             true
         } catch (e: IOException) {
-            DebugLogger.error("❌ writeData error (Video): ${e.message}")
+            DebugLogger.error("❌ writeData error / writeData hatası (Video): ${e.message}")
             false
         }
     }
@@ -160,7 +160,7 @@ class TcpServer(
             }
             videoServerSocket = ss
 
-            DebugLogger.success("✅ Video ServerSocket opened → PORT $PORT_VIDEO")
+            DebugLogger.success("✅ Video ServerSocket opened / Video ServerSocket açıldı → PORT $PORT_VIDEO")
 
             while (running.get()) {
                 try {
@@ -168,18 +168,18 @@ class TcpServer(
                     val socket = ss.accept() ?: continue
                     videoClientSocket = socket
 
-                    DebugLogger.success("🔌 TFT Video/Projection connected! → ${socket.inetAddress.hostAddress}:${socket.port}")
+                    DebugLogger.success("🔌 TFT Video/Projection connected! / TFT Video/Projeksiyon bağlandı! → ${socket.inetAddress.hostAddress}:${socket.port}")
                     handleVideoClient(socket)
                 } catch (e: SocketTimeoutException) {
                 } catch (e: IOException) {
                     if (running.get()) {
-                        DebugLogger.error("❌ Video accept error: ${e.message}")
+                        DebugLogger.error("❌ Video accept error / Video accept hatası / Video accept hatası: ${e.message}")
                         Thread.sleep(1000)
                     }
                 }
             }
         } catch (e: IOException) {
-            DebugLogger.error("❌ Video ServerSocket bind error (Port $PORT_VIDEO): ${e.message}")
+            DebugLogger.error("❌ Video ServerSocket bind error / Video ServerSocket bind hatası (Port $PORT_VIDEO): ${e.message}")
         }
     }
 
@@ -195,7 +195,7 @@ class TcpServer(
             // 2. TFT'den gelen verileri oku (TFT geri bildirim yapabilir)
             startTftVideoReader(socket.getInputStream())
 
-            // 3. Start heartbeat (Port 15456 üzerinde 2s aralıklarla)
+            // 3. Start heartbeat / Heartbeat başlat (Port 15456 üzerinde 2s aralıklarla)
             startVideoHeartbeat(os)
 
             // 4. Callback tetikle (Video encoder'ı başlatır)
@@ -205,14 +205,14 @@ class TcpServer(
                 Thread.sleep(500)
             }
         } catch (e: Exception) {
-            DebugLogger.error("❌ Video client error: ${e.message}")
+            DebugLogger.error("❌ Video client error / Video client hatası / Video client hatası: ${e.message}")
         } finally {
             connected.set(false)
             videoOutputStream = null
             videoHeartbeatThread?.interrupt()
             videoHeartbeatThread = null
             try { socket.close() } catch (_: Exception) {}
-            DebugLogger.warning("🔌 TFT Video connection lost")
+            DebugLogger.warning("🔌 TFT Video connection lost / TFT Video bağlantısı koptu / TFT Video bağlantısı koptu")
             onDisconnected()
         }
     }
@@ -226,7 +226,7 @@ class TcpServer(
                     Thread.sleep(2000) // 2 saniye
                     os.write(packet)
                     os.flush()
-                    DebugLogger.heartbeat("💓 Heartbeat sent (Video - 15456)")
+                    DebugLogger.heartbeat("💓 Heartbeat sent / Heartbeat gönderildi (Video - 15456)")
                 }
             } catch (_: Exception) {}
         }, "KoveMirror-VideoHeartbeat").also {
@@ -248,14 +248,14 @@ class TcpServer(
         os.flush()
 
         val hexPreview = buf.take(10).joinToString(" ") { "%02X".format(it) }
-        DebugLogger.data("📤 VideoSize header sent (69 byte) → Port $PORT_VIDEO:")
+        DebugLogger.data("📤 VideoSize header sent / VideoSize header gönderildi (69 byte) → Port $PORT_VIDEO:")
         DebugLogger.data("   HEX[0..9]: $hexPreview...")
-        DebugLogger.data("   Width : $width px | Height: $height px")
+        DebugLogger.data("   Width/Genişlik : $width px | Height/Yükseklik: $height px")
     }
 
     private fun startTftVideoReader(inputStream: InputStream) {
         videoReaderThread = Thread({
-            DebugLogger.info("👂 TFT->Phone video reader started")
+            DebugLogger.info("👂 TFT->Phone video reader started / TFT→Telefon video reader başlatıldı / TFT→Telefon video reader başlatıldı")
             val buf = ByteArray(4096)
             try {
                 while (running.get() && connected.get()) {
@@ -264,11 +264,11 @@ class TcpServer(
                     if (n > 0) {
                         val preview = buf.take(minOf(n, 20)).joinToString(" ") { "%02X".format(it) }
                         val more = if (n > 20) " (+${n - 20}B)" else ""
-                        DebugLogger.data("📥 TFT→Tel (Video-15456): [$preview$more] total=$n byte")
+                        DebugLogger.data("📥 TFT→Tel (Video-15456): [$preview$more] total/toplam=$n byte")
                     }
                 }
             } catch (_: Exception) {}
-            DebugLogger.info("👂 TFT video reader stopped")
+            DebugLogger.info("👂 TFT video reader stopped / TFT video reader durdu / TFT video reader durdu")
         }, "KoveMirror-TftVideoReader").also {
             it.isDaemon = true
             it.start()
@@ -287,14 +287,14 @@ class TcpServer(
                 ss.bind(InetSocketAddress(PORT_CONTROL))
             }
             controlServerSocket = ss
-            DebugLogger.success("✅ Control ServerSocket opened → PORT $PORT_CONTROL")
+            DebugLogger.success("✅ Control ServerSocket opened / Control ServerSocket açıldı → PORT $PORT_CONTROL")
 
             while (running.get()) {
                 try {
                     ss.soTimeout = ACCEPT_TIMEOUT_MS
                     val socket = ss.accept() ?: continue
                     controlClientSocket = socket
-                    DebugLogger.success("🔌 TFT Control connected! → ${socket.inetAddress.hostAddress}:${socket.port}")
+                    DebugLogger.success("🔌 TFT Control connected! / TFT Control bağlandı! → ${socket.inetAddress.hostAddress}:${socket.port}")
                     handleControlClient(socket)
                 } catch (e: SocketTimeoutException) {
                 } catch (e: IOException) {
@@ -302,7 +302,7 @@ class TcpServer(
                 }
             }
         } catch (e: IOException) {
-            DebugLogger.error("❌ Control ServerSocket bind error (Port $PORT_CONTROL): ${e.message}")
+            DebugLogger.error("❌ Control ServerSocket bind error / Control ServerSocket bind hatası (Port $PORT_CONTROL): ${e.message}")
         }
     }
 
@@ -312,14 +312,14 @@ class TcpServer(
             controlOutputStream = os
             
             // 1. TUC GET paketini göndererek el sıkışmayı başlat
-            DebugLogger.info("📤 Sending TUC GET query to TFT...")
+            DebugLogger.info("📤 Sending TUC GET query to TFT... / TFT'ye TUC GET sorgusu gönderiliyor... / TFT'ye TUC GET sorgusu gönderiliyor...")
             sendJsonControlPacket(os, "{\"msg_id\":27,\"func\":\"TUC\",\"act\":\"GET\"}")
 
             // 2. TFT'den yanıt geldiğinde diğer paketleri göndereceğiz
             var handshakeCompleted = false
             val inputStream = socket.getInputStream()
             controlReaderThread = Thread({
-                DebugLogger.info("👂 TFT->Phone control reader started")
+                DebugLogger.info("👂 TFT->Phone control reader started / TFT→Telefon control reader başlatıldı / TFT→Telefon control reader başlatıldı")
                 val buf = ByteArray(4096)
                 try {
                     while (running.get() && controlClientSocket?.isClosed == false) {
@@ -328,7 +328,7 @@ class TcpServer(
                         if (n > 0) {
                             val preview = buf.take(minOf(n, 20)).joinToString(" ") { "%02X".format(it) }
                             val more = if (n > 20) " (+${n - 20}B)" else ""
-                            DebugLogger.data("📥 TFT→Tel (Control-17818): [$preview$more] total=$n byte")
+                            DebugLogger.data("📥 TFT→Tel (Control-17818): [$preview$more] total/toplam=$n byte")
                             
                             // Gelen ASCII metin varsa göster
                             try {
@@ -343,7 +343,7 @@ class TcpServer(
                                 os.write(buf, 0, 6)
                                 os.flush()
                                 // Çok fazla log birikmesin diye sadece data olarak işaretleyebiliriz veya silebiliriz
-                                // DebugLogger.heartbeat("💓 Control Heartbeat Yankılandı (17818)")
+                                // DebugLogger.heartbeat("💓 Control Heartbeat Echoed / Control Heartbeat Yankılandı (17818)")
                             }
 
                             // TFT'den ilk veri geldiğinde (TUC SEND veya versiyon) kalan el sıkışmayı tamamla
@@ -353,12 +353,12 @@ class TcpServer(
                                 sendBinaryControlHandshake(os)
                                 sendJsonControlPacket(os, "{\"msg_id\":27,\"func\":\"INSIDENAVI\",\"query\":2}")
                                 sendJsonControlPacket(os, "{\"msg_id\":27,\"func\":\"INSIDENAVI\",\"query\":1}")
-                                DebugLogger.success("✅ Control handshake completed successfully!")
+                                DebugLogger.success("✅ Control handshake completed successfully! / Control el sıkışması başarıyla tamamlandı! / Control el sıkışması başarıyla tamamlandı!")
                             }
                         }
                     }
                 } catch (_: Exception) {}
-                DebugLogger.info("👂 TFT control reader stopped")
+                DebugLogger.info("👂 TFT control reader stopped / TFT control reader durdu / TFT control reader durdu")
             }, "KoveMirror-TftControlReader").also {
                 it.isDaemon = true
                 it.start()
@@ -374,7 +374,7 @@ class TcpServer(
             controlReaderThread?.interrupt()
             controlReaderThread = null
             try { socket.close() } catch (_: Exception) {}
-            DebugLogger.warning("🔌 TFT Control connection lost")
+            DebugLogger.warning("🔌 TFT Control connection lost / TFT Control bağlantısı koptu / TFT Control bağlantısı koptu")
         }
     }
 
@@ -416,7 +416,7 @@ class TcpServer(
         os.write(byteArrayOf(0x01, 0x11, 0x00, 0x00, 0x00, 0x00))
         
         os.flush()
-        DebugLogger.info("📤 Control port binary handshake packets sent")
+        DebugLogger.info("📤 Control port binary handshake packets sent / Control port binary el sıkışma paketleri gönderildi / Control port binary el sıkışma paketleri gönderildi")
     }
 
     // Bu metod artık kullanılmıyor, ancak stop() içindeki referanslar hata vermesin diye boş gövdeyle tutuluyor
@@ -436,14 +436,14 @@ class TcpServer(
                 ss.bind(InetSocketAddress(PORT_HEARTBEAT))
             }
             heartbeatServerSocket = ss
-            DebugLogger.success("✅ Heartbeat ServerSocket opened → PORT $PORT_HEARTBEAT")
+            DebugLogger.success("✅ Heartbeat ServerSocket opened / Heartbeat ServerSocket açıldı → PORT $PORT_HEARTBEAT")
 
             while (running.get()) {
                 try {
                     ss.soTimeout = ACCEPT_TIMEOUT_MS
                     val socket = ss.accept() ?: continue
                     heartbeatClientSocket = socket
-                    DebugLogger.success("🔌 TFT Dedicated Heartbeat connected! → ${socket.inetAddress.hostAddress}:${socket.port}")
+                    DebugLogger.success("🔌 TFT Dedicated Heartbeat connected! / TFT Dedicated Heartbeat bağlandı! → ${socket.inetAddress.hostAddress}:${socket.port}")
                     startDedicatedHeartbeat(socket.getOutputStream())
                 } catch (e: SocketTimeoutException) {
                 } catch (e: IOException) {
@@ -451,7 +451,7 @@ class TcpServer(
                 }
             }
         } catch (e: IOException) {
-            DebugLogger.error("❌ Heartbeat ServerSocket bind error (Port $PORT_HEARTBEAT): ${e.message}")
+            DebugLogger.error("❌ Heartbeat ServerSocket bind error / Heartbeat ServerSocket bind hatası (Port $PORT_HEARTBEAT): ${e.message}")
         }
     }
 
@@ -459,7 +459,7 @@ class TcpServer(
         dedicatedHeartbeatThread?.interrupt()
         dedicatedHeartbeatThread = Thread({
             val packet = byteArrayOf(0x02, 0x01, 0x00, 0x00, 0x00, 0x00)
-            DebugLogger.info("💓 Dedicated Heartbeat sending started (15457, 200ms aralık)")
+            DebugLogger.info("💓 Dedicated Heartbeat sending started / Dedicated Heartbeat gönderimi başladı (15457, 200ms aralık)")
             var count = 0L
             try {
                 while (running.get() && heartbeatClientSocket?.isClosed == false && heartbeatClientSocket?.isConnected == true) {
@@ -472,9 +472,9 @@ class TcpServer(
                     Thread.sleep(200L)
                 }
             } catch (e: Exception) {
-                DebugLogger.warning("⚠️ Dedicated Heartbeat sending stopped: ${e.message}")
+                DebugLogger.warning("⚠️ Dedicated Heartbeat sending stopped / Dedicated Heartbeat gönderim durdu / Dedicated Heartbeat gönderim durdu: ${e.message}")
             }
-            DebugLogger.info("💓 Dedicated Heartbeat sending finished")
+            DebugLogger.info("💓 Dedicated Heartbeat sending finished / Dedicated Heartbeat gönderimi bitti / Dedicated Heartbeat gönderimi bitti")
         }, "KoveMirror-DedicatedHeartbeat").also {
             it.isDaemon = true
             it.start()

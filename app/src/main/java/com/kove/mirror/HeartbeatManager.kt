@@ -23,7 +23,7 @@ class HeartbeatManager(private val outputStream: OutputStream) {
     fun start() {
         if (running.getAndSet(true)) return
         thread = Thread {
-            DebugLogger.info("💓 HeartBeat thread started (2s interval)")
+            DebugLogger.info("💓 HeartBeat thread started (2s interval) / HeartBeat thread başlatıldı (2s aralık) / HeartBeat thread başlatıldı (2s aralık)")
             while (running.get()) {
                 try {
                     outputStream.write(HEARTBEAT_PACKET)
@@ -34,11 +34,11 @@ class HeartbeatManager(private val outputStream: OutputStream) {
                 } catch (e: InterruptedException) {
                     break
                 } catch (e: IOException) {
-                    DebugLogger.error("❌ Heartbeat IO error: ${e.message}")
+                    DebugLogger.error("❌ Heartbeat IO error / Heartbeat IO hatası / Heartbeat IO hatası: ${e.message}")
                     break
                 }
             }
-            DebugLogger.info("💓 HeartBeat thread stopped (total: ${count.get()})")
+            DebugLogger.info("💓 HeartBeat thread stopped / HeartBeat thread durdu (total: ${count.get()})")
         }.also {
             it.name = "KoveMirror-Heartbeat"
             it.isDaemon = true
