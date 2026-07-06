@@ -42,7 +42,7 @@
     
     <!-- Log Messages (User orientation) -->
     <string name="log_crash_detected">🔥 CRASH DETECTED ON DEVICE:</string>
-    <string name="log_app_started">🏍️ KoveMirror v1.0 started</string>
+    <string name="log_app_started">🏍️ KoveMirror v2.0 started</string>
     <string name="log_step_1">1. Connect to motorcycle WiFi</string>
     <string name="log_step_2">2. Phone IP will appear above</string>
     <string name="log_step_3">3. Press the \'Start\' button</string>

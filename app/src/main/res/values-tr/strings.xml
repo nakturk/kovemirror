@@ -42,7 +42,7 @@
     
     <!-- Log Messages (User orientation) -->
     <string name="log_crash_detected">🔥 CİHAZDA ÇÖKME TESPİT EDİLDİ:</string>
-    <string name="log_app_started">🏍️ KoveMirror v1.0 başlatıldı</string>
+    <string name="log_app_started">🏍️ KoveMirror v2.0 başlatıldı</string>
     <string name="log_step_1">1. Motosiklet WiFi\'sine bağlanın</string>
     <string name="log_step_2">2. Telefon IP\'si yukarıda görünecek</string>
     <string name="log_step_3">3. \'Başlat\' butonuna basın</string>

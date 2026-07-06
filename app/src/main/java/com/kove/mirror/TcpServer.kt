@@ -368,7 +368,7 @@ class TcpServer(
                 Thread.sleep(500)
             }
         } catch (e: Exception) {
-            DebugLogger.error("❌ Control client hatası: ${e.message}")
+            DebugLogger.error("❌ Control client error / Control client hatası: ${e.message}")
         } finally {
             controlOutputStream = null
             controlReaderThread?.interrupt()
@@ -467,7 +467,7 @@ class TcpServer(
                     os.flush()
                     count++
                     if (count % 25 == 0L) { // Her 5 saniyede bir log yaz
-                        DebugLogger.heartbeat("💓 Dedicated Heartbeat #$count gönderildi (15457)")
+                        DebugLogger.heartbeat("💓 Dedicated Heartbeat #$count sent / gönderildi (15457)")
                     }
                     Thread.sleep(200L)
                 }
