@@ -1,10 +1,8 @@
 # KoveMirror
 
-(English version below | Türkçe versiyonu aşağıdadır)
-
----
-
 # 🇹🇷 KoveMirror (Türkçe)
+
+(Bu metin ve program AI tarafından geliştirilmiştir.)
 
 KoveMirror, Kove 800 (800X Pro vb.) model motosikletlerin TFT ekranlarına telefonunuzun ekranını yansıtmanızı (Screen Mirroring) sağlayan açık kaynaklı bir Android uygulamasıdır. Orijinal ThinkerRide sistemine alternatif olarak geliştirilmiş olup, tamamen yerel ağ üzerinden bağımsız çalışır. 
 
@@ -65,6 +63,8 @@ Projeyi Android Studio'da açıp `Build -> Make Project` diyerek ya da komut sat
 ---
 
 # 🇬🇧 KoveMirror (English)
+
+(This text and the program itself is developed by AI.)
 
 KoveMirror is an open-source Android application that enables screen mirroring from your smartphone directly to the TFT dashboard of Kove 800 motorcycles (like the 800X Pro). Built as an alternative to the official ThinkerRide system, it operates entirely locally over the motorcycle's network.
 
