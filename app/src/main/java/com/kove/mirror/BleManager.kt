@@ -24,6 +24,8 @@ class BleManager(private val context: Context, private val logCallback: (String)
     private var isConnected = false
     private var targetMac: String? = null
 
+    var onMirrorRequested: (() -> Unit)? = null
+
     private val heartbeatRunnable = object : Runnable {
         override fun run() {
             if (isConnected) {
@@ -197,6 +199,8 @@ class BleManager(private val context: Context, private val logCallback: (String)
                 // 2026 Kove: Eşleşme (Pair) başarılıysa Yansıtma komutunu şimdi gönder
                 if (json.optInt("msg_id") == 27 && json.optString("act") == "send_pairresult" && json.optInt("result") == 1) {
                     logCallback("✅ Pairing confirmed, sending Mirror commands... / Eşleşme onaylandı, Yansıtma (Mirror) komutları gönderiliyor...")
+                    
+                    onMirrorRequested?.invoke()
                     
                     val mirrorStatus = JSONObject().apply {
                         put("msg_id", 25)

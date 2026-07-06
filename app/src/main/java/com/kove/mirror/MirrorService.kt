@@ -163,6 +163,14 @@ class MirrorService : Service() {
                 bleManager = BleManager(this) { msg ->
                     DebugLogger.log(LogLevel.INFO, msg)
                 }
+                bleManager?.onMirrorRequested = {
+                    if (!tcpServerStarted || tcpServer == null) {
+                        DebugLogger.info("🔄 TFT'den yansıtma isteği geldi, TCP Server baştan başlatılıyor (Yeniden izin istemeden)...")
+                        Handler(Looper.getMainLooper()).post {
+                            startTcpServer()
+                        }
+                    }
+                }
                 bleManager?.connect(savedMac)
             } else {
                 DebugLogger.warning(getString(R.string.log_bt_mac_not_selected))
