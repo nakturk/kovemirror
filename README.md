@@ -1,5 +1,7 @@
 # KoveMirror
 
+# Latest APK is in builds directory. "KoveMirrorLatest.apk", right click and then select save as to download.
+
 # 🇹🇷 KoveMirror (Türkçe)
 
 (Bu metin ve program AI tarafından geliştirilmiştir.)
