@@ -129,3 +129,36 @@ The phone starts a TCP ServerSocket on Port **`15456`**.
 The phone starts a TCP ServerSocket on Port **`15457`**.
 * The phone writes a 6-byte heartbeat packet every **450 milliseconds** to keep the screen casting session alive:
   `0x02 0x01 0x00 0x00 0x00 0x00`
+
+---
+
+## 🎮 Handlebar Button Events & Key Tracking
+Motorcycle handlebar switch cubes typically feature navigation buttons (Up, Down, OK, Back) and media/voice buttons. The protocol handles them differently:
+
+### 1. General Menu Navigation (Up, Down, OK, Back)
+* **Local Processing:** Menu navigation presses are handled locally by the TFT dashboard's microcontroller. 
+* **Transmission:** These key presses **are NOT transmitted** to the phone over BLE or WiFi. 
+* **HID Emulation:** The TFT does not expose a standard Bluetooth HID profile (keyboard/gamepad), meaning standard Android listeners (`onKeyDown`) cannot capture general navigation clicks.
+
+### 2. Media Control Buttons (Play, Pause, Next, Previous)
+When the user triggers media playback buttons (or long-presses navigation buttons mapped to media actions), the TFT sends a JSON event over either the BLE notification characteristic or WiFi Port 17818.
+
+* **Format:**
+  ```json
+  {"msg_id": 27, "func": "MUSIC", "act": "control", "status": [0|1|2|3]}
+  ```
+* **Status Mappings:**
+  * **`0` (Pause):** Dispatches standard Android key event `KEYCODE_MEDIA_PLAY_PAUSE` (85) or `KEYCODE_MEDIA_PAUSE` (127).
+  * **`1` (Play):** Dispatches standard Android key event `KEYCODE_MEDIA_PLAY` (126).
+  * **`2` (Previous):** Dispatches standard Android key event `KEYCODE_MEDIA_PREVIOUS` (88).
+  * **`3` (Next):** Dispatches standard Android key event `KEYCODE_MEDIA_NEXT` (87).
+
+### 3. Voice Assistant / Microphone Wake Key
+When the user presses the voice command button on the handlebar, the TFT sends a wake-up signal to activate the phone's speech recognition assistant.
+
+* **Format:**
+  ```json
+  {"msg_id": 27, "func": "AUDIO", "act": "WAKE"}
+  ```
+  *(Alternative LED panel format: `{"msg_id": 27, "func": "LED", "act": "start_voice"}`)*
+* **Response:** The client application intercepts this and triggers the microphone recording / voice assistant overlay.
