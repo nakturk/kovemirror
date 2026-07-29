@@ -129,3 +129,119 @@ The phone starts a TCP ServerSocket on Port **`15456`**.
 The phone starts a TCP ServerSocket on Port **`15457`**.
 * The phone writes a 6-byte heartbeat packet every **450 milliseconds** to keep the screen casting session alive:
   `0x02 0x01 0x00 0x00 0x00 0x00`
+
+---
+
+## 📡 Telemetry, Media, Navigation & Notifications
+In addition to screen mirroring, the phone and the TFT exchange high-level telemetry, media metadata, navigation guidance, and mobile notifications via Bluetooth notifications or WiFi Port 17818.
+
+### 1. 📞 Incoming Call Notification
+Sent from the phone to the TFT screen to display caller ID on the dashboard when a phone call is received:
+* **Format:**
+  ```json
+  {"msg_id": 3, "name": "[Caller Name]", "number": "[Phone Number]"}
+  ```
+
+### 2. 🎵 Music Metadata & Status
+Sent from the phone to the TFT to sync track information and playback state on the dashboard music player:
+* **Track Metadata:**
+  ```json
+  {"msg_id": 27, "func": "MUSIC", "act": "ret_msg", "title": "[Song Title]", "author": "[Artist Name]", "album": "[Album Name]", "lyrics": "[Lyrics]"}
+  ```
+* **Playback Status:**
+  ```json
+  {"msg_id": 27, "func": "MUSIC", "act": "ret_status", "status": [0|1]}
+  ```
+  *(0 = Stopped/Paused, 1 = Playing)*
+
+### 3. 🌦️ Weather & Temperature
+Sent from the phone to the TFT to show weather forecasts and alerts on the screen:
+* **Weather Update:**
+  ```json
+  {"msg_id": 8, "weather": [int_code], "temperature": "[Temp String]"}
+  ```
+* **Weather Warning:**
+  ```json
+  {"msg_id": 25, "msg_type": 12, "msg_source": 2, "weather_waring": "[Alert Text]"}
+  ```
+
+### 4. 🚗 Tire Pressure Monitoring System (TPMS)
+Sent from the phone to the TFT to sync TPMS values (parsed from BLE sensors or external sensors):
+* **Tire Sensor Status:**
+  ```json
+  {
+    "msg_id": 27, 
+    "func": "TIRE", 
+    "act": "ret_data", 
+    "index": [1|2], 
+    "unit": [0|1], 
+    "pre": [float_val], 
+    "temp": [int_val], 
+    "leak_status": [0|1], 
+    "bat_status": [0|1], 
+    "temp_status": [0|1], 
+    "pre_status": [0|1]
+  }
+  ```
+  *(index: 1 = Front, 2 = Rear; unit: 0 = PSI, 1 = Bar)*
+* **Tire Match Status:**
+  ```json
+  {"msg_id": 27, "func": "TIRE", "act": "tire_match_sta", "front_match_status": [0|1], "rear_match_status": [0|1]}
+  ```
+
+### 5. 🗺️ Navigation HUD Guidance
+Sent from the phone to the TFT to display Turn-by-Turn (TBT) direction graphics (icons) and distances on the dashboard while navigation is active:
+* **Legacy TBT Layout (msg_id: 1):**
+  ```json
+  {"msg_id": 1, "icon": [int_icon_id], "next_road": "[Road Name]", "cur_retain_distance": [int_meters], "path_retain_distance": [int_meters], "remain_time": [int_seconds]}
+  ```
+* **Modern TBT Layout (func: NAVI):**
+  ```json
+  {
+    "msg_id": 27, 
+    "func": "NAVI", 
+    "act": 3, 
+    "icon": [int_icon_id], 
+    "next_road": "[Road Name]", 
+    "cur_retain_distance": "[dist_str]", 
+    "cur_unittype": [0|1], 
+    "path_retain_distance": "[dist_str]", 
+    "path_cur_unittype": [0|1], 
+    "cur_retain_time": [int_seconds], 
+    "remain_time": [unix_timestamp], 
+    "retain_rate": [percentage]
+  }
+  ```
+
+---
+
+## 🎮 Handlebar Button Events & Key Tracking
+Motorcycle handlebar switch cubes typically feature navigation buttons (Up, Down, OK, Back) and media/voice buttons. The protocol handles them differently:
+
+### 1. General Menu Navigation (Up, Down, OK, Back)
+* **Local Processing:** Menu navigation presses are handled locally by the TFT dashboard's microcontroller. 
+* **Transmission:** These key presses **are NOT transmitted** to the phone over BLE or WiFi. 
+* **HID Emulation:** The TFT does not expose a standard Bluetooth HID profile (keyboard/gamepad), meaning standard Android listeners (`onKeyDown`) cannot capture general navigation clicks.
+
+### 2. Media Control Buttons (Play, Pause, Next, Previous)
+When the user triggers media playback buttons (or long-presses navigation buttons mapped to media actions), the TFT sends a JSON event over either the BLE notification characteristic or WiFi Port 17818.
+
+* **Format:**
+  ```json
+  {"msg_id": 27, "func": "MUSIC", "act": "control", "status": [0|1|2|3]}
+  ```
+* **Status Mappings:**
+  * **`0` (Pause):** Dispatches standard Android key event `KEYCODE_MEDIA_PLAY_PAUSE` (85) or `KEYCODE_MEDIA_PAUSE` (127).
+  * **`1` (Play):** Dispatches standard Android key event `KEYCODE_MEDIA_PLAY` (126).
+  * **`2` (Previous):** Dispatches standard Android key event `KEYCODE_MEDIA_PREVIOUS` (88).
+  * **`3` (Next):** Dispatches standard Android key event `KEYCODE_MEDIA_NEXT` (87).
+
+### 3. Voice Assistant / Microphone Wake Key
+When the user presses the voice command button on the handlebar, the TFT sends a wake-up signal to activate the phone's speech recognition assistant.
+
+* **Format:**
+  ```json
+  {"msg_id": 27, "func": "AUDIO", "act": "WAKE"}
+  ```
+  *(Alternative LED panel format: `{"msg_id": 27, "func": "LED", "act": "start_voice"}`)*
+* **Response:** The client application intercepts this and triggers the microphone recording / voice assistant overlay.
