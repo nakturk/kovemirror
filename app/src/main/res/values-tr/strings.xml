@@ -2,8 +2,12 @@
     <!-- App Details -->
     <string name="app_name">KoveMirror</string>
     <string name="header_subtitle">Kove TFT Tam Ekran Yansıtma</string>
-    
+
+    <!-- Language Selection -->
+    <string name="label_language">🌐 Uygulama Dili:</string>
+
     <!-- UI Labels -->
+    <string name="label_select_bt_device">TFT Bluetooth Cihazını Seçin</string>
     <string name="label_ip_address_listening">📱 Telefon IP (port 17818\'de dinliyor):</string>
     <string name="label_tft_target_address">↑ TFT bağlanacak adres</string>
     <string name="label_bt_device_trigger">🔵 TFT Bluetooth Cihazı (WiFi\'yi tetiklemek için):</string>
@@ -12,35 +16,63 @@
     <string name="label_resolution">Çözünürlük: </string>
     <string name="label_padding">Kenar Boşluğu (Top/Bottom): </string>
     <string name="label_debug_log">📋 Debug Log</string>
+    <string name="label_debug_terminal">Hata Ayıklama Terminali</string>
     <string name="label_log_legend">🟢Başarı  🔴Hata  🟠Uyarı  🔵Veri  🟣💓Heartbeat  ⚪Bilgi</string>
     
+    <!-- Display Modes -->
+    <string name="label_display_mode">📺 Ekran Modu:</string>
+    <string name="label_tft_resolution">🖥️ TFT Ekran Modeli / Çözünürlüğü:</string>
+    <string name="mode_center_crop">🟢 Orantılı Tam Ekran (Center Crop - Siyah Boşluksuz)</string>
+    <string name="mode_fit">🔵 Orantılı Kenarlıklı (Fit - Siyah Bantlı)</string>
+    <string name="mode_stretch">🟠 Esnetilmiş Tam Ekran (Stretch)</string>
+
+    <!-- Presets -->
+    <string name="preset_600x1024">600 × 1024 (Kove 800X / Dikey Standart)</string>
+    <string name="preset_480x800">480 × 800 (Kove Dikey Küçük)</string>
+    <string name="preset_640x1284">640 × 1284 (Kove Dikey Büyük)</string>
+    <string name="preset_1280x720">1280 × 720 (Kove Yatay Ekran)</string>
+    <string name="preset_800x800">800 × 800 (Kove Kare Ekran)</string>
+
     <!-- WiFi States -->
     <string name="wifi_waiting">WiFi bekleniyor...</string>
     <string name="wifi_gateway">Gateway: --</string>
     <string name="wifi_not_connected_status">⚠️ WiFi bağlı değil</string>
     <string name="wifi_connected_status">✅ WiFi: %1$s</string>
     <string name="wifi_gateway_tbox">🏍️ Gateway (TBox): %1$s</string>
-    
+    <string name="wifi_required_toast">⚠️ Lütfen önce motosiklet WiFi\'sine bağlanın</string>
+
     <!-- BT States / Spinner Options -->
     <string name="bt_not_supported">Bluetooth Desteklenmiyor</string>
     <string name="bt_off">Bluetooth Kapalı</string>
     <string name="bt_permission_missing">İzin Eksik</string>
     <string name="bt_no_paired_devices">Eşleşmiş cihaz yok</string>
-    
+    <string name="status_connecting">Bağlanıyor...</string>
+
     <!-- Status Messages -->
     <string name="status_ready">⏸ Hazır</string>
     <string name="status_stream_active">🔴 Stream aktif</string>
     <string name="status_stopped">⏹ Durduruldu</string>
-    
+
     <!-- Resolution Info -->
     <string name="res_info_default">Dikey 600×1024 (shape=6) — Kove TFT standart dikey</string>
     <string name="res_info_format">Hedef: %1$d×%2$d | Boşluk: %3$dpx</string>
-    
+
     <!-- Button Actions -->
     <string name="btn_start_mirroring">▶  Yansıtmayı Başlat</string>
     <string name="btn_stop_mirroring">⏹  Durdur</string>
-    
-    <!-- Log Messages (User orientation) -->
+    <string name="btn_share_logs">Logları Paylaş</string>
+    <string name="btn_ok">Anladım</string>
+
+    <!-- Security Warning -->
+    <string name="security_warning_title">Güvenlik Uyarısı</string>
+    <string name="security_warning_msg">Cihazınızda Root veya Debugger tespit edildi. Bu durum uygulamanın güvenlik ve abonelik altyapısını etkileyebilir. Uygulamayı kullanmaya devam edebilirsiniz ancak abonelikleriniz daha sık doğrulanacaktır.</string>
+
+    <!-- File Sharing & Toast -->
+    <string name="log_file_not_found">Log dosyası bulunamadı</string>
+    <string name="share_logs_title">Logları Paylaş</string>
+    <string name="log_share_error">Log paylaşılırken hata oluştu: %1$s</string>
+
+    <!-- Log Messages (UI & Activity) -->
     <string name="log_crash_detected">🔥 CİHAZDA ÇÖKME TESPİT EDİLDİ:</string>
     <string name="log_app_started">🏍️ KoveMirror v2.0 başlatıldı</string>
     <string name="log_step_1">1. Motosiklet WiFi\'sine bağlanın</string>
@@ -61,7 +93,7 @@
     <string name="log_bt_permissions_granted">✅ Bluetooth izinleri alındı</string>
     <string name="log_bt_permissions_denied">⚠️ Bazı Bluetooth izinleri reddedildi</string>
     <string name="log_padding_updated_on_the_fly">🔄 Kenar boşluğu anlık olarak güncellendi: %1$dpx</string>
-    
+
     <!-- Notification & Service -->
     <string name="notif_waiting_tft">⏳ TFT bağlantısı bekleniyor...</string>
     <string name="notif_tft_connected">🔴 TFT bağlı — Stream aktif</string>
@@ -69,7 +101,7 @@
     <string name="notif_action_stop">Durdur</string>
     <string name="notif_channel_name">KoveMirror Yansıtma</string>
     <string name="notif_channel_description">Kove TFT ekran yansıtma servisi</string>
-    
+
     <!-- MirrorService Logs -->
     <string name="log_mirroring_starting">▶️ Yansıtma başlatılıyor...</string>
     <string name="log_bt_mac_not_selected">⚠️ Bluetooth MAC adresi seçilmemiş, BLE tetikleme devre dışı</string>
@@ -83,9 +115,50 @@
     <string name="log_stopping_mirroring">⏹️ Yansıtma durduruluyor...</string>
     <string name="log_all_stopped">⏹️ Tümü durduruldu</string>
 
-    <!-- Simplified UI -->
-    <string name="wifi_required_toast">⚠️ Lütfen önce motosiklet WiFi\'sine bağlanın</string>
-    <string name="label_select_bt_device">TFT Bluetooth Cihazını Seçin</string>
-    <string name="status_connecting">Bağlanıyor...</string>
-    <string name="btn_share_logs">Logları Paylaş</string>
+    <!-- HeartbeatManager Logs -->
+    <string name="log_hb_started">💓 Heartbeat thread başlatıldı (2s aralık)</string>
+    <string name="log_hb_sent">💓 Heartbeat #%1$d → %2$s</string>
+    <string name="log_hb_io_error">❌ Heartbeat IO hatası: %1$s</string>
+    <string name="log_hb_stopped">💓 Heartbeat thread durduruldu (toplam: %1$d)</string>
+
+    <!-- ProjectionEncoder Logs -->
+    <string name="log_encoder_starting">🎬 ProjectionEncoder başlatılıyor...</string>
+    <string name="log_codec_output_res">   Codec Çıkış Çözünürlüğü: %1$d×%2$d</string>
+    <string name="log_codec_ready">✅ MediaCodec hazır</string>
+    <string name="log_vd_creating">🖥️ VirtualDisplay oluşturuluyor...</string>
+    <string name="log_vd_ready">✅ VirtualDisplay hazır (%1$s modu)</string>
+    <string name="log_encoder_init_error">❌ Encoder başlatma hatası: %1$s</string>
+    <string name="log_codec_not_init">❌ Codec başlatılmamış - init() çağrıldı mı?</string>
+    <string name="log_encoding_loop_started">🎬 H.264 encoding döngüsü başladı</string>
+    <string name="log_eos_received">🎬 EOS alındı - encoding sona erdi</string>
+    <string name="log_encoding_error">❌ Encoding hatası: %1$s</string>
+    <string name="log_encoding_loop_finished">🎬 Encoding döngüsü sona erdi (%1$d frame)</string>
+    <string name="log_encoder_stopped">🎬 ProjectionEncoder durduruldu</string>
+    <string name="log_vd_recreating">🔄 VirtualDisplay yeniden oluşturuluyor... (Yeni Boşluk: %1$dpx, Çözünürlük: %2$d×%3$d)</string>
+
+    <!-- TcpServer Logs -->
+    <string name="log_tcp_all_closed">🔌 Tüm TCP port sunucuları kapatıldı</string>
+    <string name="log_write_data_error">❌ writeData hatası (Video): %1$s</string>
+    <string name="log_video_socket_opened">✅ Video ServerSocket açıldı → PORT %1$d</string>
+    <string name="log_tft_video_connected_ip">🔌 TFT Video/Projeksiyon bağlandı! → %1$s:%2$d</string>
+    <string name="log_video_accept_error">❌ Video accept hatası: %1$s</string>
+    <string name="log_video_bind_error">❌ Video ServerSocket bind hatası (Port %1$d): %2$s</string>
+    <string name="log_tft_video_conn_lost">🔌 TFT Video bağlantısı koptu</string>
+    <string name="log_control_socket_opened">✅ Control ServerSocket açıldı → PORT %1$d</string>
+    <string name="log_tft_control_connected_ip">🔌 TFT Control bağlandı! → %1$s:%2$d</string>
+    <string name="log_control_bind_error">❌ Control ServerSocket bind hatası (Port %1$d): %2$s</string>
+    <string name="log_sending_tuc_query">📤 TFT\'ye TUC GET sorgusu gönderiliyor...</string>
+    <string name="log_control_handshake_done">✅ Control el sıkışması başarıyla tamamlandı!</string>
+    <string name="log_tft_control_conn_lost">🔌 TFT Control bağlantısı koptu</string>
+    <string name="log_binary_handshake_sent">📤 Control port binary el sıkışma paketleri gönderildi</string>
+    <string name="log_hb_socket_opened">✅ Heartbeat ServerSocket açıldı → PORT %1$d</string>
+    <string name="log_tft_dedicated_hb_connected">🔌 TFT Dedicated Heartbeat bağlandı! → %1$s:%2$d</string>
+    <string name="log_dedicated_hb_started">💓 Dedicated Heartbeat gönderimi başladı (15457, 200ms aralık)</string>
+    <string name="log_dedicated_hb_stopped">⚠️ Dedicated Heartbeat gönderim durdu: %1$s</string>
+
+    <!-- BleManager Logs -->
+    <string name="log_ble_conn_starting">🔵 Bluetooth BLE bağlantısı başlatılıyor: %1$s</string>
+    <string name="log_ble_not_supported">❌ Bluetooth desteklenmiyor</string>
+    <string name="log_ble_invalid_mac">❌ Geçersiz MAC adresi: %1$s</string>
+    <string name="log_ble_disconnected">🔴 Bluetooth BLE bağlantısı kesildi</string>
 </resources>

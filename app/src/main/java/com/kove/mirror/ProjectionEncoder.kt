@@ -11,29 +11,21 @@ import android.view.Surface
 import java.util.concurrent.atomic.AtomicBoolean
 import java.util.concurrent.atomic.AtomicLong
 
-/**
- * ThinkerRide ProjectionEncoder analizi:
- *
- * - MediaCodec H.264 encoder, Surface input modu
- * - Resolution/Çözünürlük: 480×800 (shape=1, isVerticalScreen())
- * - Bitrate: width * height * memoryFactor (biz 3 kullanıyoruz = ~1.1 Mbps)
- * - FPS: 30
- * - i-frame interval: 1 saniye
- * - repeat-previous-frame-after: 100000 µs (100ms)
- * - color-format: COLOR_FormatSurface (2130708361)
- * - bitrate-mode: CBR (1)
- *
- * Fark: Biz DisplayManager yerine MediaProjection kullanıyoruz
- *       → MediaProjection gerçek tam ekran yakalama sağlar
- *       → VIRTUAL_DISPLAY_FLAG_AUTO_MIRROR ile tüm ekran gönderilir
- */
+enum class DisplayMode {
+    CENTER_CROP,
+    FIT,
+    STRETCH
+}
+
 class ProjectionEncoder(
     private val mediaProjection: MediaProjection,
-    val width:  Int = 480,
-    val height: Int = 800,
+    val width:  Int = 600,
+    val height: Int = 1024,
     val dpi:    Int = 320,
     val fps:    Int = 30,
-    var padding: Int = 0
+    var padding: Int = 0,
+    val displayMode: DisplayMode = DisplayMode.CENTER_CROP,
+    val phoneAspectRatio: Float = 0.45f
 ) {
 
     private var mediaCodec:     MediaCodec?     = null
@@ -46,18 +38,16 @@ class ProjectionEncoder(
 
     // ─── init ────────────────────────────────────────────────────
 
-    /**
-     * MediaCodec + VirtualDisplay başlatır.
-     * Başarılıysa Surface döner; hata olursa null.
-     */
     fun init(): Boolean {
         return try {
-            val bitrate = width * height * 3  // ~1.1 Mbps for 480×800
-            DebugLogger.info("🎬 Starting ProjectionEncoder... / ProjectionEncoder başlatılıyor... / ProjectionEncoder başlatılıyor...")
-            DebugLogger.info("   Resolution : ${width}×${height}")
-            DebugLogger.info("   FPS        : $fps")
-            DebugLogger.info("   Bitrate    : ${bitrate / 1000} Kbps (CBR)")
-            DebugLogger.info("   DPI        : $dpi")
+            val bitrate = width * height * 3  // ~1.8 Mbps for 600×1024
+            DebugLogger.info(R.string.log_encoder_starting)
+            DebugLogger.info(R.string.log_codec_output_res, width, height)
+            DebugLogger.info("   Display Mode     : ${displayMode.name}")
+            DebugLogger.info("   Phone Aspect Ratio: %.3f".format(phoneAspectRatio))
+            DebugLogger.info("   FPS              : $fps")
+            DebugLogger.info("   Bitrate          : ${bitrate / 1000} Kbps (CBR)")
+            DebugLogger.info("   DPI              : $dpi")
 
             val format = MediaFormat().apply {
                 setString(MediaFormat.KEY_MIME, "video/avc")
@@ -92,51 +82,73 @@ class ProjectionEncoder(
                 }
             }
 
-            DebugLogger.info("🎬 Creating MediaCodec H.264 encoder... / MediaCodec H.264 encoder oluşturuluyor... / MediaCodec H.264 encoder oluşturuluyor...")
+            DebugLogger.info("🎬 Creating MediaCodec H.264 encoder...")
             val codec = MediaCodec.createEncoderByType("video/avc")
             codec.configure(format, null, null, MediaCodec.CONFIGURE_FLAG_ENCODE)
             val surface = codec.createInputSurface()
             codec.start()
             mediaCodec   = codec
             inputSurface = surface
-            DebugLogger.success("✅ MediaCodec ready / MediaCodec hazır / MediaCodec hazır")
+            DebugLogger.success(R.string.log_codec_ready)
 
-            val vdHeight = height - (2 * padding)
-            DebugLogger.info("🖥️  Creating VirtualDisplay... / VirtualDisplay oluşturuluyor... / VirtualDisplay oluşturuluyor...")
-            DebugLogger.info("   VD Resolution / Çözünürlük: ${width}×${vdHeight}")
-            DebugLogger.info("   Surface Resolution / Çözünürlük: ${width}×${height}")
+            val (vdWidth, vdHeight) = calculateVirtualDisplaySize()
+            DebugLogger.info(R.string.log_vd_creating)
+            DebugLogger.info("   VD Resolution    : ${vdWidth}×${vdHeight}")
+            DebugLogger.info(R.string.log_codec_output_res, width, height)
             virtualDisplay = mediaProjection.createVirtualDisplay(
                 "KoveMirror",
-                width, vdHeight, dpi,
+                vdWidth, vdHeight, dpi,
                 DisplayManager.VIRTUAL_DISPLAY_FLAG_AUTO_MIRROR,
                 surface,
                 null, null
             )
-            DebugLogger.success("✅ VirtualDisplay ready - capturing screen / VirtualDisplay hazır — ekran yakalanıyor / VirtualDisplay hazır — ekran yakalanıyor")
+            DebugLogger.success(R.string.log_vd_ready, displayMode.name)
             true
 
         } catch (e: Exception) {
-            DebugLogger.error("❌ Encoder init error / Encoder init hatası / Encoder init hatası: ${e.message}")
+            DebugLogger.error(R.string.log_encoder_init_error, e.message ?: "")
             e.printStackTrace()
             false
         }
     }
 
+    private fun calculateVirtualDisplaySize(): Pair<Int, Int> {
+        return when (displayMode) {
+            DisplayMode.CENTER_CROP -> {
+                if (phoneAspectRatio > 0f) {
+                    if (height >= width) {
+                        // Vertical TFT (e.g. 600×1024, 480×800)
+                        val calculatedVdHeight = (width / phoneAspectRatio).toInt()
+                        Pair(width, calculatedVdHeight.coerceAtLeast(height))
+                    } else {
+                        // Horizontal TFT (e.g. 1280×720)
+                        val calculatedVdWidth = (height * phoneAspectRatio).toInt()
+                        Pair(calculatedVdWidth.coerceAtLeast(width), height)
+                    }
+                } else {
+                    Pair(width, height - (2 * padding))
+                }
+            }
+            DisplayMode.FIT -> {
+                Pair(width, height - (2 * padding))
+            }
+            DisplayMode.STRETCH -> {
+                Pair(width, height)
+            }
+        }
+    }
+
     // ─── encoding loop ───────────────────────────────────────────
 
-    /**
-     * H.264 NAL unit'lerini asenkron döngüde üretir, her frame'i [onData] callback'e verir.
-     * TcpServer.writeData() buradan çağrılır.
-     */
     fun startEncoding(onData: (ByteArray) -> Unit) {
         if (streaming.getAndSet(true)) return
         val codec = mediaCodec ?: run {
-            DebugLogger.error("❌ Codec not initialized - was init() called? / Codec başlatılmamış — init() çağrıldı mı? / Codec başlatılmamış — init() çağrıldı mı?")
+            DebugLogger.error(R.string.log_codec_not_init)
             return
         }
 
         Thread({
-            DebugLogger.info("🎬 H.264 encoding loop started / H.264 encoding döngüsü başladı / H.264 encoding döngüsü başladı")
+            DebugLogger.info(R.string.log_encoding_loop_started)
             val bufInfo     = MediaCodec.BufferInfo()
             var lastStatMs  = System.currentTimeMillis()
             var fpsCounter  = 0
@@ -155,7 +167,7 @@ class ProjectionEncoder(
                             val isKeyFrame = (bufInfo.flags and MediaCodec.BUFFER_FLAG_KEY_FRAME) != 0
 
                             if (isEos) {
-                                DebugLogger.info("🎬 EOS received - encoding finished / EOS alındı — encoding sona erdi / EOS alındı — encoding sona erdi")
+                                DebugLogger.info(R.string.log_eos_received)
                                 codec.releaseOutputBuffer(idx, false)
                                 break
                             }
@@ -178,7 +190,7 @@ class ProjectionEncoder(
                                     val kb = encodedBytes.get() / 1024
                                     DebugLogger.data(
                                         "📊 ${fpsCounter}fps | ${data.size}B/frame | " +
-                                        "🔑${keyFrames}IDR | Toplam:${kb}KB"
+                                        "🔑${keyFrames}IDR | Total:${kb}KB"
                                     )
                                     fpsCounter = 0
                                     keyFrames  = 0
@@ -188,16 +200,15 @@ class ProjectionEncoder(
                                 codec.releaseOutputBuffer(idx, false)
                             }
                         }
-                        // idx < 0: timeout veya INFO_TRY_AGAIN_LATER — normal
                     }
                 } catch (e: Exception) {
                     if (streaming.get()) {
-                        DebugLogger.error("❌ Encoding error / Encoding hatası / Encoding hatası: ${e.message}")
+                        DebugLogger.error(R.string.log_encoding_error, e.message ?: "")
                     }
                     break
                 }
             }
-            DebugLogger.info("🎬 Encoding loop finished / Encoding döngüsü sona erdi (${frameCount.get()} frame)")
+            DebugLogger.info(R.string.log_encoding_loop_finished, frameCount.get())
         }, "KoveMirror-Encoder").also {
             it.isDaemon = true
             it.start()
@@ -216,7 +227,7 @@ class ProjectionEncoder(
         mediaCodec     = null
         inputSurface   = null
         virtualDisplay = null
-        DebugLogger.info("🎬 ProjectionEncoder stopped / ProjectionEncoder durduruldu / ProjectionEncoder durduruldu")
+        DebugLogger.info(R.string.log_encoder_stopped)
     }
 
     fun updatePadding(newPadding: Int) {
@@ -224,7 +235,7 @@ class ProjectionEncoder(
         padding = newPadding
         val surface = inputSurface ?: return
         val vdHeight = height - (2 * newPadding)
-        DebugLogger.info("🔄 Re-creating VirtualDisplay... / VirtualDisplay yeniden oluşturuluyor... (New Padding/Yeni Boşluk: ${newPadding}px, VD Resolution / Çözünürlük: ${width}×${vdHeight})")
+        DebugLogger.info(R.string.log_vd_recreating, newPadding, width, vdHeight)
         try {
             virtualDisplay?.release()
             virtualDisplay = mediaProjection.createVirtualDisplay(
@@ -235,7 +246,7 @@ class ProjectionEncoder(
                 null, null
             )
         } catch (e: Exception) {
-            DebugLogger.error("❌ VirtualDisplay re-create error / VirtualDisplay re-create hatası / VirtualDisplay re-create hatası: ${e.message}")
+            DebugLogger.error(R.string.log_encoder_init_error, e.message ?: "")
         }
     }
 

@@ -1,0 +1,164 @@
+<resources>
+    <!-- App Details -->
+    <string name="app_name">KoveMirror</string>
+    <string name="header_subtitle">Kove TFT Duplicado a Pantalla Completa</string>
+
+    <!-- Language Selection -->
+    <string name="label_language">🌐 Idioma de la Aplicación:</string>
+
+    <!-- UI Labels -->
+    <string name="label_select_bt_device">Seleccionar Dispositivo Bluetooth TFT</string>
+    <string name="label_ip_address_listening">📱 IP del Teléfono (escuchando en puerto 17818):</string>
+    <string name="label_tft_target_address">↑ Dirección para conexión TFT</string>
+    <string name="label_bt_device_trigger">🔵 Dispositivo Bluetooth TFT (para activar WiFi):</string>
+    <string name="label_bt_device_subtext">Seleccione la pantalla TFT de su motocicleta entre los dispositivos vinculados</string>
+    <string name="label_resolution_padding_settings">🖥️ Ajustes de Resolución y Margen TFT:</string>
+    <string name="label_resolution">Resolución: </string>
+    <string name="label_padding">Margen (Superior/Inferior): </string>
+    <string name="label_debug_log">📋 Registro de Depuración</string>
+    <string name="label_debug_terminal">Terminal de Depuración</string>
+    <string name="label_log_legend">🟢Éxito  🔴Error  🟠Advertencia  🔵Datos  🟣💓Latido  ⚪Info</string>
+    
+    <!-- Display Modes -->
+    <string name="label_display_mode">📺 Modo de Pantalla:</string>
+    <string name="label_tft_resolution">🖥️ Modelo / Resolución de Pantalla TFT:</string>
+    <string name="mode_center_crop">🟢 Pantalla Completa Proporcional (Center Crop - Sin Bordes Negros)</string>
+    <string name="mode_fit">🔵 Proporcional con Bordes (Fit - Bandas Negras)</string>
+    <string name="mode_stretch">🟠 Pantalla Completa Estirada (Stretch)</string>
+
+    <!-- Presets -->
+    <string name="preset_600x1024">600 × 1024 (Kove 800X / Retrato Estándar)</string>
+    <string name="preset_480x800">480 × 800 (Kove Retrato Pequeño)</string>
+    <string name="preset_640x1284">640 × 1284 (Kove Retrato Grande)</string>
+    <string name="preset_1280x720">1280 × 720 (Kove Pantalla Horizontal)</string>
+    <string name="preset_800x800">800 × 800 (Kove Pantalla Cuadrada)</string>
+
+    <!-- WiFi States -->
+    <string name="wifi_waiting">Esperando WiFi...</string>
+    <string name="wifi_gateway">Puerta de enlace: --</string>
+    <string name="wifi_not_connected_status">⚠️ WiFi no conectado</string>
+    <string name="wifi_connected_status">✅ WiFi: %1$s</string>
+    <string name="wifi_gateway_tbox">🏍️ Puerta de enlace (TBox): %1$s</string>
+    <string name="wifi_required_toast">⚠️ Por favor, conéctese primero al WiFi de la motocicleta</string>
+
+    <!-- BT States / Spinner Options -->
+    <string name="bt_not_supported">Bluetooth No Compatible</string>
+    <string name="bt_off">Bluetooth Desactivado</string>
+    <string name="bt_permission_missing">Falta Permiso</string>
+    <string name="bt_no_paired_devices">Sin dispositivos vinculados</string>
+    <string name="status_connecting">Conectando...</string>
+
+    <!-- Status Messages -->
+    <string name="status_ready">⏸ Listo</string>
+    <string name="status_stream_active">🔴 Transmisión activa</string>
+    <string name="status_stopped">⏹ Detenido</string>
+
+    <!-- Resolution Info -->
+    <string name="res_info_default">Retrato 600×1024 (shape=6) — Kove TFT retrato estándar</string>
+    <string name="res_info_format">Objetivo: %1$d×%2$d | Margen: %3$dpx</string>
+
+    <!-- Button Actions -->
+    <string name="btn_start_mirroring">▶  Iniciar Duplicado</string>
+    <string name="btn_stop_mirroring">⏹  Detener</string>
+    <string name="btn_share_logs">Compartir Registros</string>
+    <string name="btn_ok">Entendido</string>
+
+    <!-- Security Warning -->
+    <string name="security_warning_title">Advertencia de Seguridad</string>
+    <string name="security_warning_msg">Se detectó Root o Depurador en su dispositivo. Esto puede afectar la seguridad y la infraestructura de suscripción de la aplicación. Puede continuar usando la aplicación, pero sus suscripciones se verificarán con más frecuencia.</string>
+
+    <!-- File Sharing & Toast -->
+    <string name="log_file_not_found">Archivo de registro no encontrado</string>
+    <string name="share_logs_title">Compartir Registros</string>
+    <string name="log_share_error">Error al compartir el registro: %1$s</string>
+
+    <!-- Log Messages (UI & Activity) -->
+    <string name="log_crash_detected">🔥 ERROR DETECTADO EN EL DISPOSITIVO:</string>
+    <string name="log_app_started">🏍️ KoveMirror v2.0 iniciado</string>
+    <string name="log_step_1">1. Conéctese al WiFi de la motocicleta</string>
+    <string name="log_step_2">2. La IP del teléfono aparecerá arriba</string>
+    <string name="log_step_3">3. Presione el botón \'Iniciar\'</string>
+    <string name="log_step_4">4. Los registros se mostrarán una vez que el TFT se conecte</string>
+    <string name="log_wifi_not_connected">⚠️ WiFi no conectado — conéctese al punto de acceso de la motocicleta</string>
+    <string name="log_phone_ip">📡 IP Teléfono: %1$s</string>
+    <string name="log_gateway">🏍️ Puerta de enlace: %1$s</string>
+    <string name="log_target_resolution">🖥️ Resolución objetivo TFT: %1$d×%2$d | Margen: %3$dpx</string>
+    <string name="log_request_screen_capture">🔐 Solicitando permiso de captura de pantalla...</string>
+    <string name="log_permission_granted">✅ Permiso concedido — iniciando MirrorService</string>
+    <string name="log_service_start_failed">❌ Error al iniciar el servicio: %1$s</string>
+    <string name="log_screen_capture_denied">❌ Permiso de captura de pantalla denegado</string>
+    <string name="log_stopped_by_user">⏹️ Detenido por el usuario</string>
+    <string name="log_bt_permissions_missing">⚠️ Faltan permisos de Bluetooth, no se pueden listar dispositivos</string>
+    <string name="log_selected_bt">🔗 Bluetooth seleccionado: %1$s (%2$s)</string>
+    <string name="log_bt_permissions_granted">✅ Permisos de Bluetooth concedidos</string>
+    <string name="log_bt_permissions_denied">⚠️ Algunos permisos de Bluetooth denegados</string>
+    <string name="log_padding_updated_on_the_fly">🔄 Margen actualizado dinámicamente: %1$dpx</string>
+
+    <!-- Notification & Service -->
+    <string name="notif_waiting_tft">⏳ Esperando conexión TFT...</string>
+    <string name="notif_tft_connected">🔴 TFT conectado — Transmisión activa</string>
+    <string name="notif_waiting_tft_port">🟡 Esperando TFT (puerto %1$d)</string>
+    <string name="notif_action_stop">Detener</string>
+    <string name="notif_channel_name">Duplicado KoveMirror</string>
+    <string name="notif_channel_description">Servicio de duplicado de pantalla Kove TFT</string>
+
+    <!-- MirrorService Logs -->
+    <string name="log_mirroring_starting">▶️ Iniciando duplicado...</string>
+    <string name="log_bt_mac_not_selected">⚠️ Dirección MAC Bluetooth no seleccionada, activador BLE desactivado</string>
+    <string name="log_searching_wifi">📡 Buscando red WiFi y vinculando proceso...</string>
+    <string name="log_wifi_bound_process">🔗 Proceso de aplicación vinculado con éxito a la red WiFi (bindProcessToNetwork)</string>
+    <string name="log_wifi_bound_process_legacy">🔗 Proceso de aplicación vinculado con éxito a la red WiFi (setProcessDefaultNetwork)</string>
+    <string name="log_wifi_lost">🔌 Conexión de red WiFi perdida</string>
+    <string name="log_wifi_unbound">🔌 Vinculación de red WiFi borrada</string>
+    <string name="log_tft_video_connected">🚀 Video TFT conectado, iniciando codificador...</string>
+    <string name="log_tft_disconnected_waiting">🔌 TFT desconectado — esperando reconexión...</string>
+    <string name="log_stopping_mirroring">⏹️ Deteniendo duplicado...</string>
+    <string name="log_all_stopped">⏹️ Todo detenido</string>
+
+    <!-- HeartbeatManager Logs -->
+    <string name="log_hb_started">💓 Hilo de Heartbeat iniciado (intervalo de 2s)</string>
+    <string name="log_hb_sent">💓 Heartbeat #%1$d → %2$s</string>
+    <string name="log_hb_io_error">❌ Error de E/S de Heartbeat: %1$s</string>
+    <string name="log_hb_stopped">💓 Hilo de Heartbeat detenido (total: %1$d)</string>
+
+    <!-- ProjectionEncoder Logs -->
+    <string name="log_encoder_starting">🎬 Iniciando ProjectionEncoder...</string>
+    <string name="log_codec_output_res">   Resolución de Salida del Codec: %1$d×%2$d</string>
+    <string name="log_codec_ready">✅ MediaCodec listo</string>
+    <string name="log_vd_creating">🖥️ Creando VirtualDisplay...</string>
+    <string name="log_vd_ready">✅ VirtualDisplay listo (modo %1$s)</string>
+    <string name="log_encoder_init_error">❌ Error de inicialización del codificador: %1$s</string>
+    <string name="log_codec_not_init">❌ Codec no inicializado - ¿se llamó a init()?</string>
+    <string name="log_encoding_loop_started">🎬 Bucle de codificación H.264 iniciado</string>
+    <string name="log_eos_received">🎬 EOS recibido - codificación finalizada</string>
+    <string name="log_encoding_error">❌ Error de codificación: %1$s</string>
+    <string name="log_encoding_loop_finished">🎬 Bucle de codificación finalizado (%1$d fotogramas)</string>
+    <string name="log_encoder_stopped">🎬 ProjectionEncoder detenido</string>
+    <string name="log_vd_recreating">🔄 Recreando VirtualDisplay... (Nuevo Margen: %1$dpx, Res: %2$d×%3$d)</string>
+
+    <!-- TcpServer Logs -->
+    <string name="log_tcp_all_closed">🔌 Todos los servidores de puertos TCP cerrados</string>
+    <string name="log_write_data_error">❌ Error en writeData (Video): %1$s</string>
+    <string name="log_video_socket_opened">✅ Video ServerSocket abierto → PUERTO %1$d</string>
+    <string name="log_tft_video_connected_ip">🔌 ¡TFT Video/Duplicado conectado! → %1$s:%2$d</string>
+    <string name="log_video_accept_error">❌ Error de aceptación de video: %1$s</string>
+    <string name="log_video_bind_error">❌ Error de vinculación Video ServerSocket (Puerto %1$d): %2$s</string>
+    <string name="log_tft_video_conn_lost">🔌 Conexión de Video TFT perdida</string>
+    <string name="log_control_socket_opened">✅ Control ServerSocket abierto → PUERTO %1$d</string>
+    <string name="log_tft_control_connected_ip">🔌 ¡TFT Control conectado! → %1$s:%2$d</string>
+    <string name="log_control_bind_error">❌ Error de vinculación Control ServerSocket (Puerto %1$d): %2$s</string>
+    <string name="log_sending_tuc_query">📤 Enviando consulta TUC GET al TFT...</string>
+    <string name="log_control_handshake_done">✅ ¡Apretón de manos de Control completado con éxito!</string>
+    <string name="log_tft_control_conn_lost">🔌 Conexión de TFT Control perdida</string>
+    <string name="log_binary_handshake_sent">📤 Paquetes de apretón de manos binario de puerto Control enviados</string>
+    <string name="log_hb_socket_opened">✅ Heartbeat ServerSocket abierto → PUERTO %1$d</string>
+    <string name="log_tft_dedicated_hb_connected">🔌 ¡TFT Dedicated Heartbeat conectado! → %1$s:%2$d</string>
+    <string name="log_dedicated_hb_started">💓 Envío de Dedicated Heartbeat iniciado (15457, intervalo 200ms)</string>
+    <string name="log_dedicated_hb_stopped">⚠️ Envío de Dedicated Heartbeat detenido: %1$s</string>
+
+    <!-- BleManager Logs -->
+    <string name="log_ble_conn_starting">🔵 Iniciando conexión Bluetooth BLE: %1$s</string>
+    <string name="log_ble_not_supported">❌ Bluetooth no compatible</string>
+    <string name="log_ble_invalid_mac">❌ Dirección MAC no válida: %1$s</string>
+    <string name="log_ble_disconnected">🔴 Conexión Bluetooth BLE desconectada</string>
+</resources>

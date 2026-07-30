@@ -1,5 +1,6 @@
 package com.kove.mirror
 
+import android.content.Context
 import android.os.Handler
 import android.os.Looper
 import java.io.File
@@ -21,6 +22,11 @@ object DebugLogger {
     private val mainHandler = Handler(Looper.getMainLooper())
     private val timeFormat = SimpleDateFormat("HH:mm:ss.SSS", Locale.getDefault())
     private var logFile: File? = null
+    private var appContext: Context? = null
+
+    fun setContext(context: Context) {
+        appContext = context.applicationContext
+    }
 
     fun addListener(listener: (LogEntry) -> Unit) = listeners.add(listener)
     fun removeListener(listener: (LogEntry) -> Unit) = listeners.remove(listener)
@@ -30,13 +36,25 @@ object DebugLogger {
             try {
                 if (!baseDir.exists()) baseDir.mkdirs()
                 logFile = File(baseDir, "kove_mirror_log.txt")
-                // Her başlatıldığında temizle
                 if (logFile?.exists() == true) logFile?.delete()
                 logFile?.createNewFile()
-                info("📂 Log file created / Log dosyası oluşturuldu / Log dosyası oluşturuldu: ${logFile?.absolutePath}")
             } catch (e: Exception) {
-                android.util.Log.e("KoveMirror", "Log file creation error / Log dosyası oluşturma hatası / Log dosyası oluşturma hatası", e)
+                android.util.Log.e("KoveMirror", "Log file creation error", e)
             }
+        }
+    }
+
+    fun getString(resId: Int, vararg formatArgs: Any): String {
+        val ctx = appContext
+        return if (ctx != null) {
+            val localizedCtx = LocaleHelper.applyLocale(ctx)
+            if (formatArgs.isNotEmpty()) {
+                localizedCtx.getString(resId, *formatArgs)
+            } else {
+                localizedCtx.getString(resId)
+            }
+        } else {
+            "Resource #$resId"
         }
     }
 
@@ -58,9 +76,7 @@ object DebugLogger {
         logFile?.let { file ->
             try {
                 file.appendText(formattedLine + "\n")
-            } catch (e: Exception) {
-                // Ignore
-            }
+            } catch (_: Exception) {}
         }
 
         val entry = LogEntry(timestamp, level, message)
@@ -73,4 +89,11 @@ object DebugLogger {
     fun error(msg: String)     = log(LogLevel.ERROR, msg)
     fun data(msg: String)      = log(LogLevel.DATA, msg)
     fun heartbeat(msg: String) = log(LogLevel.HEARTBEAT, msg)
+
+    fun info(resId: Int, vararg formatArgs: Any)      = info(getString(resId, *formatArgs))
+    fun success(resId: Int, vararg formatArgs: Any)   = success(getString(resId, *formatArgs))
+    fun warning(resId: Int, vararg formatArgs: Any)   = warning(getString(resId, *formatArgs))
+    fun error(resId: Int, vararg formatArgs: Any)     = error(getString(resId, *formatArgs))
+    fun data(resId: Int, vararg formatArgs: Any)      = data(getString(resId, *formatArgs))
+    fun heartbeat(resId: Int, vararg formatArgs: Any) = heartbeat(getString(resId, *formatArgs))
 }

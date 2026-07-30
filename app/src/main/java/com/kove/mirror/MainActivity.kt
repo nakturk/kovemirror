@@ -4,6 +4,7 @@ import android.Manifest
 import android.annotation.SuppressLint
 import android.app.Activity
 import android.bluetooth.BluetoothAdapter
+import android.content.Context
 import android.content.Intent
 import android.content.pm.PackageManager
 import android.graphics.Color
@@ -34,9 +35,17 @@ class MainActivity : AppCompatActivity() {
 
     private val uiHandler = Handler(Looper.getMainLooper())
 
+    private val languageCodes = listOf("tr", "en", "el", "es")
+    private val languageNames = listOf("Türkçe", "English", "Ελληνικά", "Español")
+
+    override fun attachBaseContext(newBase: Context) {
+        super.attachBaseContext(LocaleHelper.applyLocale(newBase))
+    }
+
     override fun onCreate(savedInstanceState: Bundle?) {
         CrashHandler.init(this)
         DebugLogger.initFile(getExternalFilesDir(null))
+        DebugLogger.setContext(this)
         super.onCreate(savedInstanceState)
         
         // Ekranın kapanmasını engelle (Keep screen on)
@@ -47,7 +56,10 @@ class MainActivity : AppCompatActivity() {
         
         checkSecurityConstraints()
 
+        setupLanguageSpinner()
         setupBluetoothSpinner()
+        setupDisplayModeSpinner()
+        setupResolutionSpinner()
         setupButtons()
 
         checkBluetoothPermissions()
@@ -59,6 +71,29 @@ class MainActivity : AppCompatActivity() {
     override fun onResume() {
         super.onResume()
         refreshWifiStatus()
+    }
+
+    // ─── Language Selector ───────────────────────────────────────
+
+    private fun setupLanguageSpinner() {
+        val adapter = ArrayAdapter(this, android.R.layout.simple_spinner_item, languageNames)
+        adapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item)
+        binding.spLanguage.adapter = adapter
+
+        val currentLang = LocaleHelper.getSavedLanguage(this)
+        val currentIdx = languageCodes.indexOf(currentLang).let { if (it >= 0) it else 0 }
+        binding.spLanguage.setSelection(currentIdx, false)
+
+        binding.spLanguage.onItemSelectedListener = object : AdapterView.OnItemSelectedListener {
+            override fun onItemSelected(parent: AdapterView<*>?, view: View?, position: Int, id: Long) {
+                val selectedLang = languageCodes[position]
+                if (selectedLang != LocaleHelper.getSavedLanguage(this@MainActivity)) {
+                    LocaleHelper.setLocale(this@MainActivity, selectedLang)
+                    recreate()
+                }
+            }
+            override fun onNothingSelected(parent: AdapterView<*>?) {}
+        }
     }
 
     // ─── Setup ───────────────────────────────────────────────────
@@ -91,7 +126,7 @@ class MainActivity : AppCompatActivity() {
     private fun shareLogs() {
         val logFile = java.io.File(getExternalFilesDir(null), "kove_mirror_log.txt")
         if (!logFile.exists()) {
-            Toast.makeText(this, "Log dosyası bulunamadı / Log file not found", Toast.LENGTH_SHORT).show()
+            Toast.makeText(this, getString(R.string.log_file_not_found), Toast.LENGTH_SHORT).show()
             return
         }
 
@@ -107,9 +142,9 @@ class MainActivity : AppCompatActivity() {
                 putExtra(Intent.EXTRA_STREAM, uri)
                 addFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION)
             }
-            startActivity(Intent.createChooser(intent, "Logları Paylaş / Share Logs"))
+            startActivity(Intent.createChooser(intent, getString(R.string.share_logs_title)))
         } catch (e: Exception) {
-            Toast.makeText(this, "Log paylaşılırken hata oluştu: ${e.message}", Toast.LENGTH_SHORT).show()
+            Toast.makeText(this, getString(R.string.log_share_error, e.message ?: ""), Toast.LENGTH_SHORT).show()
         }
     }
 
@@ -128,6 +163,20 @@ class MainActivity : AppCompatActivity() {
         }
     }
 
+    private data class TftPresetOption(
+        val titleResId: Int,
+        val width: Int,
+        val height: Int
+    )
+
+    private val tftPresets = listOf(
+        TftPresetOption(R.string.preset_600x1024, 600, 1024),
+        TftPresetOption(R.string.preset_480x800, 480, 800),
+        TftPresetOption(R.string.preset_640x1284, 640, 1284),
+        TftPresetOption(R.string.preset_1280x720, 1280, 720),
+        TftPresetOption(R.string.preset_800x800, 800, 800)
+    )
+
     // ─── Start/Stop ──────────────────────────────────────────────
 
     private fun onStartStopClick() {
@@ -139,14 +188,87 @@ class MainActivity : AppCompatActivity() {
                 return
             }
 
-            MirrorService.TFT_WIDTH   = 600
-            MirrorService.TFT_HEIGHT  = 1024
-            MirrorService.TFT_PADDING = 0
+            val presetIdx = binding.spTftResolution.selectedItemPosition.coerceIn(0, tftPresets.size - 1)
+            val selectedPreset = tftPresets[presetIdx]
 
-            DebugLogger.info(getString(R.string.log_target_resolution, 600, 1024, 0))
+            val modeIdx = binding.spDisplayMode.selectedItemPosition.coerceIn(0, 2)
+            val selectedMode = when (modeIdx) {
+                1 -> DisplayMode.FIT
+                2 -> DisplayMode.STRETCH
+                else -> DisplayMode.CENTER_CROP
+            }
+
+            val ratio = getPhoneAspectRatio()
+
+            MirrorService.TFT_WIDTH          = selectedPreset.width
+            MirrorService.TFT_HEIGHT         = selectedPreset.height
+            MirrorService.DISPLAY_MODE       = selectedMode
+            MirrorService.PHONE_ASPECT_RATIO = ratio
+            MirrorService.TFT_PADDING        = 0
+
+            DebugLogger.info(
+                "🖥️ Target: ${selectedPreset.width}×${selectedPreset.height} | " +
+                "Mode: ${selectedMode.name} | Ratio: %.3f".format(ratio)
+            )
             requestScreenCapture()
         } else {
             stopMirroring()
+        }
+    }
+
+    private fun setupDisplayModeSpinner() {
+        val options = listOf(
+            getString(R.string.mode_center_crop),
+            getString(R.string.mode_fit),
+            getString(R.string.mode_stretch)
+        )
+        val adapter = ArrayAdapter(this, android.R.layout.simple_spinner_item, options)
+        adapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item)
+        binding.spDisplayMode.adapter = adapter
+
+        val savedModeIdx = getSharedPreferences("kove_prefs", MODE_PRIVATE).getInt("display_mode", 0)
+        binding.spDisplayMode.setSelection(savedModeIdx.coerceIn(0, options.size - 1))
+
+        binding.spDisplayMode.onItemSelectedListener = object : AdapterView.OnItemSelectedListener {
+            override fun onItemSelected(parent: AdapterView<*>?, view: View?, position: Int, id: Long) {
+                getSharedPreferences("kove_prefs", MODE_PRIVATE).edit().putInt("display_mode", position).apply()
+            }
+            override fun onNothingSelected(parent: AdapterView<*>?) {}
+        }
+    }
+
+    private fun setupResolutionSpinner() {
+        val options = tftPresets.map { getString(it.titleResId) }
+        val adapter = ArrayAdapter(this, android.R.layout.simple_spinner_item, options)
+        adapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item)
+        binding.spTftResolution.adapter = adapter
+
+        val savedPresetIdx = getSharedPreferences("kove_prefs", MODE_PRIVATE).getInt("tft_preset", 0)
+        binding.spTftResolution.setSelection(savedPresetIdx.coerceIn(0, options.size - 1))
+
+        binding.spTftResolution.onItemSelectedListener = object : AdapterView.OnItemSelectedListener {
+            override fun onItemSelected(parent: AdapterView<*>?, view: View?, position: Int, id: Long) {
+                getSharedPreferences("kove_prefs", MODE_PRIVATE).edit().putInt("tft_preset", position).apply()
+            }
+            override fun onNothingSelected(parent: AdapterView<*>?) {}
+        }
+    }
+
+    private fun getPhoneAspectRatio(): Float {
+        return try {
+            val wm = getSystemService(WINDOW_SERVICE) as android.view.WindowManager
+            val (w, h) = if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.R) {
+                val bounds = wm.currentWindowMetrics.bounds
+                Pair(bounds.width().coerceAtLeast(1), bounds.height().coerceAtLeast(1))
+            } else {
+                val metrics = android.util.DisplayMetrics()
+                @Suppress("DEPRECATION")
+                wm.defaultDisplay.getRealMetrics(metrics)
+                Pair(metrics.widthPixels.coerceAtLeast(1), metrics.heightPixels.coerceAtLeast(1))
+            }
+            w.toFloat() / h.toFloat()
+        } catch (e: Exception) {
+            0.45f
         }
     }
 
@@ -156,9 +278,9 @@ class MainActivity : AppCompatActivity() {
         
         if (isRooted || isDebugged) {
             AlertDialog.Builder(this)
-                .setTitle("Güvenlik Uyarısı")
-                .setMessage("Cihazınızda Root veya Debugger tespit edildi. Bu durum uygulamanın güvenlik ve abonelik altyapısını etkileyebilir. Uygulamayı kullanmaya devam edebilirsiniz ancak abonelikleriniz daha sık doğrulanacaktır.")
-                .setPositiveButton("Anladım", null)
+                .setTitle(R.string.security_warning_title)
+                .setMessage(R.string.security_warning_msg)
+                .setPositiveButton(R.string.btn_ok, null)
                 .show()
         }
     }

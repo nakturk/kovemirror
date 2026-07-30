@@ -16,19 +16,6 @@ import android.os.Looper
 import android.os.IBinder
 import androidx.core.app.NotificationCompat
 
-/**
- * Ön plan servisi — MediaProjection + TCP server yaşam döngüsünü yönetir.
- *
- * Başlatma akışı:
- * 1. MainActivity → createScreenCaptureIntent() → kullanıcı onayı
- * 2. onActivityResult → MirrorService.startService(resultCode, data)
- * 3. MirrorService.onCreate → startForeground()
- * 4. startMirroring():
- *    a. MediaProjection oluştur
- *    b. TcpServer başlat (port 17818 dinle)
- *    c. ProjectionEncoder başlat (VirtualDisplay + H.264)
- *    d. TFT bağlanınca: VideoSize header + HeartBeat + stream
- */
 class MirrorService : Service() {
 
     companion object {
@@ -39,10 +26,11 @@ class MirrorService : Service() {
         const val CHANNEL_ID         = "KoveMirrorCh"
         const val NOTIF_ID           = 1001
 
-        // Değiştirilebilir çözünürlük (MainActivity'den ayarlanır)
-        @Volatile var TFT_WIDTH   = 480
-        @Volatile var TFT_HEIGHT  = 800
-        @Volatile var TFT_PADDING = 0
+        @Volatile var TFT_WIDTH          = 600
+        @Volatile var TFT_HEIGHT         = 1024
+        @Volatile var TFT_PADDING        = 0
+        @Volatile var DISPLAY_MODE       = DisplayMode.CENTER_CROP
+        @Volatile var PHONE_ASPECT_RATIO = 0.45f
 
         @Volatile var runningInstance: MirrorService? = null
 
@@ -82,9 +70,10 @@ class MirrorService : Service() {
 
     override fun onCreate() {
         super.onCreate()
+        DebugLogger.setContext(this)
         runningInstance = this
         createNotificationChannel()
-        DebugLogger.info("🚀 MirrorService oluşturuldu / MirrorService created")
+        DebugLogger.info("🚀 MirrorService started")
     }
 
     override fun onStartCommand(intent: Intent?, flags: Int, startId: Int): Int {
@@ -108,7 +97,7 @@ class MirrorService : Service() {
                     }
                     startMirroring(code, data)
                 } else {
-                    DebugLogger.error("❌ Geçersiz MediaProjection verisi / Invalid MediaProjection data: code=$code, data=$data")
+                    DebugLogger.error("❌ Invalid MediaProjection data: code=$code, data=$data")
                     stopSelf()
                 }
             }
@@ -137,7 +126,6 @@ class MirrorService : Service() {
             DebugLogger.info("   Control Port: ${TcpServer.PORT_CONTROL}")
             DebugLogger.info("   Heartbeat Port: ${TcpServer.PORT_HEARTBEAT}")
 
-            // Ekranın otomatik kapanmasını engellemek için WakeLock (Arka planda da çalışır)
             val powerManager = getSystemService(Context.POWER_SERVICE) as android.os.PowerManager
             @Suppress("DEPRECATION")
             wakeLock = powerManager.newWakeLock(
@@ -146,18 +134,16 @@ class MirrorService : Service() {
             )
             wakeLock?.acquire()
 
-            // 1) MediaProjection (TCP Server'dan önce hazır olmalı)
             val pm = getSystemService(MEDIA_PROJECTION_SERVICE) as MediaProjectionManager
             val projection = pm.getMediaProjection(resultCode, data) ?: throw NullPointerException("MediaProjection is null")
             mediaProjection = projection
             projection.registerCallback(object : MediaProjection.Callback() {
                 override fun onStop() {
-                    DebugLogger.warning("⚠️ MediaProjection sistem tarafından durduruldu / MediaProjection stopped by system")
+                    DebugLogger.warning("⚠️ MediaProjection stopped by system")
                     stopMirroring()
                 }
             }, null)
 
-            // 2) Bluetooth (TFT BLE)
             val savedMac = getSharedPreferences("kove_prefs", MODE_PRIVATE).getString("bt_mac", "")
             if (!savedMac.isNullOrEmpty()) {
                 bleManager = BleManager(this) { msg ->
@@ -165,7 +151,7 @@ class MirrorService : Service() {
                 }
                 bleManager?.onMirrorRequested = {
                     if (!tcpServerStarted || tcpServer == null) {
-                        DebugLogger.info("🔄 TFT'den yansıtma isteği geldi, TCP Server baştan başlatılıyor (Yeniden izin istemeden)... / Mirroring requested from TFT, TCP Server restarting (without re-asking permission)...")
+                        DebugLogger.info("🔄 Mirroring requested from TFT, TCP Server restarting...")
                         Handler(Looper.getMainLooper()).post {
                             startTcpServer()
                         }
@@ -176,10 +162,9 @@ class MirrorService : Service() {
                 DebugLogger.warning(getString(R.string.log_bt_mac_not_selected))
             }
 
-            // 3) WiFi Ağına bağlan — Bağlanınca TCP Server asenkron olarak tetiklenecek
             bindToWifiNetwork()
         } catch (e: Exception) {
-            DebugLogger.error("❌ startMirroring hatası / startMirroring error: ${e.javaClass.simpleName}: ${e.message}")
+            DebugLogger.error("❌ startMirroring error: ${e.javaClass.simpleName}: ${e.message}")
             e.printStackTrace()
             stopSelf()
         }
@@ -188,18 +173,18 @@ class MirrorService : Service() {
     private fun startTcpServer() {
         val projection = mediaProjection
         if (projection == null) {
-            DebugLogger.warning("⚠️ MediaProjection henüz hazır değil, TCP Server başlatılmadı / MediaProjection not ready yet, TCP Server not started")
+            DebugLogger.warning("⚠️ MediaProjection not ready yet, TCP Server not started")
             return
         }
 
         if (tcpServerStarted) {
-            DebugLogger.info("🔄 TCP Server zaten çalışıyor, yeniden başlatılıyor... / TCP Server already running, restarting...")
+            DebugLogger.info("🔄 TCP Server already running, restarting...")
             tcpServer?.stop()
             tcpServer = null
         }
 
         val ipAddress = NetworkUtils.getWifiIpAddress(applicationContext)
-        DebugLogger.info("🔌 TCP Server başlatılıyor / TCP Server starting, bind IP: $ipAddress")
+        DebugLogger.info("🔌 TCP Server starting, bind IP: $ipAddress")
 
         val server = TcpServer(
             hostIp = ipAddress,
@@ -208,17 +193,24 @@ class MirrorService : Service() {
             onConnected = { os ->
                 DebugLogger.success(getString(R.string.log_tft_video_connected))
                 try {
-                    val encoder = ProjectionEncoder(projection, TFT_WIDTH, TFT_HEIGHT, padding = TFT_PADDING)
+                    val encoder = ProjectionEncoder(
+                        mediaProjection = projection,
+                        width  = TFT_WIDTH,
+                        height = TFT_HEIGHT,
+                        padding = TFT_PADDING,
+                        displayMode = DISPLAY_MODE,
+                        phoneAspectRatio = PHONE_ASPECT_RATIO
+                    )
                     projectionEncoder = encoder
                     if (encoder.init()) {
                         encoder.startEncoding { nalData ->
                             tcpServer?.writeData(nalData)
                         }
                     } else {
-                        DebugLogger.error("❌ Encoder başlatılamadı / Encoder could not be started")
+                        DebugLogger.error("❌ Encoder could not be started")
                     }
                 } catch (e: Exception) {
-                    DebugLogger.error("❌ Encoder start hatası / Encoder start error: ${e.message}")
+                    DebugLogger.error("❌ Encoder start error: ${e.message}")
                 }
                 updateNotif(getString(R.string.notif_tft_connected))
             },
@@ -228,12 +220,9 @@ class MirrorService : Service() {
                 projectionEncoder = null
                 updateNotif(getString(R.string.notif_waiting_tft_port, TcpServer.PORT_VIDEO))
 
-                // Auto-Reconnect mantığı:
-                // Eğer kullanıcı manuel "Stop" basmadıysa ve hala arka planda çalışıyorsak,
-                // TFT'ye BLE üzerinden tekrar "başla" sinyali gönderelim.
                 Handler(Looper.getMainLooper()).postDelayed({
                     if (tcpServerStarted && bleManager != null) {
-                        DebugLogger.info("🔄 Otomatik yeniden bağlanma (Auto-Reconnect) tetikleniyor... / Auto-Reconnect triggered...")
+                        DebugLogger.info("🔄 Auto-Reconnect triggered...")
                         bleManager?.sendInitPackets()
                     }
                 }, 2000)
@@ -245,12 +234,10 @@ class MirrorService : Service() {
 
         val gw = NetworkUtils.getGatewayAddress(applicationContext)
         DebugLogger.info("─────────────────────────────")
-        DebugLogger.info("📡 Telefon IP / Phone IP: $ipAddress")
-        DebugLogger.info("🏍️ Gateway(TBox): $gw")
-        DebugLogger.info("🔌 Dinlenen portlar / Listening ports: Video=${TcpServer.PORT_VIDEO}, Control=${TcpServer.PORT_CONTROL}, Heartbeat=${TcpServer.PORT_HEARTBEAT}")
+        DebugLogger.info("📡 Phone IP: $ipAddress")
+        DebugLogger.info("🏍️ Gateway (TBox): $gw")
+        DebugLogger.info("🔌 Ports: Video=${TcpServer.PORT_VIDEO}, Control=${TcpServer.PORT_CONTROL}, Heartbeat=${TcpServer.PORT_HEARTBEAT}")
         DebugLogger.info("─────────────────────────────")
-        DebugLogger.info("Motosiklet WiFi'sine bağlanın ve TFT'nin / Connect to Motorcycle WiFi and wait for TFT")
-        DebugLogger.info("bu IP:portlara bağlanmasını bekleyin. / to connect to these IP:ports.")
     }
 
     private fun stopMirroring() {
@@ -266,7 +253,6 @@ class MirrorService : Service() {
         mediaProjection?.stop()
         mediaProjection = null
 
-        // WakeLock serbest bırak
         if (wakeLock?.isHeld == true) {
             wakeLock?.release()
         }
@@ -298,7 +284,7 @@ class MirrorService : Service() {
                             startTcpServer()
                         }
                     } catch (e: Exception) {
-                        DebugLogger.error("❌ Ağa bağlanırken hata oluştu / Error binding to network: ${e.message}")
+                        DebugLogger.error("❌ Error binding to network: ${e.message}")
                     }
                 }
 
@@ -313,7 +299,7 @@ class MirrorService : Service() {
                         }
                         DebugLogger.warning(getString(R.string.log_wifi_lost))
                     } catch (e: Exception) {
-                        DebugLogger.error("❌ Ağ bağı kaldırılırken hata / Error unbinding network: ${e.message}")
+                        DebugLogger.error("❌ Error unbinding network: ${e.message}")
                     }
                 }
             }
@@ -322,7 +308,7 @@ class MirrorService : Service() {
             connectivityManager.requestNetwork(request, callback)
             DebugLogger.info(getString(R.string.log_searching_wifi))
         } catch (e: Exception) {
-            DebugLogger.error("❌ bindToWifiNetwork hatası / bindToWifiNetwork error: ${e.message}")
+            DebugLogger.error("❌ bindToWifiNetwork error: ${e.message}")
         }
     }
 
@@ -343,7 +329,7 @@ class MirrorService : Service() {
             }
             DebugLogger.info(getString(R.string.log_wifi_unbound))
         } catch (e: Exception) {
-            DebugLogger.error("❌ unbindFromWifiNetwork hatası / unbindFromWifiNetwork error: ${e.message}")
+            DebugLogger.error("❌ unbindFromWifiNetwork error: ${e.message}")
         }
     }
 

@@ -1,0 +1,164 @@
+<resources>
+    <!-- App Details -->
+    <string name="app_name">KoveMirror</string>
+    <string name="header_subtitle">Kove TFT Προβολή Πλήρους Οθόνης</string>
+
+    <!-- Language Selection -->
+    <string name="label_language">🌐 Γλώσσα Εφαρμογής:</string>
+
+    <!-- UI Labels -->
+    <string name="label_select_bt_device">Επιλέξτε Συσκευή Bluetooth TFT</string>
+    <string name="label_ip_address_listening">📱 IP Τηλεφώνου (ακρόαση στη θύρα 17818):</string>
+    <string name="label_tft_target_address">↑ Διεύθυνση για σύνδεση TFT</string>
+    <string name="label_bt_device_trigger">🔵 Συσκευή Bluetooth TFT (για ενεργοποίηση WiFi):</string>
+    <string name="label_bt_device_subtext">Επιλέξτε την οθόνη TFT της μοτοσυκλέτας σας από τις συζευγμένες συσκευές</string>
+    <string name="label_resolution_padding_settings">🖥️ Ρυθμίσεις Ανάλυσης και Περιθωρίου TFT:</string>
+    <string name="label_resolution">Ανάλυση: </string>
+    <string name="label_padding">Περιθώριο (Πάνω/Κάτω): </string>
+    <string name="label_debug_log">📋 Καταγραφή Εντοπισμού Σφαλμάτων</string>
+    <string name="label_debug_terminal">Τερματικό Εντοπισμού Σφαλμάτων</string>
+    <string name="label_log_legend">🟢Επιτυχία  🔴Σφάλμα  🟠Προειδοποίηση  🔵Δεδομένα  🟣💓Παλμός  ⚪Πληροφορία</string>
+    
+    <!-- Display Modes -->
+    <string name="label_display_mode">📺 Λειτουργία Εμφάνισης:</string>
+    <string name="label_tft_resolution">🖥️ Μοντέλο / Ανάλυση Οθόνης TFT:</string>
+    <string name="mode_center_crop">🟢 Αναλογική Πλήρης Οθόνη (Center Crop - Χωρίς Μαύρα Περιθώρια)</string>
+    <string name="mode_fit">🔵 Αναλογικό με Πλαίσια (Fit - Μαύρες Λωρίδες)</string>
+    <string name="mode_stretch">🟠 Παραμορφωμένη Πλήρης Οθόνη (Stretch)</string>
+
+    <!-- Presets -->
+    <string name="preset_600x1024">600 × 1024 (Kove 800X / Κατακόρυφο Τυπικό)</string>
+    <string name="preset_480x800">480 × 800 (Kove Κατακόρυφο Μικρό)</string>
+    <string name="preset_640x1284">640 × 1284 (Kove Κατακόρυφο Μεγάλο)</string>
+    <string name="preset_1280x720">1280 × 720 (Kove Οριζόντια Οθόνη)</string>
+    <string name="preset_800x800">800 × 800 (Kove Τετράγωνη Οθόνη)</string>
+
+    <!-- WiFi States -->
+    <string name="wifi_waiting">Αναμονή για WiFi...</string>
+    <string name="wifi_gateway">Πύλη: --</string>
+    <string name="wifi_not_connected_status">⚠️ Δεν υπάρχει σύνδεση WiFi</string>
+    <string name="wifi_connected_status">✅ WiFi: %1$s</string>
+    <string name="wifi_gateway_tbox">🏍️ Πύλη (TBox): %1$s</string>
+    <string name="wifi_required_toast">⚠️ Παρακαλώ συνδεθείτε πρώτα στο WiFi της μοτοσυκλέτας</string>
+
+    <!-- BT States / Spinner Options -->
+    <string name="bt_not_supported">Το Bluetooth δεν υποστηρίζεται</string>
+    <string name="bt_off">Το Bluetooth είναι απενεργοποιημένο</string>
+    <string name="bt_permission_missing">Λείπει η άδεια</string>
+    <string name="bt_no_paired_devices">Δεν υπάρχουν συζευγμένες συσκευές</string>
+    <string name="status_connecting">Σύνδεση...</string>
+
+    <!-- Status Messages -->
+    <string name="status_ready">⏸ Έτοιμο</string>
+    <string name="status_stream_active">🔴 Ενεργή ροή</string>
+    <string name="status_stopped">⏹ Διακόπηκε</string>
+
+    <!-- Resolution Info -->
+    <string name="res_info_default">Κατακόρυφο 600×1024 (shape=6) — Kove TFT τυπικό κατακόρυφο</string>
+    <string name="res_info_format">Στόχος: %1$d×%2$d | Περιθώριο: %3$dpx</string>
+
+    <!-- Button Actions -->
+    <string name="btn_start_mirroring">▶  Έναρξη Προβολής</string>
+    <string name="btn_stop_mirroring">⏹  Διακοπή</string>
+    <string name="btn_share_logs">Κοινοποίηση Καταγραφών</string>
+    <string name="btn_ok">Κατάλαβα</string>
+
+    <!-- Security Warning -->
+    <string name="security_warning_title">Προειδοποίηση Ασφαλείας</string>
+    <string name="security_warning_msg">Εντοπίστηκε Root ή Debugger στη συσκευή σας. Αυτό ενδέχεται να επηρεάσει την ασφάλεια και τις συνδρομές της εφαρμογής. Μπορείτε να συνεχίσετε να χρησιμοποιείτε την εφαρμογή, αλλά οι συνδρομές σας θα επαληθεύονται πιο συχνά.</string>
+
+    <!-- File Sharing & Toast -->
+    <string name="log_file_not_found">Το αρχείο καταγραφής δεν βρέθηκε</string>
+    <string name="share_logs_title">Κοινοποίηση Καταγραφών</string>
+    <string name="log_share_error">Σφάλμα κατά την κοινοποίηση καταγραφής: %1$s</string>
+
+    <!-- Log Messages (UI & Activity) -->
+    <string name="log_crash_detected">🔥 ΕΝΤΟΠΙΣΤΗΚΕ ΣΦΑΛΜΑ ΣΤΗ ΣΥΣΚΕΥΗ:</string>
+    <string name="log_app_started">🏍️ KoveMirror v2.0 ξεκίνησε</string>
+    <string name="log_step_1">1. Συνδεθείτε στο WiFi της μοτοσυκλέτας</string>
+    <string name="log_step_2">2. Η IP του τηλεφώνου θα εμφανιστεί παραπάνω</string>
+    <string name="log_step_3">3. Πατήστε το κουμπί \'Έναρξη\'</string>
+    <string name="log_step_4">4. Οι καταγραφές θα εμφανιστούν μόλις συνδεθεί το TFT</string>
+    <string name="log_wifi_not_connected">⚠️ Δεν υπάρχει σύνδεση WiFi — συνδεθείτε στο hotspot της μοτοσυκλέτας</string>
+    <string name="log_phone_ip">📡 IP Τηλεφώνου: %1$s</string>
+    <string name="log_gateway">🏍️ Πύλη          : %1$s</string>
+    <string name="log_target_resolution">🖥️ Ανάλυση στόχου TFT: %1$d×%2$d | Περιθώριο: %3$dpx</string>
+    <string name="log_request_screen_capture">🔐 Αίτημα άδειας καταγραφής οθόνης...</string>
+    <string name="log_permission_granted">✅ Δόθηκε άδεια — έναρξη MirrorService</string>
+    <string name="log_service_start_failed">❌ Αποτυχία έναρξης υπηρεσίας: %1$s</string>
+    <string name="log_screen_capture_denied">❌ Απορρίφθηκε η άδεια καταγραφής οθόνης</string>
+    <string name="log_stopped_by_user">⏹️ Διακόπηκε από το χρήστη</string>
+    <string name="log_bt_permissions_missing">⚠️ Λείπουν οι άδειες Bluetooth, αδυναμία εμφάνισης συσκευών</string>
+    <string name="log_selected_bt">🔗 Επιλεγμένο Bluetooth: %1$s (%2$s)</string>
+    <string name="log_bt_permissions_granted">✅ Δόθηκαν οι άδειες Bluetooth</string>
+    <string name="log_bt_permissions_denied">⚠️ Απορρίφθηκαν ορισμένες άδειες Bluetooth</string>
+    <string name="log_padding_updated_on_the_fly">🔄 Το περιθώριο ενημερώθηκε δυναμικά: %1$dpx</string>
+
+    <!-- Notification & Service -->
+    <string name="notif_waiting_tft">⏳ Αναμονή για σύνδεση TFT...</string>
+    <string name="notif_tft_connected">🔴 TFT συνδέθηκε — Ενεργή ροή</string>
+    <string name="notif_waiting_tft_port">🟡 Αναμονή για TFT (θύρα %1$d)</string>
+    <string name="notif_action_stop">Διακοπή</string>
+    <string name="notif_channel_name">Προβολή KoveMirror</string>
+    <string name="notif_channel_description">Υπηρεσία προβολής οθόνης Kove TFT</string>
+
+    <!-- MirrorService Logs -->
+    <string name="log_mirroring_starting">▶️ Εκκίνηση προβολής...</string>
+    <string name="log_bt_mac_not_selected">⚠️ Δεν επιλέχθηκε διεύθυνση MAC Bluetooth, η ενεργοποίηση BLE απενεργοποιήθηκε</string>
+    <string name="log_searching_wifi">📡 Αναζήτηση δικτύου WiFi και σύνδεση διεργασίας...</string>
+    <string name="log_wifi_bound_process">🔗 Η διεργασία εφαρμογής συνδέθηκε επιτυχώς στο δίκτυο WiFi (bindProcessToNetwork)</string>
+    <string name="log_wifi_bound_process_legacy">🔗 Η διεργασία εφαρμογής συνδέθηκε επιτυχώς στο δίκτυο WiFi (setProcessDefaultNetwork)</string>
+    <string name="log_wifi_lost">🔌 Χάθηκε η σύνδεση δικτύου WiFi</string>
+    <string name="log_wifi_unbound">🔌 Εκκαθαρίστηκε η σύνδεση δικτύου WiFi</string>
+    <string name="log_tft_video_connected">🚀 Το TFT Βίντεο συνδέθηκε, εκκίνηση κωδικοποιητή...</string>
+    <string name="log_tft_disconnected_waiting">🔌 Το TFT αποσυνδέθηκε — αναμονή για επανασύνδεση...</string>
+    <string name="log_stopping_mirroring">⏹️ Διακοπή προβολής...</string>
+    <string name="log_all_stopped">⏹️ Όλα διακόπηκαν</string>
+
+    <!-- HeartbeatManager Logs -->
+    <string name="log_hb_started">💓 Το νήμα Heartbeat ξεκίνησε (διάστημα 2s)</string>
+    <string name="log_hb_sent">💓 Heartbeat #%1$d → %2$s</string>
+    <string name="log_hb_io_error">❌ Σφάλμα IO Heartbeat: %1$s</string>
+    <string name="log_hb_stopped">💓 Το νήμα Heartbeat διακόπηκε (συνολικά: %1$d)</string>
+
+    <!-- ProjectionEncoder Logs -->
+    <string name="log_encoder_starting">🎬 Εκκίνηση ProjectionEncoder...</string>
+    <string name="log_codec_output_res">   Ανάλυση Εξόδου Codec: %1$d×%2$d</string>
+    <string name="log_codec_ready">✅ MediaCodec έτοιμο</string>
+    <string name="log_vd_creating">🖥️ Δημιουργία VirtualDisplay...</string>
+    <string name="log_vd_ready">✅ VirtualDisplay έτοιμο (λειτουργία %1$s)</string>
+    <string name="log_encoder_init_error">❌ Σφάλμα αρχικοποίησης encoder: %1$s</string>
+    <string name="log_codec_not_init">❌ Το Codec δεν αρχικοποιήθηκε - κλήθηκε το init();</string>
+    <string name="log_encoding_loop_started">🎬 Ο βρόχος κωδικοποίησης H.264 ξεκίνησε</string>
+    <string name="log_eos_received">🎬 Ελήφθη EOS - η κωδικοποίηση ολοκληρώθηκε</string>
+    <string name="log_encoding_error">❌ Σφάλμα κωδικοποίησης: %1$s</string>
+    <string name="log_encoding_loop_finished">🎬 Ο βρόχος κωδικοποίησης ολοκληρώθηκε (%1$d frames)</string>
+    <string name="log_encoder_stopped">🎬 Το ProjectionEncoder διακόπηκε</string>
+    <string name="log_vd_recreating">🔄 Επαναδημιουργία VirtualDisplay... (Νέο Περιθώριο: %1$dpx, Ανάλυση: %2$d×%3$d)</string>
+
+    <!-- TcpServer Logs -->
+    <string name="log_tcp_all_closed">🔌 Όλοι οι διακομιστές θυρών TCP έκλεισαν</string>
+    <string name="log_write_data_error">❌ Σφάλμα writeData (Βίντεο): %1$s</string>
+    <string name="log_video_socket_opened">✅ Το Video ServerSocket άνοιξε → ΘΥΡΑ %1$d</string>
+    <string name="log_tft_video_connected_ip">🔌 Το TFT Βίντεο/Προβολή συνδέθηκε! → %1$s:%2$d</string>
+    <string name="log_video_accept_error">❌ Σφάλμα αποδοχής βίντεο: %1$s</string>
+    <string name="log_video_bind_error">❌ Σφάλμα σύνδεσης Video ServerSocket (Θύρα %1$d): %2$s</string>
+    <string name="log_tft_video_conn_lost">🔌 Η σύνδεση TFT Βίντεο χάθηκε</string>
+    <string name="log_control_socket_opened">✅ Το Control ServerSocket άνοιξε → ΘΥΡΑ %1$d</string>
+    <string name="log_tft_control_connected_ip">🔌 Το TFT Control συνδέθηκε! → %1$s:%2$d</string>
+    <string name="log_control_bind_error">❌ Σφάλμα σύνδεσης Control ServerSocket (Θύρα %1$d): %2$s</string>
+    <string name="log_sending_tuc_query">📤 Αποστολή ερωτήματος TUC GET στο TFT...</string>
+    <string name="log_control_handshake_done">✅ Η χειραψία Control ολοκληρώθηκε με επιτυχία!</string>
+    <string name="log_tft_control_conn_lost">🔌 Η σύνδεση TFT Control χάθηκε</string>
+    <string name="log_binary_handshake_sent">📤 Απεστάλησαν πακέτα χειραψίας binary θύρας Control</string>
+    <string name="log_hb_socket_opened">✅ Το Heartbeat ServerSocket άνοιξε → ΘΥΡΑ %1$d</string>
+    <string name="log_tft_dedicated_hb_connected">🔌 Το TFT Dedicated Heartbeat συνδέθηκε! → %1$s:%2$d</string>
+    <string name="log_dedicated_hb_started">💓 Η αποστολή Dedicated Heartbeat ξεκίνησε (15457, διάστημα 200ms)</string>
+    <string name="log_dedicated_hb_stopped">⚠️ Η αποστολή Dedicated Heartbeat διακόπηκε: %1$s</string>
+
+    <!-- BleManager Logs -->
+    <string name="log_ble_conn_starting">🔵 Εκκίνηση σύνδεσης Bluetooth BLE: %1$s</string>
+    <string name="log_ble_not_supported">❌ Το Bluetooth δεν υποστηρίζεται</string>
+    <string name="log_ble_invalid_mac">❌ Μη έγκυρη διεύθυνση MAC: %1$s</string>
+    <string name="log_ble_disconnected">🔴 Η σύνδεση Bluetooth BLE διακόπηκε</string>
+</resources>
