@@ -101,6 +101,9 @@ class MainActivity : AppCompatActivity() {
     private fun setupButtons() {
         binding.btnStartStop.setOnClickListener { onStartStopClick() }
         binding.btnShareLogs.setOnClickListener { shareLogs() }
+        binding.btnOpenMap.setOnClickListener {
+            startActivity(Intent(this, MapActivity::class.java))
+        }
 
         // Setup Debug Terminal
         DebugLogger.addListener { entry ->

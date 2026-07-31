@@ -161,4 +161,33 @@
     <string name="log_ble_not_supported">❌ Bluetooth no compatible</string>
     <string name="log_ble_invalid_mac">❌ Dirección MAC no válida: %1$s</string>
     <string name="log_ble_disconnected">🔴 Conexión Bluetooth BLE desconectada</string>
+
+    <!-- Mapa y Rutas -->
+    <string name="btn_open_map">🗺️  Mapa &amp; Rutas</string>
+    <string name="map_title">🗺️ Mapa &amp; Seguimiento de Rutas</string>
+    <string name="map_layer_maps">Mapa</string>
+    <string name="map_layer_topo">Topo</string>
+    <string name="map_layer_sat">Satélite</string>
+    <string name="map_layer_osm">🗺️ OSM</string>
+    <string name="map_layer_satellite">🛰️ Satélite</string>
+    <string name="map_btn_import">📂 Importar</string>
+    <string name="map_btn_routes">📋 Rutas</string>
+    <string name="map_btn_gps">📍 GPS</string>
+    <string name="map_btn_gps_on">📍 GPS ON</string>
+    <string name="map_btn_back">Volver</string>
+    <string name="map_btn_close">Cerrar</string>
+    <string name="map_btn_cancel">Cancelar</string>
+    <string name="map_btn_apply">Aplicar</string>
+    <string name="map_loaded_routes">Rutas Cargadas</string>
+    <string name="map_route_style_title">Estilo de Ruta</string>
+    <string name="map_route_color">Color:</string>
+    <string name="map_route_width">Grosor:</string>
+    <string name="map_route_preview">Vista previa:</string>
+    <string name="map_route_toggle_visibility">Cambiar Visibilidad</string>
+    <string name="map_route_delete">Eliminar Ruta</string>
+    <string name="map_import_success">✅ %1$d ruta(s) importada(s)</string>
+    <string name="map_import_no_routes">⚠️ No se encontraron rutas en el archivo</string>
+    <string name="map_import_error">❌ Error de importación: %1$s</string>
+    <string name="map_gps_permission_denied">⚠️ Permiso de ubicación denegado</string>
+    <string name="map_waiting_gps">📍 Esperando señal GPS…</string>
 </resources>

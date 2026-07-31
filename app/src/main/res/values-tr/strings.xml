@@ -161,4 +161,33 @@
     <string name="log_ble_not_supported">❌ Bluetooth desteklenmiyor</string>
     <string name="log_ble_invalid_mac">❌ Geçersiz MAC adresi: %1$s</string>
     <string name="log_ble_disconnected">🔴 Bluetooth BLE bağlantısı kesildi</string>
+
+    <!-- Harita & Rota Özelliği -->
+    <string name="btn_open_map">🗺️  Harita &amp; Rota</string>
+    <string name="map_title">🗺️ Harita &amp; Rota Takibi</string>
+    <string name="map_layer_maps">Harita</string>
+    <string name="map_layer_topo">Topo</string>
+    <string name="map_layer_sat">Uydu</string>
+    <string name="map_layer_osm">🗺️ OSM</string>
+    <string name="map_layer_satellite">🛰️ Uydu</string>
+    <string name="map_btn_import">📂 İçe Aktar</string>
+    <string name="map_btn_routes">📋 Rotalar</string>
+    <string name="map_btn_gps">📍 GPS</string>
+    <string name="map_btn_gps_on">📍 GPS AÇIK</string>
+    <string name="map_btn_back">Geri</string>
+    <string name="map_btn_close">Kapat</string>
+    <string name="map_btn_cancel">İptal</string>
+    <string name="map_btn_apply">Uygula</string>
+    <string name="map_loaded_routes">Yüklü Rotalar</string>
+    <string name="map_route_style_title">Rota Stili</string>
+    <string name="map_route_color">Renk:</string>
+    <string name="map_route_width">Kalınlık:</string>
+    <string name="map_route_preview">Önizleme:</string>
+    <string name="map_route_toggle_visibility">Görünürlüğü Değiştir</string>
+    <string name="map_route_delete">Rotayı Sil</string>
+    <string name="map_import_success">✅ %1$d rota içe aktarıldı</string>
+    <string name="map_import_no_routes">⚠️ Dosyada rota bulunamadı</string>
+    <string name="map_import_error">❌ İçe aktarma hatası: %1$s</string>
+    <string name="map_gps_permission_denied">⚠️ Konum izni reddedildi</string>
+    <string name="map_waiting_gps">📍 GPS sinyali bekleniyor…</string>
 </resources>

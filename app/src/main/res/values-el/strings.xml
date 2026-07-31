@@ -161,4 +161,33 @@
     <string name="log_ble_not_supported">❌ Το Bluetooth δεν υποστηρίζεται</string>
     <string name="log_ble_invalid_mac">❌ Μη έγκυρη διεύθυνση MAC: %1$s</string>
     <string name="log_ble_disconnected">🔴 Η σύνδεση Bluetooth BLE διακόπηκε</string>
+
+    <!-- Χάρτης & Διαδρομές -->
+    <string name="btn_open_map">🗺️  Χάρτης &amp; Διαδρομή</string>
+    <string name="map_title">🗺️ Χάρτης &amp; Παρακολούθηση Διαδρομών</string>
+    <string name="map_layer_maps">Χάρτης</string>
+    <string name="map_layer_topo">Topo</string>
+    <string name="map_layer_sat">Δορυφόρος</string>
+    <string name="map_layer_osm">🗺️ OSM</string>
+    <string name="map_layer_satellite">🛰️ Δορυφόρος</string>
+    <string name="map_btn_import">📂 Εισαγωγή</string>
+    <string name="map_btn_routes">📋 Διαδρομές</string>
+    <string name="map_btn_gps">📍 GPS</string>
+    <string name="map_btn_gps_on">📍 GPS ON</string>
+    <string name="map_btn_back">Πίσω</string>
+    <string name="map_btn_close">Κλείσιμο</string>
+    <string name="map_btn_cancel">Ακύρωση</string>
+    <string name="map_btn_apply">Εφαρμογή</string>
+    <string name="map_loaded_routes">Φορτωμένες Διαδρομές</string>
+    <string name="map_route_style_title">Στυλ Διαδρομής</string>
+    <string name="map_route_color">Χρώμα:</string>
+    <string name="map_route_width">Πάχος:</string>
+    <string name="map_route_preview">Προεπισκόπηση:</string>
+    <string name="map_route_toggle_visibility">Εναλλαγή Ορατότητας</string>
+    <string name="map_route_delete">Διαγραφή Διαδρομής</string>
+    <string name="map_import_success">✅ Εισαγωγή %1$d διαδρομής(-ών)</string>
+    <string name="map_import_no_routes">⚠️ Δεν βρέθηκαν διαδρομές στο αρχείο</string>
+    <string name="map_import_error">❌ Σφάλμα εισαγωγής: %1$s</string>
+    <string name="map_gps_permission_denied">⚠️ Η άδεια τοποθεσίας απορρίφθηκε</string>
+    <string name="map_waiting_gps">📍 Αναμονή για σήμα GPS…</string>
 </resources>

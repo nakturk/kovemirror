@@ -1,0 +1,71 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:orientation="horizontal"
+    android:gravity="center_vertical"
+    android:background="#1A1A2E"
+    android:padding="12dp"
+    android:layout_marginBottom="2dp">
+
+    <!-- Color indicator circle -->
+    <View
+        android:id="@+id/viewRouteColor"
+        android:layout_width="16dp"
+        android:layout_height="16dp"
+        android:background="#FF1744" />
+
+    <!-- Route name -->
+    <TextView
+        android:id="@+id/tvRouteName"
+        android:layout_width="0dp"
+        android:layout_height="wrap_content"
+        android:layout_weight="1"
+        android:textColor="#FFFFFF"
+        android:textSize="14sp"
+        android:ellipsize="end"
+        android:maxLines="1"
+        android:layout_marginStart="10dp"
+        android:layout_marginEnd="8dp"
+        android:text="Route Name" />
+
+    <!-- Point count -->
+    <TextView
+        android:id="@+id/tvRoutePoints"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:textColor="#888888"
+        android:textSize="11sp"
+        android:layout_marginEnd="8dp"
+        android:text="0 pts" />
+
+    <!-- Style edit button -->
+    <ImageView
+        android:id="@+id/btnRouteStyle"
+        android:layout_width="32dp"
+        android:layout_height="32dp"
+        android:padding="4dp"
+        android:src="@android:drawable/ic_menu_edit"
+        android:contentDescription="@string/map_route_style_title"
+        android:layout_marginEnd="4dp" />
+
+    <!-- Visibility toggle -->
+    <ImageView
+        android:id="@+id/btnRouteVisibility"
+        android:layout_width="32dp"
+        android:layout_height="32dp"
+        android:padding="4dp"
+        android:src="@android:drawable/ic_menu_view"
+        android:contentDescription="@string/map_route_toggle_visibility"
+        android:layout_marginEnd="4dp" />
+
+    <!-- Delete button -->
+    <ImageView
+        android:id="@+id/btnRouteDelete"
+        android:layout_width="32dp"
+        android:layout_height="32dp"
+        android:padding="4dp"
+        android:src="@android:drawable/ic_menu_delete"
+        android:contentDescription="@string/map_route_delete" />
+
+</LinearLayout>

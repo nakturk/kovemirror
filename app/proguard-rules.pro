@@ -7,3 +7,7 @@
 
 # Keep domain models if any (for JSON serialization etc, not strictly needed right now)
 #-keep class com.kove.mirror.model.** { *; }
+
+# osmdroid
+-keep class org.osmdroid.** { *; }
+-dontwarn org.osmdroid.**

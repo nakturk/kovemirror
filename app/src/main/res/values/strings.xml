@@ -161,4 +161,33 @@
     <string name="log_ble_not_supported">❌ Bluetooth not supported</string>
     <string name="log_ble_invalid_mac">❌ Invalid MAC address: %1$s</string>
     <string name="log_ble_disconnected">🔴 Bluetooth BLE connection disconnected</string>
+
+    <!-- Map & Route Feature -->
+    <string name="btn_open_map">🗺️  Map &amp; Route</string>
+    <string name="map_title">🗺️ Map &amp; Route Tracking</string>
+    <string name="map_layer_maps">Maps</string>
+    <string name="map_layer_topo">Topo</string>
+    <string name="map_layer_sat">Satellite</string>
+    <string name="map_layer_osm">🗺️ OSM</string>
+    <string name="map_layer_satellite">🛰️ Satellite</string>
+    <string name="map_btn_import">📂 Import</string>
+    <string name="map_btn_routes">📋 Routes</string>
+    <string name="map_btn_gps">📍 GPS</string>
+    <string name="map_btn_gps_on">📍 GPS ON</string>
+    <string name="map_btn_back">Back</string>
+    <string name="map_btn_close">Close</string>
+    <string name="map_btn_cancel">Cancel</string>
+    <string name="map_btn_apply">Apply</string>
+    <string name="map_loaded_routes">Loaded Routes</string>
+    <string name="map_route_style_title">Route Style</string>
+    <string name="map_route_color">Color:</string>
+    <string name="map_route_width">Width:</string>
+    <string name="map_route_preview">Preview:</string>
+    <string name="map_route_toggle_visibility">Toggle Visibility</string>
+    <string name="map_route_delete">Delete Route</string>
+    <string name="map_import_success">✅ Imported %1$d route(s)</string>
+    <string name="map_import_no_routes">⚠️ No routes found in file</string>
+    <string name="map_import_error">❌ Import error: %1$s</string>
+    <string name="map_gps_permission_denied">⚠️ Location permission denied</string>
+    <string name="map_waiting_gps">📍 Waiting for GPS fix…</string>
 </resources>

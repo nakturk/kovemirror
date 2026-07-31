@@ -1,0 +1,243 @@
+<?xml version="1.0" encoding="utf-8"?>
+<FrameLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:background="#0D0D0D">
+
+    <!-- Full-screen OSM Map -->
+    <org.osmdroid.views.MapView
+        android:id="@+id/mapView"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent" />
+
+    <!-- Top bar: back + title + layer buttons -->
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="horizontal"
+        android:gravity="center_vertical"
+        android:background="#CC0D0D0D"
+        android:padding="6dp"
+        android:elevation="6dp">
+
+        <!-- Back button -->
+        <ImageView
+            android:id="@+id/btnBack"
+            android:layout_width="32dp"
+            android:layout_height="32dp"
+            android:padding="4dp"
+            android:src="@android:drawable/ic_menu_revert"
+            android:contentDescription="@string/map_btn_back"
+            android:background="?android:attr/selectableItemBackgroundBorderless" />
+
+        <TextView
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_weight="1"
+            android:text="@string/map_title"
+            android:textColor="#FFFFFF"
+            android:textSize="14sp"
+            android:textStyle="bold"
+            android:layout_marginStart="6dp" />
+
+        <!-- Layer: Maps -->
+        <Button
+            android:id="@+id/btnLayerMaps"
+            android:layout_width="wrap_content"
+            android:layout_height="30dp"
+            android:text="@string/map_layer_maps"
+            android:textSize="10sp"
+            android:textColor="#FFFFFF"
+            android:background="#2979FF"
+            android:paddingStart="8dp"
+            android:paddingEnd="8dp"
+            android:minWidth="0dp"
+            android:minHeight="0dp"
+            android:layout_marginEnd="4dp" />
+
+        <!-- Layer: Topo -->
+        <Button
+            android:id="@+id/btnLayerTopo"
+            android:layout_width="wrap_content"
+            android:layout_height="30dp"
+            android:text="@string/map_layer_topo"
+            android:textSize="10sp"
+            android:textColor="#FFFFFF"
+            android:background="#555555"
+            android:paddingStart="8dp"
+            android:paddingEnd="8dp"
+            android:minWidth="0dp"
+            android:minHeight="0dp"
+            android:layout_marginEnd="4dp" />
+
+        <!-- Layer: Satellite -->
+        <Button
+            android:id="@+id/btnLayerSatellite"
+            android:layout_width="wrap_content"
+            android:layout_height="30dp"
+            android:text="@string/map_layer_sat"
+            android:textSize="10sp"
+            android:textColor="#FFFFFF"
+            android:background="#555555"
+            android:paddingStart="8dp"
+            android:paddingEnd="8dp"
+            android:minWidth="0dp"
+            android:minHeight="0dp" />
+    </LinearLayout>
+
+    <!-- Right side: Zoom + My Location buttons -->
+    <LinearLayout
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_gravity="end|center_vertical"
+        android:orientation="vertical"
+        android:layout_marginEnd="10dp">
+
+        <!-- Zoom In -->
+        <Button
+            android:id="@+id/btnZoomIn"
+            android:layout_width="44dp"
+            android:layout_height="44dp"
+            android:text="+"
+            android:textSize="22sp"
+            android:textColor="#FFFFFF"
+            android:textStyle="bold"
+            android:background="#CC333333"
+            android:layout_marginBottom="4dp"
+            android:elevation="4dp"
+            android:minWidth="0dp"
+            android:minHeight="0dp"
+            android:padding="0dp" />
+
+        <!-- Zoom Out -->
+        <Button
+            android:id="@+id/btnZoomOut"
+            android:layout_width="44dp"
+            android:layout_height="44dp"
+            android:text="−"
+            android:textSize="22sp"
+            android:textColor="#FFFFFF"
+            android:textStyle="bold"
+            android:background="#CC333333"
+            android:layout_marginBottom="12dp"
+            android:elevation="4dp"
+            android:minWidth="0dp"
+            android:minHeight="0dp"
+            android:padding="0dp" />
+
+        <!-- My Location (center on GPS) -->
+        <Button
+            android:id="@+id/btnMyLocation"
+            android:layout_width="44dp"
+            android:layout_height="44dp"
+            android:text="◎"
+            android:textSize="20sp"
+            android:textColor="#FFFFFF"
+            android:textStyle="bold"
+            android:background="#CC1565C0"
+            android:elevation="4dp"
+            android:minWidth="0dp"
+            android:minHeight="0dp"
+            android:padding="0dp" />
+    </LinearLayout>
+
+    <!-- Bottom-left: import route -->
+    <Button
+        android:id="@+id/btnImportRoute"
+        android:layout_width="wrap_content"
+        android:layout_height="40dp"
+        android:layout_gravity="bottom|start"
+        android:layout_marginStart="10dp"
+        android:layout_marginBottom="12dp"
+        android:text="@string/map_btn_import"
+        android:textSize="11sp"
+        android:textColor="#FFFFFF"
+        android:background="#2E7D32"
+        android:paddingStart="10dp"
+        android:paddingEnd="10dp"
+        android:elevation="4dp" />
+
+    <!-- Bottom-center: route list toggle -->
+    <Button
+        android:id="@+id/btnRouteList"
+        android:layout_width="wrap_content"
+        android:layout_height="40dp"
+        android:layout_gravity="bottom|center_horizontal"
+        android:layout_marginBottom="12dp"
+        android:text="@string/map_btn_routes"
+        android:textSize="11sp"
+        android:textColor="#FFFFFF"
+        android:background="#1565C0"
+        android:paddingStart="10dp"
+        android:paddingEnd="10dp"
+        android:elevation="4dp"
+        android:visibility="gone" />
+
+    <!-- Bottom-right: GPS tracking toggle -->
+    <Button
+        android:id="@+id/btnGpsToggle"
+        android:layout_width="wrap_content"
+        android:layout_height="40dp"
+        android:layout_gravity="bottom|end"
+        android:layout_marginEnd="10dp"
+        android:layout_marginBottom="12dp"
+        android:text="@string/map_btn_gps"
+        android:textSize="11sp"
+        android:textColor="#FFFFFF"
+        android:background="#1565C0"
+        android:paddingStart="10dp"
+        android:paddingEnd="10dp"
+        android:elevation="4dp" />
+
+    <!-- Route list bottom sheet (hidden by default) -->
+    <LinearLayout
+        android:id="@+id/routeListContainer"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_gravity="bottom"
+        android:orientation="vertical"
+        android:background="#E6111122"
+        android:padding="8dp"
+        android:visibility="gone"
+        android:elevation="8dp">
+
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="horizontal"
+            android:gravity="center_vertical"
+            android:layout_marginBottom="4dp">
+
+            <TextView
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_weight="1"
+                android:text="@string/map_loaded_routes"
+                android:textColor="#FFFFFF"
+                android:textSize="14sp"
+                android:textStyle="bold" />
+
+            <ImageView
+                android:id="@+id/btnCloseRouteList"
+                android:layout_width="28dp"
+                android:layout_height="28dp"
+                android:padding="4dp"
+                android:src="@android:drawable/ic_menu_close_clear_cancel"
+                android:contentDescription="@string/map_btn_close"
+                android:background="?android:attr/selectableItemBackgroundBorderless" />
+        </LinearLayout>
+
+        <ScrollView
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:maxHeight="200dp">
+
+            <LinearLayout
+                android:id="@+id/routeListItems"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:orientation="vertical" />
+        </ScrollView>
+    </LinearLayout>
+
+</FrameLayout>
