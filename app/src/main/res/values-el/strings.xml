@@ -190,4 +190,12 @@
     <string name="map_import_error">❌ Σφάλμα εισαγωγής: %1$s</string>
     <string name="map_gps_permission_denied">⚠️ Η άδεια τοποθεσίας απορρίφθηκε</string>
     <string name="map_waiting_gps">📍 Αναμονή για σήμα GPS…</string>
+
+    <!-- Turn-by-Turn Πλοήγηση -->
+    <string name="nav_start_navigation">▶ Έναρξη Πλοήγησης</string>
+    <string name="nav_stop">Διακοπή</string>
+    <string name="nav_destination_selected">📍 Επιλέχθηκε Προορισμός</string>
+    <string name="nav_arrived">🎉 Φτάσατε στον προορισμό σας!</string>
+    <string name="nav_calculating">Υπολογισμός διαδρομής…</string>
+    <string name="nav_rem_format">Απομένουν: %1$.1f km (%2$d min)</string>
 </resources>

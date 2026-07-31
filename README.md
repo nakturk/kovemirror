@@ -8,7 +8,36 @@
 
 KoveMirror, Kove 800 (800X Pro vb.) model motosikletlerin TFT ekranlarına telefonunuzun ekranını yansıtmanızı (Screen Mirroring) sağlayan açık kaynaklı bir Android uygulamasıdır. Orijinal ThinkerRide sistemine alternatif olarak geliştirilmiş olup, tamamen yerel ağ üzerinden bağımsız çalışır. 
 
-Motosikletin navigasyon için TFT ekranında gösterdiği görüntüyü, herhangi bir üçüncü taraf uygulamaya bağımlı kalmadan Google Maps, Yandex Navigasyon gibi kendi istediğiniz uygulamalarla kullanabilmenizi sağlar.
+Motosikletin navigasyon için TFT ekranında gösterdiği görüntüyü, herhangi bir üçüncü taraf uygulamaya bağımlı kalmadan Google Maps, Yandex Navigasyon gibi kendi istediğiniz uygulamalarla kullanabilmenizi sağlar. Ayrıca uygulama içinde yerleşik **Harita, Rota Import (GPX/KML/KMZ) ve Adım Adım Navigasyon** alt özelliği bulunur.
+
+---
+
+## 🗺️ Harita ve Navigasyon Özellikleri
+
+Uygulama içinde "Harita & Rota" butonu ile erişilebilen yerleşik harita modülü şu özellikleri sunar:
+
+1. **3 Harita Katmanı Seçeneği**:
+   - **Harita (OSM)**: OpenStreetMap Mapnik standart vektör haritası.
+   - **Topo**: OpenTopoMap arazi ve topografya haritası.
+   - **Uydu (Sat)**: ESRI World Imagery yüksek çözünürlüklü uydu görüntüsü katmanı.
+
+2. **KML / KMZ / GPX Rota Import & Takip**:
+   - GPX, KML ve KMZ formatındaki sürüş rotalarını harita üzerine yükleme.
+   - 10 farklı renk seçeneği ve 2px–15px arası çizgi kalınlığı ile özelleştirme.
+   - Birden fazla rotayı aynı anda yükleme, görünürlüklerini açıp kapama veya silme.
+   - Rota yüklendiğinde otomatik odaklanma ve ölçekleme (Zoom to Fit).
+
+3. **📍 Haritada Uzun Basarak Navigasyon (OSRM Routing)**:
+   - Harita üzerinde herhangi bir yere **uzun basarak (long press)** hedef pini bırakma.
+   - Açılan panelde mesafe ve koordinatları görüntüleyerek **"Navigasyonu Başlat"** seçeneği.
+   - Açık kaynaklı OSRM motoru ile anında en hızlı karayolu rotası çizimi.
+   - Ekranın üstünde canlı **Turn Banner (Dönüş Bilgi Kartı)**: Dönüş yönü ikonu (sağ/sol/U dönüşü), sıradaki dönüşe kalan mesafe ve toplam kalan km/süre takibi.
+
+4. **GPS Takip & Harita Kontrolleri**:
+   - Yüzen **`+` / `−`** butonları ile kolay yakınlaştırma/uzaklaştırma.
+   - **`◎` (Mevcut Konum)** butonu ile haritayı anında kullanıcının bulunduğu GPS konumuna merkezleme.
+
+---
 
 ## Protokol Yapısı ve İletişim
 
@@ -70,7 +99,36 @@ Projeyi Android Studio'da açıp `Build -> Make Project` diyerek ya da komut sat
 
 KoveMirror is an open-source Android application that enables screen mirroring from your smartphone directly to the TFT dashboard of Kove 800 motorcycles (like the 800X Pro). Built as an alternative to the official ThinkerRide system, it operates entirely locally over the motorcycle's network.
 
-This allows you to project any app of your choice (such as Google Maps, Waze, or Spotify) onto your motorcycle’s screen without being tied to restrictive third-party navigation apps.
+This allows you to project any app of your choice (such as Google Maps, Waze, or Spotify) onto your motorcycle’s screen without being tied to restrictive third-party navigation apps. It also includes an offline-friendly built-in **Map, Route Import (GPX/KML/KMZ), and Turn-by-Turn Navigation** module.
+
+---
+
+## 🗺️ Map & Navigation Features
+
+Accessible via the "Map & Route" button on the main screen:
+
+1. **3 Map Layer Options**:
+   - **Maps (OSM)**: OpenStreetMap Mapnik standard vector map.
+   - **Topo**: OpenTopoMap terrain and topographic contours.
+   - **Satellite (Sat)**: ESRI World Imagery high-resolution satellite imagery.
+
+2. **KML / KMZ / GPX Route Import & Tracking**:
+   - Import riding routes in GPX, KML, and KMZ formats.
+   - Customize route lines with 10 preset colors and stroke widths from 2px to 15px.
+   - Manage multiple imported routes simultaneously (toggle visibility, change styles, or delete).
+   - Automatic zoom-to-fit bounding box upon importing routes.
+
+3. **📍 Long-Press Destination Selection & Navigation (OSRM Engine)**:
+   - **Long press** anywhere on the map to drop a destination pin.
+   - Preview destination coordinates, approximate distance, and tap **"Start Navigation"**.
+   - Generates fastest driving routes instantly via the open-source OSRM engine.
+   - **Live Top Turn Banner**: Displays upcoming turn direction arrows (left/right/uturn), distance to next maneuver, and remaining trip distance/ETA.
+
+4. **GPS Tracking & On-Screen Map Controls**:
+   - Floating **`+` / `−`** zoom controls.
+   - **`◎` (My Location)** button to instantly center and zoom to your physical GPS position.
+
+---
 
 ## Protocol Structure and Communication
 

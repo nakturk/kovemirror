@@ -12,6 +12,7 @@
 
     <!-- Top bar: back + title + layer buttons -->
     <LinearLayout
+        android:id="@+id/topBar"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:orientation="horizontal"
@@ -83,6 +84,80 @@
             android:paddingEnd="8dp"
             android:minWidth="0dp"
             android:minHeight="0dp" />
+    </LinearLayout>
+
+    <!-- Top Turn Banner (Active during Navigation) -->
+    <LinearLayout
+        android:id="@+id/navBanner"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="vertical"
+        android:background="#E60F172A"
+        android:padding="12dp"
+        android:visibility="gone"
+        android:elevation="10dp">
+
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="horizontal"
+            android:gravity="center_vertical">
+
+            <TextView
+                android:id="@+id/tvTurnIcon"
+                android:layout_width="40dp"
+                android:layout_height="40dp"
+                android:text="⬆️"
+                android:textSize="28sp"
+                android:gravity="center" />
+
+            <LinearLayout
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_weight="1"
+                android:orientation="vertical"
+                android:layout_marginStart="8dp">
+
+                <TextView
+                    android:id="@+id/tvTurnInstruction"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:text="Calculating route..."
+                    android:textColor="#FFFFFF"
+                    android:textSize="15sp"
+                    android:textStyle="bold" />
+
+                <TextView
+                    android:id="@+id/tvTurnDistance"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:text="in 200 m"
+                    android:textColor="#38BDF8"
+                    android:textSize="13sp" />
+            </LinearLayout>
+
+            <Button
+                android:id="@+id/btnStopNav"
+                android:layout_width="wrap_content"
+                android:layout_height="36dp"
+                android:text="@string/nav_stop"
+                android:textSize="11sp"
+                android:textColor="#FFFFFF"
+                android:background="#B71C1C"
+                android:paddingStart="10dp"
+                android:paddingEnd="10dp"
+                android:minWidth="0dp"
+                android:minHeight="0dp" />
+        </LinearLayout>
+
+        <TextView
+            android:id="@+id/tvTotalDistanceEta"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="Remaining: -- km"
+            android:textColor="#94A3B8"
+            android:textSize="12sp"
+            android:layout_marginTop="4dp" />
     </LinearLayout>
 
     <!-- Right side: Zoom + My Location buttons -->
@@ -188,6 +263,75 @@
         android:paddingStart="10dp"
         android:paddingEnd="10dp"
         android:elevation="4dp" />
+
+    <!-- Destination Popup Bottom Card (When long-pressed on map) -->
+    <LinearLayout
+        android:id="@+id/destCard"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_gravity="bottom"
+        android:orientation="vertical"
+        android:background="#F01E293B"
+        android:padding="16dp"
+        android:visibility="gone"
+        android:elevation="10dp">
+
+        <TextView
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="@string/nav_destination_selected"
+            android:textColor="#38BDF8"
+            android:textSize="16sp"
+            android:textStyle="bold" />
+
+        <TextView
+            android:id="@+id/tvDestCoords"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:textColor="#E2E8F0"
+            android:textSize="13sp"
+            android:layout_marginTop="2dp"
+            android:text="39.1234, 35.5678" />
+
+        <TextView
+            android:id="@+id/tvDestDist"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:textColor="#94A3B8"
+            android:textSize="12sp"
+            android:layout_marginTop="2dp"
+            android:text="Approx: 12.4 km" />
+
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="horizontal"
+            android:layout_marginTop="12dp">
+
+            <Button
+                android:id="@+id/btnCancelDest"
+                android:layout_width="0dp"
+                android:layout_height="40dp"
+                android:layout_weight="1"
+                android:text="@string/map_btn_cancel"
+                android:textSize="12sp"
+                android:textColor="#FFFFFF"
+                android:background="#475569"
+                android:layout_marginEnd="6dp" />
+
+            <Button
+                android:id="@+id/btnStartNav"
+                android:layout_width="0dp"
+                android:layout_height="40dp"
+                android:layout_weight="2"
+                android:text="@string/nav_start_navigation"
+                android:textSize="13sp"
+                android:textColor="#FFFFFF"
+                android:textStyle="bold"
+                android:background="#2563EB"
+                android:layout_marginStart="6dp" />
+        </LinearLayout>
+    </LinearLayout>
 
     <!-- Route list bottom sheet (hidden by default) -->
     <LinearLayout

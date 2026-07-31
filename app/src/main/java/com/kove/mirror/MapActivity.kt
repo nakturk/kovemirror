@@ -21,15 +21,19 @@ import androidx.appcompat.app.AppCompatActivity
 import androidx.core.app.ActivityCompat
 import androidx.core.content.ContextCompat
 import org.osmdroid.config.Configuration
+import org.osmdroid.events.MapEventsReceiver
 import org.osmdroid.tileprovider.tilesource.OnlineTileSourceBase
 import org.osmdroid.tileprovider.tilesource.TileSourceFactory
 import org.osmdroid.tileprovider.tilesource.XYTileSource
 import org.osmdroid.util.GeoPoint
 import org.osmdroid.util.MapTileIndex
 import org.osmdroid.views.MapView
+import org.osmdroid.views.overlay.MapEventsOverlay
+import org.osmdroid.views.overlay.Marker
 import org.osmdroid.views.overlay.Polyline
 import org.osmdroid.views.overlay.mylocation.GpsMyLocationProvider
 import org.osmdroid.views.overlay.mylocation.MyLocationNewOverlay
+import java.util.Locale
 
 class MapActivity : AppCompatActivity() {
 
@@ -46,6 +50,13 @@ class MapActivity : AppCompatActivity() {
     private var locationOverlay: MyLocationNewOverlay? = null
     private var isGpsEnabled = false
     private var currentLayer = LAYER_MAPS
+
+    // ─── Long Press Navigation ──────────────────────────────────
+    private var selectedDestination: GeoPoint? = null
+    private var destinationMarker: Marker? = null
+    private var navigationPolyline: Polyline? = null
+    private var isNavigating = false
+    private var currentNavigationRoute: NavigationHelper.NavigationRoute? = null
 
     // ─── Route Management ───────────────────────────────────────
 
@@ -106,6 +117,7 @@ class MapActivity : AppCompatActivity() {
         mapView = findViewById(R.id.mapView)
         setupMap()
         setupButtons()
+        setupMapEvents()
     }
 
     // ─── Map Setup ──────────────────────────────────────────────
@@ -129,7 +141,193 @@ class MapActivity : AppCompatActivity() {
         controller.setCenter(GeoPoint(savedLat, savedLon))
     }
 
-    // ─── Buttons ────────────────────────────────────────────────
+    // ─── Map Long Press Events ───────────────────────────────────
+
+    private fun setupMapEvents() {
+        val receiver = object : MapEventsReceiver {
+            override fun singleTapConfirmedHelper(p: GeoPoint?): Boolean {
+                return false
+            }
+
+            override fun longPressHelper(p: GeoPoint?): Boolean {
+                if (p != null && !isNavigating) {
+                    onMapLongPressed(p)
+                    return true
+                }
+                return false
+            }
+        }
+        val overlay = MapEventsOverlay(receiver)
+        mapView.overlays.add(0, overlay)
+    }
+
+    private fun onMapLongPressed(point: GeoPoint) {
+        selectedDestination = point
+
+        // Place or move marker
+        if (destinationMarker == null) {
+            destinationMarker = Marker(mapView).apply {
+                title = getString(R.string.nav_destination_selected)
+                setAnchor(Marker.ANCHOR_CENTER, Marker.ANCHOR_BOTTOM)
+            }
+            mapView.overlays.add(destinationMarker)
+        }
+        destinationMarker?.position = point
+        mapView.invalidate()
+
+        // Show Destination Card
+        val destCard = findViewById<LinearLayout>(R.id.destCard)
+        val tvCoords = findViewById<TextView>(R.id.tvDestCoords)
+        val tvDist = findViewById<TextView>(R.id.tvDestDist)
+
+        tvCoords.text = String.format(Locale.US, "%.5f, %.5f", point.latitude, point.longitude)
+
+        // Calculate approximate air distance from current location
+        val myLoc = locationOverlay?.myLocation
+        if (myLoc != null) {
+            val distMeters = myLoc.distanceToAsDouble(point)
+            val distKm = distMeters / 1000.0
+            tvDist.text = String.format(Locale.getDefault(), "Approx: %.1f km", distKm)
+        } else {
+            tvDist.text = "GPS location unknown"
+        }
+
+        destCard.visibility = View.VISIBLE
+    }
+
+    private fun cancelDestinationSelection() {
+        selectedDestination = null
+        destinationMarker?.let { mapView.overlays.remove(it) }
+        destinationMarker = null
+        findViewById<LinearLayout>(R.id.destCard).visibility = View.GONE
+        mapView.invalidate()
+    }
+
+    // ─── Start / Stop Navigation ────────────────────────────────
+
+    private fun startNavigation() {
+        val dest = selectedDestination ?: return
+        if (!hasLocationPermission()) {
+            requestLocationPermission()
+            return
+        }
+
+        if (!isGpsEnabled) {
+            toggleGps()
+        }
+
+        val myLoc = locationOverlay?.myLocation
+        if (myLoc == null) {
+            Toast.makeText(this, getString(R.string.map_waiting_gps), Toast.LENGTH_SHORT).show()
+            return
+        }
+
+        // Hide dest card, show turn banner
+        findViewById<LinearLayout>(R.id.destCard).visibility = View.GONE
+        val navBanner = findViewById<LinearLayout>(R.id.navBanner)
+        val tvInstruction = findViewById<TextView>(R.id.tvTurnInstruction)
+        val tvTurnDist = findViewById<TextView>(R.id.tvTurnDistance)
+        val tvTotalEta = findViewById<TextView>(R.id.tvTotalDistanceEta)
+
+        navBanner.visibility = View.VISIBLE
+        findViewById<View>(R.id.topBar).visibility = View.GONE
+        tvInstruction.text = getString(R.string.nav_calculating)
+        tvTurnDist.text = ""
+        tvTotalEta.text = ""
+
+        NavigationHelper.fetchRoute(
+            start = myLoc,
+            destination = dest,
+            onSuccess = { route ->
+                runOnUiThread {
+                    currentNavigationRoute = route
+                    isNavigating = true
+
+                    // Draw navigation polyline
+                    navigationPolyline?.let { mapView.overlays.remove(it) }
+                    navigationPolyline = Polyline().apply {
+                        setPoints(route.geometryPoints)
+                        outlinePaint.color = Color.parseColor("#2563EB") // Royal Blue
+                        outlinePaint.strokeWidth = 10f * resources.displayMetrics.density
+                        outlinePaint.isAntiAlias = true
+                    }
+                    mapView.overlays.add(navigationPolyline)
+                    mapView.invalidate()
+
+                    // Enable auto-follow GPS
+                    locationOverlay?.enableFollowLocation()
+                    mapView.controller.setZoom(16.0)
+
+                    updateNavigationUi(myLoc)
+                }
+            },
+            onError = { error ->
+                runOnUiThread {
+                    Toast.makeText(this, "Navigation error: $error", Toast.LENGTH_LONG).show()
+                    stopNavigation()
+                }
+            }
+        )
+    }
+
+    private fun stopNavigation() {
+        isNavigating = false
+        currentNavigationRoute = null
+        selectedDestination = null
+
+        navigationPolyline?.let { mapView.overlays.remove(it) }
+        navigationPolyline = null
+
+        destinationMarker?.let { mapView.overlays.remove(it) }
+        destinationMarker = null
+
+        findViewById<LinearLayout>(R.id.navBanner).visibility = View.GONE
+        findViewById<View>(R.id.topBar).visibility = View.VISIBLE
+        findViewById<LinearLayout>(R.id.destCard).visibility = View.GONE
+
+        mapView.invalidate()
+    }
+
+    private fun updateNavigationUi(currentLocation: GeoPoint) {
+        val route = currentNavigationRoute ?: return
+        val dest = selectedDestination ?: return
+
+        val remainingDistMeters = currentLocation.distanceToAsDouble(dest)
+        if (remainingDistMeters < 30.0) {
+            Toast.makeText(this, getString(R.string.nav_arrived), Toast.LENGTH_LONG).show()
+            stopNavigation()
+            return
+        }
+
+        // Find nearest step in route
+        val nextStep = route.steps.firstOrNull { step ->
+            step.location.latitude != 0.0 && currentLocation.distanceToAsDouble(step.location) < 300.0
+        } ?: route.steps.firstOrNull()
+
+        val tvIcon = findViewById<TextView>(R.id.tvTurnIcon)
+        val tvInstruction = findViewById<TextView>(R.id.tvTurnInstruction)
+        val tvTurnDist = findViewById<TextView>(R.id.tvTurnDistance)
+        val tvTotalEta = findViewById<TextView>(R.id.tvTotalDistanceEta)
+
+        if (nextStep != null) {
+            val distToStep = currentLocation.distanceToAsDouble(nextStep.location)
+            tvInstruction.text = nextStep.instruction
+            tvTurnDist.text = if (distToStep < 1000) "${distToStep.toInt()} m" else String.format(Locale.getDefault(), "%.1f km", distToStep / 1000.0)
+
+            tvIcon.text = when {
+                nextStep.modifier.contains("left") -> "⬅️"
+                nextStep.modifier.contains("right") -> "➡️"
+                nextStep.modifier.contains("uturn") -> "↩️"
+                else -> "⬆️"
+            }
+        }
+
+        val remKm = remainingDistMeters / 1000.0
+        val remMin = (route.totalDurationSeconds / 60.0).toInt()
+        tvTotalEta.text = getString(R.string.nav_rem_format, remKm, remMin)
+    }
+
+    // ─── Buttons Setup ──────────────────────────────────────────
 
     private fun setupButtons() {
         // Back button
@@ -154,6 +352,13 @@ class MapActivity : AppCompatActivity() {
 
         // My location button (center on GPS)
         findViewById<Button>(R.id.btnMyLocation).setOnClickListener { centerOnMyLocation() }
+
+        // Destination Card Buttons
+        findViewById<Button>(R.id.btnCancelDest).setOnClickListener { cancelDestinationSelection() }
+        findViewById<Button>(R.id.btnStartNav).setOnClickListener { startNavigation() }
+
+        // Turn Banner Stop Nav Button
+        findViewById<Button>(R.id.btnStopNav).setOnClickListener { stopNavigation() }
 
         // Import route
         findViewById<Button>(R.id.btnImportRoute).setOnClickListener { openFilePicker() }
@@ -205,18 +410,15 @@ class MapActivity : AppCompatActivity() {
             return
         }
 
-        // If GPS overlay is not enabled, enable it first
         if (!isGpsEnabled) {
             toggleGps()
         }
 
-        // Center on current location
         locationOverlay?.myLocation?.let { loc ->
             mapView.controller.animateTo(loc)
             mapView.controller.setZoom(16.0)
         } ?: run {
             Toast.makeText(this, getString(R.string.map_waiting_gps), Toast.LENGTH_SHORT).show()
-            // Enable follow mode so it auto-centers when fix is obtained
             locationOverlay?.enableFollowLocation()
         }
     }
@@ -244,7 +446,16 @@ class MapActivity : AppCompatActivity() {
             provider.locationUpdateMinTime = 2000
             provider.locationUpdateMinDistance = 5f
 
-            locationOverlay = MyLocationNewOverlay(provider, mapView).apply {
+            locationOverlay = object : MyLocationNewOverlay(provider, mapView) {
+                override fun onLocationChanged(location: android.location.Location?, source: org.osmdroid.views.overlay.mylocation.IMyLocationProvider?) {
+                    super.onLocationChanged(location, source)
+                    if (isNavigating && location != null) {
+                        runOnUiThread {
+                            updateNavigationUi(GeoPoint(location.latitude, location.longitude))
+                        }
+                    }
+                }
+            }.apply {
                 enableMyLocation()
                 enableFollowLocation()
             }
@@ -354,13 +565,11 @@ class MapActivity : AppCompatActivity() {
 
             mapView.invalidate()
 
-            // Zoom to fit all imported routes
             if (parsedRoutes.isNotEmpty()) {
                 val allPoints = parsedRoutes.flatMap { it.points }
                 zoomToFitPoints(allPoints)
             }
 
-            // Show route list button
             val btnRouteList = findViewById<Button>(R.id.btnRouteList)
             btnRouteList.visibility = if (loadedRoutes.isNotEmpty()) View.VISIBLE else View.GONE
 
@@ -425,7 +634,6 @@ class MapActivity : AppCompatActivity() {
         for ((index, route) in loadedRoutes.withIndex()) {
             val itemView = LayoutInflater.from(this).inflate(R.layout.item_route, container, false)
 
-            // Color indicator
             val colorView = itemView.findViewById<View>(R.id.viewRouteColor)
             val colorDrawable = GradientDrawable().apply {
                 shape = GradientDrawable.OVAL
@@ -433,11 +641,9 @@ class MapActivity : AppCompatActivity() {
             }
             colorView.background = colorDrawable
 
-            // Name and points
             itemView.findViewById<TextView>(R.id.tvRouteName).text = route.name
             itemView.findViewById<TextView>(R.id.tvRoutePoints).text = "${route.points.size} pts"
 
-            // Style button
             itemView.findViewById<ImageView>(R.id.btnRouteStyle).setOnClickListener {
                 val dialog = RouteStyleDialog(this, route.color, route.width) { newColor, newWidth ->
                     route.color = newColor
@@ -452,7 +658,6 @@ class MapActivity : AppCompatActivity() {
                 dialog.show()
             }
 
-            // Visibility toggle
             val btnVisibility = itemView.findViewById<ImageView>(R.id.btnRouteVisibility)
             btnVisibility.alpha = if (route.visible) 1.0f else 0.3f
             btnVisibility.setOnClickListener {
@@ -466,7 +671,6 @@ class MapActivity : AppCompatActivity() {
                 refreshRouteList()
             }
 
-            // Delete button
             itemView.findViewById<ImageView>(R.id.btnRouteDelete).setOnClickListener {
                 route.polyline?.let { mapView.overlays.remove(it) }
                 loadedRoutes.removeAt(index)
@@ -494,7 +698,6 @@ class MapActivity : AppCompatActivity() {
         super.onPause()
         mapView.onPause()
 
-        // Save map position
         val center = mapView.mapCenter
         getSharedPreferences("kove_map_prefs", MODE_PRIVATE).edit().apply {
             putFloat("map_lat", center.latitude.toFloat())

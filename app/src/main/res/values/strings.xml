@@ -190,4 +190,12 @@
     <string name="map_import_error">❌ Import error: %1$s</string>
     <string name="map_gps_permission_denied">⚠️ Location permission denied</string>
     <string name="map_waiting_gps">📍 Waiting for GPS fix…</string>
+
+    <!-- Turn-by-Turn Navigation -->
+    <string name="nav_start_navigation">▶ Start Navigation</string>
+    <string name="nav_stop">Stop</string>
+    <string name="nav_destination_selected">📍 Destination Selected</string>
+    <string name="nav_arrived">🎉 Arrived at destination!</string>
+    <string name="nav_calculating">Calculating route…</string>
+    <string name="nav_rem_format">Remaining: %1$.1f km (%2$d min)</string>
 </resources>

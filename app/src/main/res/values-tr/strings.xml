@@ -190,4 +190,12 @@
     <string name="map_import_error">❌ İçe aktarma hatası: %1$s</string>
     <string name="map_gps_permission_denied">⚠️ Konum izni reddedildi</string>
     <string name="map_waiting_gps">📍 GPS sinyali bekleniyor…</string>
+
+    <!-- Turn-by-Turn Navigasyon -->
+    <string name="nav_start_navigation">▶ Navigasyonu Başlat</string>
+    <string name="nav_stop">Durdur</string>
+    <string name="nav_destination_selected">📍 Hedef Seçildi</string>
+    <string name="nav_arrived">🎉 Hedefe ulaştınız!</string>
+    <string name="nav_calculating">Rota hesaplanıyor…</string>
+    <string name="nav_rem_format">Kalan: %1$.1f km (%2$d dk)</string>
 </resources>
