@@ -9,6 +9,7 @@ import android.content.pm.PackageManager
 import android.graphics.Color
 import android.graphics.drawable.GradientDrawable
 import android.net.Uri
+import android.os.Build
 import android.os.Bundle
 import android.view.LayoutInflater
 import android.view.View
@@ -689,27 +690,17 @@ class MapActivity : AppCompatActivity() {
 
     // ─── Motorcycle Handlebar Buttons ────────────────────────────
 
+    private val myLocationReceiver = object : android.content.BroadcastReceiver() {
+        override fun onReceive(context: android.content.Context?, intent: Intent?) {
+            if (intent?.action == "com.kove.mirror.ACTION_MY_LOCATION") {
+                DebugLogger.info("📍 ACTION_MY_LOCATION received in MapActivity")
+                centerOnMyLocation()
+            }
+        }
+    }
+
     private val handlebarKeyListener: (HandlebarKey) -> Boolean = { key ->
         when (key) {
-            HandlebarKey.UP -> {
-                mapView.controller.zoomOut()
-                Toast.makeText(this, "🔍 Zoom Out (UP)", Toast.LENGTH_SHORT).show()
-                true
-            }
-            HandlebarKey.DOWN -> {
-                mapView.controller.zoomIn()
-                Toast.makeText(this, "🔍 Zoom In (DOWN)", Toast.LENGTH_SHORT).show()
-                true
-            }
-            HandlebarKey.ENTER -> {
-                if (findViewById<LinearLayout>(R.id.destCard).visibility == View.VISIBLE) {
-                    startNavigation()
-                } else {
-                    centerOnMyLocation()
-                }
-                Toast.makeText(this, "🎮 ENTER", Toast.LENGTH_SHORT).show()
-                true
-            }
             HandlebarKey.ESC -> {
                 if (isNavigating) {
                     stopNavigation()
@@ -718,9 +709,9 @@ class MapActivity : AppCompatActivity() {
                 } else {
                     finish()
                 }
-                Toast.makeText(this, "🎮 ESC", Toast.LENGTH_SHORT).show()
                 true
             }
+            else -> false // Let HandlebarOverlayService execute active mode (Zoom, Pan, Media, Volume, App Switch)
         }
     }
 
@@ -739,10 +730,17 @@ class MapActivity : AppCompatActivity() {
         super.onResume()
         mapView.onResume()
         HandlebarKeyManager.addListener(handlebarKeyListener)
+        val filter = android.content.IntentFilter("com.kove.mirror.ACTION_MY_LOCATION")
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
+            registerReceiver(myLocationReceiver, filter, Context.RECEIVER_NOT_EXPORTED)
+        } else {
+            registerReceiver(myLocationReceiver, filter)
+        }
     }
 
     override fun onPause() {
         super.onPause()
+        try { unregisterReceiver(myLocationReceiver) } catch (_: Exception) {}
         HandlebarKeyManager.removeListener(handlebarKeyListener)
         mapView.onPause()
 

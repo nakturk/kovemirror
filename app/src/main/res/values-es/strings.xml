@@ -198,4 +198,28 @@
     <string name="nav_arrived">🎉 ¡Has llegado a tu destino!</string>
     <string name="nav_calculating">Calculando ruta…</string>
     <string name="nav_rem_format">Restante: %1$.1f km (%2$d min)</string>
+
+    <!-- Selección de Modo -->
+    <string name="label_app_mode">🎮 Modo de Aplicación:</string>
+    <string name="mode_mirroring">📺 Duplicación de Pantalla + Control de Manillar</string>
+    <string name="mode_control_only">🎮 Solo Control de Manillar (Sin Duplicación)</string>
+
+    <!-- Modo Solo Control -->
+    <string name="btn_start_controller">▶  Iniciar Control</string>
+    <string name="btn_stop_controller">⏹  Detener Control</string>
+    <string name="status_control_active">🎮 Control de Manillar Activo</string>
+    <string name="notif_control_only_active">🎮 Control de Manillar Activo</string>
+
+    <!-- Botones de Permisos -->
+    <string name="btn_overlay_permission">⚠️ Dar Permiso Overlay</string>
+    <string name="btn_overlay_granted">✅ Overlay OK</string>
+    <string name="btn_accessibility_permission">⚠️ Activar Accesibilidad</string>
+    <string name="btn_accessibility_granted">✅ Accesibilidad OK</string>
+    <string name="permission_required_title">Permiso Requerido</string>
+    <string name="overlay_permission_required_msg">Se requiere el permiso de superposición para mostrar el menú del manillar sobre otras aplicaciones. Por favor, conceda el permiso \"Mostrar sobre otras apps\".</string>
+    <string name="btn_grant_permission">Dar Permiso</string>
+    <string name="toast_enable_accessibility">Por favor, active \"KoveMirror Control de Manillar\" en los ajustes de Accesibilidad</string>
+
+    <!-- Servicio de Accesibilidad -->
+    <string name="accessibility_service_description">KoveMirror Control de Manillar permite controlar las aplicaciones de tu teléfono con los botones del manillar de tu motocicleta (zoom, desplazamiento, controles multimedia, volumen, cambio de app).</string>
 </resources>

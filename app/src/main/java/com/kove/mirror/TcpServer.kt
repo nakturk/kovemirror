@@ -15,6 +15,7 @@ class TcpServer(
     private val hostIp: String?,
     private val width: Int,
     private val height: Int,
+    private val videoEnabled: Boolean = true,
     private val onConnected:    (OutputStream) -> Unit,
     private val onDisconnected: () -> Unit
 ) {
@@ -61,9 +62,13 @@ class TcpServer(
     fun start() {
         if (running.getAndSet(true)) return
         
-        videoServerThread = Thread(::runVideoServer, "KoveMirror-VideoServer").also {
-            it.isDaemon = true
-            it.start()
+        if (videoEnabled) {
+            videoServerThread = Thread(::runVideoServer, "KoveMirror-VideoServer").also {
+                it.isDaemon = true
+                it.start()
+            }
+        } else {
+            DebugLogger.info("📺 Video server disabled (Control Only mode)")
         }
         controlServerThread = Thread(::runControlServer, "KoveMirror-ControlServer").also {
             it.isDaemon = true

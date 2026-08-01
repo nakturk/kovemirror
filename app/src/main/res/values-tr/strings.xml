@@ -198,4 +198,28 @@
     <string name="nav_arrived">🎉 Hedefe ulaştınız!</string>
     <string name="nav_calculating">Rota hesaplanıyor…</string>
     <string name="nav_rem_format">Kalan: %1$.1f km (%2$d dk)</string>
+
+    <!-- Uygulama Modu Seçimi -->
+    <string name="label_app_mode">🎮 Uygulama Modu:</string>
+    <string name="mode_mirroring">📺 Ekran Yansıtma + Gidon Kumandası</string>
+    <string name="mode_control_only">🎮 Sadece Gidon Kumandası (Yansıtma Yok)</string>
+
+    <!-- Sadece Kontrol Modu -->
+    <string name="btn_start_controller">▶  Kumandayı Başlat</string>
+    <string name="btn_stop_controller">⏹  Kumandayı Durdur</string>
+    <string name="status_control_active">🎮 Gidon Kumandası Aktif</string>
+    <string name="notif_control_only_active">🎮 Gidon Kumandası Aktif</string>
+
+    <!-- İzin Butonları -->
+    <string name="btn_overlay_permission">⚠️ Overlay İzni Ver</string>
+    <string name="btn_overlay_granted">✅ Overlay İzni OK</string>
+    <string name="btn_accessibility_permission">⚠️ Erişilebilirlik Aç</string>
+    <string name="btn_accessibility_granted">✅ Erişilebilirlik OK</string>
+    <string name="permission_required_title">İzin Gerekli</string>
+    <string name="overlay_permission_required_msg">Gidon kumanda menüsünü diğer uygulamaların üzerinde gösterebilmek için \"Diğer uygulamaların üzerinde göster\" izni gereklidir.</string>
+    <string name="btn_grant_permission">İzin Ver</string>
+    <string name="toast_enable_accessibility">Lütfen Erişilebilirlik ayarlarında \"KoveMirror Gidon Kumandası\"nı etkinleştirin</string>
+
+    <!-- Erişilebilirlik Servisi -->
+    <string name="accessibility_service_description">KoveMirror Gidon Kumandası, motosikletinizdeki gidon tuşlarıyla telefonunuzdaki uygulamaları kontrol etmenizi sağlar (yakınlaştırma, kaydırma, medya kontrolü, ses, uygulama değiştirme).</string>
 </resources>

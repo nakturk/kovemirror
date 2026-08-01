@@ -198,4 +198,28 @@
     <string name="nav_arrived">🎉 Φτάσατε στον προορισμό σας!</string>
     <string name="nav_calculating">Υπολογισμός διαδρομής…</string>
     <string name="nav_rem_format">Απομένουν: %1$.1f km (%2$d min)</string>
+
+    <!-- Επιλογή Λειτουργίας -->
+    <string name="label_app_mode">🎮 Λειτουργία Εφαρμογής:</string>
+    <string name="mode_mirroring">📺 Κατοπτρισμός Οθόνης + Έλεγχος Τιμονιού</string>
+    <string name="mode_control_only">🎮 Μόνο Έλεγχος Τιμονιού (Χωρίς Κατοπτρισμό)</string>
+
+    <!-- Λειτουργία Μόνο Ελέγχου -->
+    <string name="btn_start_controller">▶  Εκκίνηση Ελέγχου</string>
+    <string name="btn_stop_controller">⏹  Διακοπή Ελέγχου</string>
+    <string name="status_control_active">🎮 Έλεγχος Τιμονιού Ενεργός</string>
+    <string name="notif_control_only_active">🎮 Έλεγχος Τιμονιού Ενεργός</string>
+
+    <!-- Κουμπιά Δικαιωμάτων -->
+    <string name="btn_overlay_permission">⚠️ Άδεια Overlay</string>
+    <string name="btn_overlay_granted">✅ Overlay OK</string>
+    <string name="btn_accessibility_permission">⚠️ Ενεργοποίηση Προσβασιμότητας</string>
+    <string name="btn_accessibility_granted">✅ Προσβασιμότητα OK</string>
+    <string name="permission_required_title">Απαιτείται Άδεια</string>
+    <string name="overlay_permission_required_msg">Απαιτείται άδεια overlay για εμφάνιση του μενού τιμονιού πάνω από άλλες εφαρμογές. Παρακαλώ δώστε την άδεια \"Εμφάνιση πάνω από άλλες εφαρμογές\".</string>
+    <string name="btn_grant_permission">Παραχώρηση Άδειας</string>
+    <string name="toast_enable_accessibility">Παρακαλώ ενεργοποιήστε τον \"KoveMirror Έλεγχο Τιμονιού\" στις ρυθμίσεις Προσβασιμότητας</string>
+
+    <!-- Υπηρεσία Προσβασιμότητας -->
+    <string name="accessibility_service_description">Ο Έλεγχος Τιμονιού KoveMirror σας επιτρέπει να ελέγχετε εφαρμογές στο τηλέφωνό σας με τα κουμπιά τιμονιού της μοτοσικλέτας σας (ζουμ, μετακίνηση, μέσα, ένταση, εναλλαγή εφαρμογών).</string>
 </resources>

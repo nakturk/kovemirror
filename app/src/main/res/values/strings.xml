@@ -198,4 +198,28 @@
     <string name="nav_arrived">🎉 Arrived at destination!</string>
     <string name="nav_calculating">Calculating route…</string>
     <string name="nav_rem_format">Remaining: %1$.1f km (%2$d min)</string>
+
+    <!-- App Mode Selection -->
+    <string name="label_app_mode">🎮 App Mode:</string>
+    <string name="mode_mirroring">📺 Screen Mirroring + Handlebar Control</string>
+    <string name="mode_control_only">🎮 Handlebar Control Only (No Mirroring)</string>
+
+    <!-- Control Only Mode -->
+    <string name="btn_start_controller">▶  Start Controller</string>
+    <string name="btn_stop_controller">⏹  Stop Controller</string>
+    <string name="status_control_active">🎮 Handlebar Control Active</string>
+    <string name="notif_control_only_active">🎮 Handlebar Control Active</string>
+
+    <!-- Permission Buttons -->
+    <string name="btn_overlay_permission">⚠️ Grant Overlay</string>
+    <string name="btn_overlay_granted">✅ Overlay OK</string>
+    <string name="btn_accessibility_permission">⚠️ Enable Accessibility</string>
+    <string name="btn_accessibility_granted">✅ Accessibility OK</string>
+    <string name="permission_required_title">Permission Required</string>
+    <string name="overlay_permission_required_msg">Overlay permission is required to display the handlebar mode menu on top of other apps. Please grant "Draw over other apps" permission.</string>
+    <string name="btn_grant_permission">Grant Permission</string>
+    <string name="toast_enable_accessibility">Please enable "KoveMirror Handlebar Controller" in the Accessibility settings</string>
+
+    <!-- Accessibility Service -->
+    <string name="accessibility_service_description">KoveMirror Handlebar Controller allows your motorcycle handlebar buttons to control apps on your phone (zoom, pan, media controls, volume, app switching).</string>
 </resources>

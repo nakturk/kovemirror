@@ -19,8 +19,9 @@ import androidx.core.app.NotificationCompat
 class MirrorService : Service() {
 
     companion object {
-        const val ACTION_START       = "com.kove.mirror.START"
-        const val ACTION_STOP        = "com.kove.mirror.STOP"
+        const val ACTION_START              = "com.kove.mirror.START"
+        const val ACTION_START_CONTROL_ONLY = "com.kove.mirror.START_CONTROL_ONLY"
+        const val ACTION_STOP              = "com.kove.mirror.STOP"
         const val EXTRA_RESULT_CODE  = "result_code"
         const val EXTRA_RESULT_DATA  = "result_data"
         const val CHANNEL_ID         = "KoveMirrorCh"
@@ -51,6 +52,16 @@ class MirrorService : Service() {
                 context.startService(i)
         }
 
+        fun startControlOnlyService(context: Context) {
+            val i = Intent(context, MirrorService::class.java).apply {
+                action = ACTION_START_CONTROL_ONLY
+            }
+            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O)
+                context.startForegroundService(i)
+            else
+                context.startService(i)
+        }
+
         fun stopService(context: Context) {
             context.startService(
                 Intent(context, MirrorService::class.java).apply { action = ACTION_STOP }
@@ -64,6 +75,7 @@ class MirrorService : Service() {
     private var bleManager:        BleManager?        = null
     private var wifiNetworkCallback: ConnectivityManager.NetworkCallback? = null
     private var tcpServerStarted = false
+    private var isControlOnlyMode = false
     private var wakeLock: android.os.PowerManager.WakeLock? = null
 
     // ─── Lifecycle ───────────────────────────────────────────────
@@ -79,6 +91,7 @@ class MirrorService : Service() {
     override fun onStartCommand(intent: Intent?, flags: Int, startId: Int): Int {
         when (intent?.action) {
             ACTION_START -> {
+                isControlOnlyMode = false
                 val code = intent.getIntExtra(EXTRA_RESULT_CODE, 0)
                 val data = if (Build.VERSION.SDK_INT >= 33)
                     intent.getParcelableExtra(EXTRA_RESULT_DATA, Intent::class.java)
@@ -100,6 +113,19 @@ class MirrorService : Service() {
                     DebugLogger.error("❌ Invalid MediaProjection data: code=$code, data=$data")
                     stopSelf()
                 }
+            }
+            ACTION_START_CONTROL_ONLY -> {
+                isControlOnlyMode = true
+                if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) {
+                    startForeground(
+                        NOTIF_ID,
+                        buildNotif(getString(R.string.notif_control_only_active)),
+                        ServiceInfo.FOREGROUND_SERVICE_TYPE_CONNECTED_DEVICE
+                    )
+                } else {
+                    startForeground(NOTIF_ID, buildNotif(getString(R.string.notif_control_only_active)))
+                }
+                startControlOnly()
             }
             ACTION_STOP -> {
                 stopMirroring()
@@ -170,11 +196,56 @@ class MirrorService : Service() {
         }
     }
 
+    // ─── Control Only Mode ──────────────────────────────────────
+
+    private fun startControlOnly() {
+        try {
+            DebugLogger.info("🎮 Starting Control Only mode...")
+            DebugLogger.info("   Control Port: ${TcpServer.PORT_CONTROL}")
+            DebugLogger.info("   Heartbeat Port: ${TcpServer.PORT_HEARTBEAT}")
+            DebugLogger.info("   Video: DISABLED")
+
+            val powerManager = getSystemService(Context.POWER_SERVICE) as android.os.PowerManager
+            @Suppress("DEPRECATION")
+            wakeLock = powerManager.newWakeLock(
+                android.os.PowerManager.SCREEN_BRIGHT_WAKE_LOCK or android.os.PowerManager.ACQUIRE_CAUSES_WAKEUP,
+                "KoveMirror::AlwaysOn"
+            )
+            wakeLock?.acquire()
+
+            val savedMac = getSharedPreferences("kove_prefs", MODE_PRIVATE).getString("bt_mac", "")
+            if (!savedMac.isNullOrEmpty()) {
+                bleManager = BleManager(this) { msg ->
+                    DebugLogger.log(LogLevel.INFO, msg)
+                }
+                bleManager?.onMirrorRequested = {
+                    if (!tcpServerStarted || tcpServer == null) {
+                        DebugLogger.info("🔄 Control requested from TFT, TCP Server restarting...")
+                        Handler(Looper.getMainLooper()).post {
+                            startTcpServer()
+                        }
+                    }
+                }
+                bleManager?.connect(savedMac)
+            } else {
+                DebugLogger.warning(getString(R.string.log_bt_mac_not_selected))
+            }
+
+            bindToWifiNetwork()
+        } catch (e: Exception) {
+            DebugLogger.error("❌ startControlOnly error: ${e.javaClass.simpleName}: ${e.message}")
+            e.printStackTrace()
+            stopSelf()
+        }
+    }
+
     private fun startTcpServer() {
-        val projection = mediaProjection
-        if (projection == null) {
-            DebugLogger.warning("⚠️ MediaProjection not ready yet, TCP Server not started")
-            return
+        if (!isControlOnlyMode) {
+            val projection = mediaProjection
+            if (projection == null) {
+                DebugLogger.warning("⚠️ MediaProjection not ready yet, TCP Server not started")
+                return
+            }
         }
 
         if (tcpServerStarted) {
@@ -184,41 +255,49 @@ class MirrorService : Service() {
         }
 
         val ipAddress = NetworkUtils.getWifiIpAddress(applicationContext)
-        DebugLogger.info("🔌 TCP Server starting, bind IP: $ipAddress")
+        DebugLogger.info("🔌 TCP Server starting, bind IP: $ipAddress (controlOnly=$isControlOnlyMode)")
 
         val server = TcpServer(
             hostIp = ipAddress,
             width  = TFT_WIDTH,
             height = TFT_HEIGHT,
+            videoEnabled = !isControlOnlyMode,
             onConnected = { os ->
-                DebugLogger.success(getString(R.string.log_tft_video_connected))
-                try {
-                    val encoder = ProjectionEncoder(
-                        mediaProjection = projection,
-                        width  = TFT_WIDTH,
-                        height = TFT_HEIGHT,
-                        padding = TFT_PADDING,
-                        displayMode = DISPLAY_MODE,
-                        phoneAspectRatio = PHONE_ASPECT_RATIO
-                    )
-                    projectionEncoder = encoder
-                    if (encoder.init()) {
-                        encoder.startEncoding { nalData ->
-                            tcpServer?.writeData(nalData)
+                if (!isControlOnlyMode) {
+                    DebugLogger.success(getString(R.string.log_tft_video_connected))
+                    try {
+                        val encoder = ProjectionEncoder(
+                            mediaProjection = mediaProjection!!,
+                            width  = TFT_WIDTH,
+                            height = TFT_HEIGHT,
+                            padding = TFT_PADDING,
+                            displayMode = DISPLAY_MODE,
+                            phoneAspectRatio = PHONE_ASPECT_RATIO
+                        )
+                        projectionEncoder = encoder
+                        if (encoder.init()) {
+                            encoder.startEncoding { nalData ->
+                                tcpServer?.writeData(nalData)
+                            }
+                        } else {
+                            DebugLogger.error("❌ Encoder could not be started")
                         }
-                    } else {
-                        DebugLogger.error("❌ Encoder could not be started")
+                    } catch (e: Exception) {
+                        DebugLogger.error("❌ Encoder start error: ${e.message}")
                     }
-                } catch (e: Exception) {
-                    DebugLogger.error("❌ Encoder start error: ${e.message}")
+                    updateNotif(getString(R.string.notif_tft_connected))
+                } else {
+                    DebugLogger.success("🎮 TFT Control connected (Control Only mode)")
+                    updateNotif(getString(R.string.notif_control_only_active))
                 }
-                updateNotif(getString(R.string.notif_tft_connected))
             },
             onDisconnected = {
                 DebugLogger.warning(getString(R.string.log_tft_disconnected_waiting))
-                projectionEncoder?.stop()
-                projectionEncoder = null
-                updateNotif(getString(R.string.notif_waiting_tft_port, TcpServer.PORT_VIDEO))
+                if (!isControlOnlyMode) {
+                    projectionEncoder?.stop()
+                    projectionEncoder = null
+                    updateNotif(getString(R.string.notif_waiting_tft_port, TcpServer.PORT_VIDEO))
+                }
 
                 Handler(Looper.getMainLooper()).postDelayed({
                     if (tcpServerStarted && bleManager != null) {
@@ -236,7 +315,11 @@ class MirrorService : Service() {
         DebugLogger.info("─────────────────────────────")
         DebugLogger.info("📡 Phone IP: $ipAddress")
         DebugLogger.info("🏍️ Gateway (TBox): $gw")
-        DebugLogger.info("🔌 Ports: Video=${TcpServer.PORT_VIDEO}, Control=${TcpServer.PORT_CONTROL}, Heartbeat=${TcpServer.PORT_HEARTBEAT}")
+        if (isControlOnlyMode) {
+            DebugLogger.info("🔌 Ports: Control=${TcpServer.PORT_CONTROL}, Heartbeat=${TcpServer.PORT_HEARTBEAT} (Video DISABLED)")
+        } else {
+            DebugLogger.info("🔌 Ports: Video=${TcpServer.PORT_VIDEO}, Control=${TcpServer.PORT_CONTROL}, Heartbeat=${TcpServer.PORT_HEARTBEAT}")
+        }
         DebugLogger.info("─────────────────────────────")
     }
 

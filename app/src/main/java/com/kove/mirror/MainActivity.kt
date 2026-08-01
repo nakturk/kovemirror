@@ -9,10 +9,12 @@ import android.content.Intent
 import android.content.pm.PackageManager
 import android.graphics.Color
 import android.media.projection.MediaProjectionManager
+import android.net.Uri
 import android.os.Build
 import android.os.Bundle
 import android.os.Handler
 import android.os.Looper
+import android.provider.Settings
 import android.view.View
 import android.widget.*
 import androidx.appcompat.app.AlertDialog
@@ -26,12 +28,17 @@ class MainActivity : AppCompatActivity() {
     companion object {
         const val REQ_SCREEN_CAPTURE = 100
         const val REQ_NOTIFICATION   = 101
+        const val REQ_OVERLAY        = 102
+
+        const val APP_MODE_MIRRORING     = 0
+        const val APP_MODE_CONTROL_ONLY  = 1
     }
 
     private lateinit var binding: ActivityMainBinding
     private var isStreaming = false
     private var titleClickCount = 0
     private var titleClickTime = 0L
+    private var currentAppMode = APP_MODE_MIRRORING
 
     private val uiHandler = Handler(Looper.getMainLooper())
 
@@ -58,9 +65,12 @@ class MainActivity : AppCompatActivity() {
 
         setupLanguageSpinner()
         setupBluetoothSpinner()
+        setupAppModeRadioGroup()
         setupDisplayModeSpinner()
         setupResolutionSpinner()
         setupButtons()
+        setupPermissionButtons()
+        setupHeaderEasterEgg()
 
         checkBluetoothPermissions()
         requestNotifPermission()
@@ -68,29 +78,28 @@ class MainActivity : AppCompatActivity() {
         DebugLogger.info(getString(R.string.log_app_started))
     }
 
-    private val handlebarKeyListener: (HandlebarKey) -> Boolean = { key ->
-        when (key) {
-            HandlebarKey.UP -> {
-                DebugLogger.info("🎮 Handlebar key UP on MainActivity")
-                Toast.makeText(this, "🎮 Handlebar: UP", Toast.LENGTH_SHORT).show()
-                true
+    private fun setupHeaderEasterEgg() {
+        binding.tvAppTitle.setOnClickListener {
+            val now = System.currentTimeMillis()
+            if (now - titleClickTime > 2000) {
+                titleClickCount = 0
             }
-            HandlebarKey.DOWN -> {
-                DebugLogger.info("🎮 Handlebar key DOWN on MainActivity")
-                Toast.makeText(this, "🎮 Handlebar: DOWN", Toast.LENGTH_SHORT).show()
-                true
-            }
-            HandlebarKey.ENTER -> {
-                DebugLogger.info("🎮 Handlebar key ENTER on MainActivity")
-                startActivity(Intent(this, MapActivity::class.java))
-                true
-            }
-            HandlebarKey.ESC -> {
-                DebugLogger.info("🎮 Handlebar key ESC on MainActivity")
-                if (isStreaming) {
-                    stopMirroring()
+            titleClickTime = now
+            titleClickCount++
+
+            if (titleClickCount >= 10) {
+                titleClickCount = 0
+                val isVisible = binding.llTestButtons.visibility == View.VISIBLE
+                if (isVisible) {
+                    binding.llTestButtons.visibility = View.GONE
+                    Toast.makeText(this, "🙈 Test Simülatörü Gizlendi", Toast.LENGTH_SHORT).show()
+                } else {
+                    binding.llTestButtons.visibility = View.VISIBLE
+                    Toast.makeText(this, "🎮 Test Simülatörü Açıldı!", Toast.LENGTH_LONG).show()
                 }
-                true
+            } else if (titleClickCount >= 5) {
+                val remaining = 10 - titleClickCount
+                Toast.makeText(this, "🎮 Simülatör için $remaining tık kaldı...", Toast.LENGTH_SHORT).show()
             }
         }
     }
@@ -107,12 +116,11 @@ class MainActivity : AppCompatActivity() {
     override fun onResume() {
         super.onResume()
         refreshWifiStatus()
-        HandlebarKeyManager.addListener(handlebarKeyListener)
+        updatePermissionButtonStates()
     }
 
     override fun onPause() {
         super.onPause()
-        HandlebarKeyManager.removeListener(handlebarKeyListener)
     }
 
     // ─── Language Selector ───────────────────────────────────────
@@ -138,6 +146,94 @@ class MainActivity : AppCompatActivity() {
         }
     }
 
+    // ─── App Mode Selector ──────────────────────────────────────
+
+    private fun setupAppModeRadioGroup() {
+        val savedMode = getSharedPreferences("kove_prefs", MODE_PRIVATE).getInt("app_mode", APP_MODE_MIRRORING)
+        currentAppMode = savedMode
+        if (savedMode == APP_MODE_CONTROL_ONLY) {
+            binding.rbModeControlOnly.isChecked = true
+        } else {
+            binding.rbModeMirroring.isChecked = true
+        }
+        updateUiForMode(savedMode)
+
+        binding.rgAppMode.setOnCheckedChangeListener { _, checkedId ->
+            val newMode = if (checkedId == R.id.rbModeControlOnly) APP_MODE_CONTROL_ONLY else APP_MODE_MIRRORING
+            currentAppMode = newMode
+            getSharedPreferences("kove_prefs", MODE_PRIVATE).edit().putInt("app_mode", newMode).apply()
+            updateUiForMode(newMode)
+        }
+    }
+
+    private fun updateUiForMode(mode: Int) {
+        when (mode) {
+            APP_MODE_MIRRORING -> {
+                binding.spDisplayMode.isEnabled = true
+                binding.spTftResolution.isEnabled = true
+                binding.spDisplayMode.alpha = 1.0f
+                binding.spTftResolution.alpha = 1.0f
+                binding.llPermissions.visibility = View.GONE
+                binding.llTestButtons.visibility = View.GONE
+                if (!isStreaming) {
+                    binding.btnStartStop.text = getString(R.string.btn_start_mirroring)
+                }
+            }
+            APP_MODE_CONTROL_ONLY -> {
+                binding.spDisplayMode.isEnabled = false
+                binding.spTftResolution.isEnabled = false
+                binding.spDisplayMode.alpha = 0.4f
+                binding.spTftResolution.alpha = 0.4f
+                binding.llPermissions.visibility = View.VISIBLE
+                if (!isStreaming) {
+                    binding.btnStartStop.text = getString(R.string.btn_start_controller)
+                }
+                updatePermissionButtonStates()
+            }
+        }
+    }
+
+    // ─── Permission Buttons ─────────────────────────────────────
+
+    private fun setupPermissionButtons() {
+        binding.btnOverlayPermission.setOnClickListener {
+            if (!Settings.canDrawOverlays(this)) {
+                val intent = Intent(Settings.ACTION_MANAGE_OVERLAY_PERMISSION, Uri.parse("package:$packageName"))
+                startActivityForResult(intent, REQ_OVERLAY)
+            } else {
+                Toast.makeText(this, "✅ Overlay permission already granted", Toast.LENGTH_SHORT).show()
+            }
+        }
+
+        binding.btnAccessibilityPermission.setOnClickListener {
+            val intent = Intent(Settings.ACTION_ACCESSIBILITY_SETTINGS)
+            startActivity(intent)
+            Toast.makeText(this, getString(R.string.toast_enable_accessibility), Toast.LENGTH_LONG).show()
+        }
+    }
+
+    private fun updatePermissionButtonStates() {
+        if (currentAppMode == APP_MODE_CONTROL_ONLY) {
+            // Overlay permission
+            if (Settings.canDrawOverlays(this)) {
+                binding.btnOverlayPermission.setBackgroundColor(Color.parseColor("#2E7D32"))
+                binding.btnOverlayPermission.text = getString(R.string.btn_overlay_granted)
+            } else {
+                binding.btnOverlayPermission.setBackgroundColor(Color.parseColor("#FF6F00"))
+                binding.btnOverlayPermission.text = getString(R.string.btn_overlay_permission)
+            }
+
+            // Accessibility service
+            if (KoveAccessibilityService.isEnabled(this)) {
+                binding.btnAccessibilityPermission.setBackgroundColor(Color.parseColor("#2E7D32"))
+                binding.btnAccessibilityPermission.text = getString(R.string.btn_accessibility_granted)
+            } else {
+                binding.btnAccessibilityPermission.setBackgroundColor(Color.parseColor("#FF6F00"))
+                binding.btnAccessibilityPermission.text = getString(R.string.btn_accessibility_permission)
+            }
+        }
+    }
+
     // ─── Setup ───────────────────────────────────────────────────
 
     private fun setupButtons() {
@@ -145,6 +241,17 @@ class MainActivity : AppCompatActivity() {
         binding.btnShareLogs.setOnClickListener { shareLogs() }
         binding.btnOpenMap.setOnClickListener {
             startActivity(Intent(this, MapActivity::class.java))
+        }
+
+        // Test Handlebar Simulation Buttons
+        binding.btnTestUp.setOnClickListener {
+            HandlebarKeyManager.dispatchKey(HandlebarKey.UP)
+        }
+        binding.btnTestEnt.setOnClickListener {
+            HandlebarKeyManager.dispatchKey(HandlebarKey.ENTER)
+        }
+        binding.btnTestDown.setOnClickListener {
+            HandlebarKeyManager.dispatchKey(HandlebarKey.DOWN)
         }
 
         // Setup Debug Terminal
@@ -226,38 +333,85 @@ class MainActivity : AppCompatActivity() {
 
     private fun onStartStopClick() {
         if (!isStreaming) {
+            if (currentAppMode == APP_MODE_CONTROL_ONLY) {
+                // Control Only Mode — no screen capture or motorcycle WiFi required
+                startControlOnly()
+            } else {
+                // Mirroring Mode — requires motorcycle WiFi
+                val ip = NetworkUtils.getWifiIpAddress(this)
+                if (ip.startsWith("0.0") || ip == "null") {
+                    Toast.makeText(this, getString(R.string.wifi_required_toast), Toast.LENGTH_LONG).show()
+                    return
+                }
 
-            val ip = NetworkUtils.getWifiIpAddress(this)
-            if (ip.startsWith("0.0") || ip == "null") {
-                Toast.makeText(this, getString(R.string.wifi_required_toast), Toast.LENGTH_LONG).show()
-                return
+                val presetIdx = binding.spTftResolution.selectedItemPosition.coerceIn(0, tftPresets.size - 1)
+                val selectedPreset = tftPresets[presetIdx]
+
+                val modeIdx = binding.spDisplayMode.selectedItemPosition.coerceIn(0, 2)
+                val selectedMode = when (modeIdx) {
+                    1 -> DisplayMode.FIT
+                    2 -> DisplayMode.STRETCH
+                    else -> DisplayMode.CENTER_CROP
+                }
+
+                val ratio = getPhoneAspectRatio()
+
+                MirrorService.TFT_WIDTH          = selectedPreset.width
+                MirrorService.TFT_HEIGHT         = selectedPreset.height
+                MirrorService.DISPLAY_MODE       = selectedMode
+                MirrorService.PHONE_ASPECT_RATIO = ratio
+                MirrorService.TFT_PADDING        = 0
+
+                DebugLogger.info(
+                    "🖥️ Target: ${selectedPreset.width}×${selectedPreset.height} | " +
+                    "Mode: ${selectedMode.name} | Ratio: %.3f".format(ratio)
+                )
+                requestScreenCapture()
             }
-
-            val presetIdx = binding.spTftResolution.selectedItemPosition.coerceIn(0, tftPresets.size - 1)
-            val selectedPreset = tftPresets[presetIdx]
-
-            val modeIdx = binding.spDisplayMode.selectedItemPosition.coerceIn(0, 2)
-            val selectedMode = when (modeIdx) {
-                1 -> DisplayMode.FIT
-                2 -> DisplayMode.STRETCH
-                else -> DisplayMode.CENTER_CROP
-            }
-
-            val ratio = getPhoneAspectRatio()
-
-            MirrorService.TFT_WIDTH          = selectedPreset.width
-            MirrorService.TFT_HEIGHT         = selectedPreset.height
-            MirrorService.DISPLAY_MODE       = selectedMode
-            MirrorService.PHONE_ASPECT_RATIO = ratio
-            MirrorService.TFT_PADDING        = 0
-
-            DebugLogger.info(
-                "🖥️ Target: ${selectedPreset.width}×${selectedPreset.height} | " +
-                "Mode: ${selectedMode.name} | Ratio: %.3f".format(ratio)
-            )
-            requestScreenCapture()
         } else {
-            stopMirroring()
+            stopService()
+        }
+    }
+
+    private fun startControlOnly() {
+        // Check overlay permission
+        if (!Settings.canDrawOverlays(this)) {
+            AlertDialog.Builder(this)
+                .setTitle(getString(R.string.permission_required_title))
+                .setMessage(getString(R.string.overlay_permission_required_msg))
+                .setPositiveButton(getString(R.string.btn_grant_permission)) { _, _ ->
+                    val intent = Intent(Settings.ACTION_MANAGE_OVERLAY_PERMISSION, Uri.parse("package:$packageName"))
+                    startActivityForResult(intent, REQ_OVERLAY)
+                }
+                .setNegativeButton(getString(R.string.map_btn_cancel), null)
+                .show()
+            return
+        }
+
+        // Warn if accessibility not enabled (but allow anyway)
+        if (!KoveAccessibilityService.isEnabled(this)) {
+            DebugLogger.warning("⚠️ Accessibility Service not enabled - gesture actions (zoom/pan) will not work")
+        }
+
+        isStreaming = true
+        binding.btnStartStop.text = getString(R.string.btn_stop_controller)
+        binding.btnStartStop.setBackgroundColor(Color.parseColor("#B71C1C"))
+        binding.tvStatus.text = getString(R.string.status_control_active)
+        binding.tvStatus.setTextColor(Color.parseColor("#FF9800"))
+
+        DebugLogger.success("🎮 Control Only mode starting...")
+
+        try {
+            // Start HandlebarOverlayService
+            HandlebarOverlayService.startService(this)
+
+            // Start MirrorService in control-only mode
+            MirrorService.startControlOnlyService(this)
+        } catch (e: Exception) {
+            val errMsg = getString(R.string.log_service_start_failed, e.message ?: "")
+            DebugLogger.error(errMsg)
+            Toast.makeText(this, errMsg, Toast.LENGTH_LONG).show()
+            resetToStopped()
         }
     }
 
@@ -349,6 +503,10 @@ class MainActivity : AppCompatActivity() {
                 binding.tvStatus.setTextColor(Color.parseColor("#EF5350"))
                 DebugLogger.success(getString(R.string.log_permission_granted))
                 try {
+                    // Also start overlay service for handlebar controls during mirroring
+                    if (Settings.canDrawOverlays(this)) {
+                        HandlebarOverlayService.startService(this)
+                    }
                     MirrorService.startService(this, resultCode, data)
                 } catch (e: Exception) {
                     val errMsg = getString(R.string.log_service_start_failed, e.message ?: "")
@@ -359,18 +517,25 @@ class MainActivity : AppCompatActivity() {
             } else {
                 DebugLogger.error(getString(R.string.log_screen_capture_denied))
             }
+        } else if (requestCode == REQ_OVERLAY) {
+            updatePermissionButtonStates()
         }
     }
 
-    private fun stopMirroring() {
+    private fun stopService() {
         MirrorService.stopService(this)
+        HandlebarOverlayService.stopService(this)
         DebugLogger.info(getString(R.string.log_stopped_by_user))
         resetToStopped()
     }
 
     private fun resetToStopped() {
         isStreaming = false
-        binding.btnStartStop.text = getString(R.string.btn_start_mirroring)
+        if (currentAppMode == APP_MODE_CONTROL_ONLY) {
+            binding.btnStartStop.text = getString(R.string.btn_start_controller)
+        } else {
+            binding.btnStartStop.text = getString(R.string.btn_start_mirroring)
+        }
         binding.btnStartStop.setBackgroundColor(Color.parseColor("#2E7D32"))
         binding.tvStatus.text = getString(R.string.status_stopped)
         binding.tvStatus.setTextColor(Color.parseColor("#AAAAAA"))

@@ -11,3 +11,7 @@
 # osmdroid
 -keep class org.osmdroid.** { *; }
 -dontwarn org.osmdroid.**
+
+# AccessibilityService (must not be stripped/renamed)
+-keep class com.kove.mirror.KoveAccessibilityService { *; }
+-keep class com.kove.mirror.HandlebarOverlayService { *; }

@@ -87,6 +87,75 @@
         android:popupBackground="#1A1A2E"
         android:layout_marginBottom="6dp" />
 
+    <!-- App Mode selector -->
+    <TextView
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:text="@string/label_app_mode"
+        android:textColor="#FFFFFF"
+        android:textSize="13sp"
+        android:textStyle="bold"
+        android:layout_marginBottom="4dp" />
+
+    <RadioGroup
+        android:id="@+id/rgAppMode"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="vertical"
+        android:background="#1A1A2E"
+        android:padding="6dp"
+        android:layout_marginBottom="6dp">
+
+        <RadioButton
+            android:id="@+id/rbModeMirroring"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="@string/mode_mirroring"
+            android:textColor="#FFFFFF"
+            android:textSize="13sp"
+            android:checked="true" />
+
+        <RadioButton
+            android:id="@+id/rbModeControlOnly"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="@string/mode_control_only"
+            android:textColor="#FFFFFF"
+            android:textSize="13sp" />
+    </RadioGroup>
+
+    <!-- Permission status buttons -->
+    <LinearLayout
+        android:id="@+id/llPermissions"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="horizontal"
+        android:layout_marginBottom="6dp"
+        android:visibility="gone">
+
+        <Button
+            android:id="@+id/btnOverlayPermission"
+            android:layout_width="0dp"
+            android:layout_height="32dp"
+            android:layout_weight="1"
+            android:text="@string/btn_overlay_permission"
+            android:textSize="10sp"
+            android:textColor="#FFFFFF"
+            android:background="#FF6F00"
+            android:layout_marginEnd="4dp" />
+
+        <Button
+            android:id="@+id/btnAccessibilityPermission"
+            android:layout_width="0dp"
+            android:layout_height="32dp"
+            android:layout_weight="1"
+            android:text="@string/btn_accessibility_permission"
+            android:textSize="10sp"
+            android:textColor="#FFFFFF"
+            android:background="#FF6F00"
+            android:layout_marginStart="4dp" />
+    </LinearLayout>
+
     <!-- Display Mode + Resolution side by side -->
     <LinearLayout
         android:layout_width="match_parent"
@@ -159,6 +228,53 @@
         android:background="#2E7D32"
         android:textStyle="bold"
         android:layout_marginBottom="4dp"/>
+
+    <!-- Test Handlebar Simulation Buttons -->
+    <LinearLayout
+        android:id="@+id/llTestButtons"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="horizontal"
+        android:layout_marginBottom="6dp"
+        android:visibility="gone">
+
+        <Button
+            android:id="@+id/btnTestUp"
+            android:layout_width="0dp"
+            android:layout_height="36dp"
+            android:layout_weight="1"
+            android:text="▲ UP"
+            android:textSize="11sp"
+            android:textColor="#FFFFFF"
+            android:background="#4A148C"
+            android:textStyle="bold"
+            android:layout_marginEnd="2dp" />
+
+        <Button
+            android:id="@+id/btnTestEnt"
+            android:layout_width="0dp"
+            android:layout_height="36dp"
+            android:layout_weight="1"
+            android:text="🔘 ENT"
+            android:textSize="11sp"
+            android:textColor="#FFFFFF"
+            android:background="#4A148C"
+            android:textStyle="bold"
+            android:layout_marginStart="2dp"
+            android:layout_marginEnd="2dp" />
+
+        <Button
+            android:id="@+id/btnTestDown"
+            android:layout_width="0dp"
+            android:layout_height="36dp"
+            android:layout_weight="1"
+            android:text="▼ DOWN"
+            android:textSize="11sp"
+            android:textColor="#FFFFFF"
+            android:background="#4A148C"
+            android:textStyle="bold"
+            android:layout_marginStart="2dp" />
+    </LinearLayout>
 
     <!-- Map & Route + Share Logs side by side -->
     <LinearLayout
