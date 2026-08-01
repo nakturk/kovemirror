@@ -222,4 +222,30 @@
 
     <!-- Υπηρεσία Προσβασιμότητας -->
     <string name="accessibility_service_description">Ο Έλεγχος Τιμονιού KoveMirror σας επιτρέπει να ελέγχετε εφαρμογές στο τηλέφωνό σας με τα κουμπιά τιμονιού της μοτοσικλέτας σας (ζουμ, μετακίνηση, μέσα, ένταση, εναλλαγή εφαρμογών).</string>
+
+    <!-- Handlebar Mode Names -->
+    <string name="handlebar_mode_title">🎮 Μενού Τιμονιού</string>
+    <string name="handlebar_mode_my_location">Επιστροφή στη τοποθεσία μου</string>
+    <string name="handlebar_mode_zoom">Μεγέθυνση / Σμίκρυνση</string>
+    <string name="handlebar_mode_pan_vertical">Μετακίνηση Πάνω / Κάτω</string>
+    <string name="handlebar_mode_pan_horizontal">Μετακίνηση Αριστερά / Δεξιά</string>
+    <string name="handlebar_mode_media_track">Επόμενο / Προηγούμενο Κομμάτι</string>
+    <string name="handlebar_mode_volume">Αύξηση / Μείωση Έντασης</string>
+    <string name="handlebar_mode_play">Αναπαραγωγή</string>
+    <string name="handlebar_mode_pause">Παύση</string>
+    <string name="handlebar_mode_app_switch">Επόμενη / Προηγούμενη Εφαρμογή</string>
+
+    <!-- Handlebar Toasts -->
+    <string name="toast_handlebar_mode_assigned">✅ Λειτουργία Τιμονιού: %1$s</string>
+    <string name="toast_my_location">📍 Επιστροφή στη τοποθεσία μου</string>
+
+    <!-- TFT Frame Fit Dialog -->
+    <string name="btn_tft_fit">📺 TFT</string>
+    <string name="tft_fit_dialog_title">📺 Ρύθμιση Πλαισίου TFT</string>
+    <string name="tft_fit_dialog_description">Ρυθμίστε τα μαύρα πλαίσια πάνω και κάτω για ευθυγράμμιση του χάρτη με την οθόνη TFT:</string>
+    <string name="tft_fit_top_label">Πάνω Μαύρο Πλαίσιο: %1$d dp</string>
+    <string name="tft_fit_bottom_label">Κάτω Μαύρο Πλαίσιο: %1$d dp</string>
+    <string name="tft_fit_reset">Επαναφορά</string>
+    <string name="tft_fit_save">Αποθήκευση &amp; Κλείσιμο</string>
+    <string name="toast_tft_fit_saved">✅ Πλαίσιο TFT Αποθηκεύτηκε</string>
 </resources>

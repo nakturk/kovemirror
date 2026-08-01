@@ -144,7 +144,7 @@ class HandlebarOverlayService : Service() {
 
         // Title
         val titleTv = TextView(this).apply {
-            text = "🎮 Handlebar Mode"
+            text = getString(R.string.handlebar_mode_title)
             setTextColor(Color.parseColor("#AAAACC"))
             textSize = 13f
             typeface = Typeface.DEFAULT_BOLD
@@ -156,7 +156,7 @@ class HandlebarOverlayService : Service() {
         menuItemViews.clear()
         for ((idx, mode) in allModes.withIndex()) {
             val itemTv = TextView(this).apply {
-                text = "  ${mode.displayName}"
+                text = "  ${mode.getDisplayName(this@HandlebarOverlayService)}"
                 setTextColor(Color.WHITE)
                 textSize = 14f
                 setPadding(dp(12), dp(8), dp(12), dp(8))
@@ -168,7 +168,7 @@ class HandlebarOverlayService : Service() {
 
         // Active UP/DOWN mode indicator at bottom
         val activeModeTv = TextView(this).apply {
-            text = "✅ Active ▲▼: ${HandlebarKeyManager.activeUpDownMode.displayName}"
+            text = "✅ ▲▼: ${HandlebarKeyManager.activeUpDownMode.getDisplayName(this@HandlebarOverlayService)}"
             setTextColor(Color.parseColor("#4CAF50"))
             textSize = 11f
             setPadding(0, dp(8), 0, 0)
@@ -202,31 +202,24 @@ class HandlebarOverlayService : Service() {
             overlayView = rootLayout
             updateHighlight(HandlebarKeyManager.highlightedIndex)
         } catch (e: Exception) {
-            DebugLogger.error("❌ Failed to add overlay view: ${e.message}")
+            DebugLogger.error("❌ Failed to show menu: ${e.message}")
         }
     }
 
-    private fun updateHighlight(index: Int) {
-        mainHandler.post {
-            for ((idx, tv) in menuItemViews.withIndex()) {
-                val mode = allModes[idx]
-                val badge = if (mode.isEntAction) " [ENT]" else ""
-                if (idx == index) {
-                    tv.setBackgroundColor(Color.parseColor("#3366FF"))
-                    tv.setTextColor(Color.WHITE)
-                    tv.typeface = Typeface.DEFAULT_BOLD
-                    tv.text = "▶ ${mode.displayName}$badge"
-                } else if (!mode.isEntAction && mode == HandlebarKeyManager.activeUpDownMode) {
-                    tv.setBackgroundColor(Color.TRANSPARENT)
-                    tv.setTextColor(Color.parseColor("#4CAF50"))
-                    tv.typeface = Typeface.DEFAULT
-                    tv.text = "  ${mode.displayName} ✓"
-                } else {
-                    tv.setBackgroundColor(Color.TRANSPARENT)
-                    tv.setTextColor(Color.WHITE)
-                    tv.typeface = Typeface.DEFAULT
-                    tv.text = "  ${mode.displayName}$badge"
-                }
+    private fun updateHighlight(selectedIndex: Int) {
+        val count = menuItemViews.size
+        for (i in 0 until count) {
+            val tv = menuItemViews.getOrNull(i) ?: continue
+            val mode = allModes.getOrNull(i) ?: continue
+            val modeName = mode.getDisplayName(this)
+            if (i == selectedIndex) {
+                tv.text = "▶ $modeName"
+                tv.setBackgroundColor(Color.parseColor("#2979FF"))
+                tv.setTypeface(null, Typeface.BOLD)
+            } else {
+                tv.text = "  $modeName"
+                tv.setBackgroundColor(Color.TRANSPARENT)
+                tv.setTypeface(null, Typeface.NORMAL)
             }
         }
     }
@@ -248,11 +241,11 @@ class HandlebarOverlayService : Service() {
         }
 
         val tv = TextView(this).apply {
-            text = "🎮 ▲▼: ${HandlebarKeyManager.activeUpDownMode.displayName}"
-            setTextColor(Color.parseColor("#88FFFFFF"))
-            textSize = 10f
-            setBackgroundColor(Color.parseColor("#88000000"))
-            setPadding(dp(6), dp(2), dp(6), dp(2))
+            text = "🎮 ▲▼: ${HandlebarKeyManager.activeUpDownMode.getDisplayName(this@HandlebarOverlayService)}"
+            setTextColor(Color.WHITE)
+            textSize = 11f
+            setPadding(dp(8), dp(4), dp(8), dp(4))
+            setBackgroundColor(Color.parseColor("#CC000000"))
         }
         activeModeIndicator = tv
 
@@ -286,8 +279,9 @@ class HandlebarOverlayService : Service() {
 
     private fun showActiveModeIndicator(mode: HandlebarActionMode) {
         mainHandler.post {
-            activeModeIndicator?.text = "🎮 ▲▼: ${mode.displayName}"
-            Toast.makeText(this, "✅ Gidon Tuşları: ${mode.displayNameTr}", Toast.LENGTH_SHORT).show()
+            val modeName = mode.getDisplayName(this)
+            activeModeIndicator?.text = "🎮 ▲▼: $modeName"
+            Toast.makeText(this, getString(R.string.toast_handlebar_mode_assigned, modeName), Toast.LENGTH_SHORT).show()
         }
     }
 
@@ -307,7 +301,7 @@ class HandlebarOverlayService : Service() {
         when (mode) {
             HandlebarActionMode.MY_LOCATION -> {
                 DebugLogger.info("🎮 Action: Get back to my location")
-                Toast.makeText(this, "📍 Konumuma Dön", Toast.LENGTH_SHORT).show()
+                Toast.makeText(this, getString(R.string.toast_my_location), Toast.LENGTH_SHORT).show()
                 val intent = Intent("com.kove.mirror.ACTION_MY_LOCATION")
                 sendBroadcast(intent)
             }

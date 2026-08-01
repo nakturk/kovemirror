@@ -119,6 +119,12 @@ class MapActivity : AppCompatActivity() {
         setupMap()
         setupButtons()
         setupMapEvents()
+
+        // Load saved TFT black bar margins
+        val prefs = getSharedPreferences("kove_map_prefs", MODE_PRIVATE)
+        val topPadding = prefs.getInt("map_top_padding_dp", 0)
+        val bottomPadding = prefs.getInt("map_bottom_padding_dp", 0)
+        applyTftPadding(topPadding, bottomPadding)
     }
 
     // ─── Map Setup ──────────────────────────────────────────────
@@ -249,7 +255,9 @@ class MapActivity : AppCompatActivity() {
                     navigationPolyline = Polyline().apply {
                         setPoints(route.geometryPoints)
                         outlinePaint.color = Color.parseColor("#2563EB") // Royal Blue
-                        outlinePaint.strokeWidth = 10f * resources.displayMetrics.density
+                        outlinePaint.strokeWidth = 7f * resources.displayMetrics.density
+                        outlinePaint.strokeCap = android.graphics.Paint.Cap.ROUND
+                        outlinePaint.strokeJoin = android.graphics.Paint.Join.ROUND
                         outlinePaint.isAntiAlias = true
                     }
                     mapView.overlays.add(navigationPolyline)
@@ -335,9 +343,9 @@ class MapActivity : AppCompatActivity() {
         findViewById<ImageView>(R.id.btnBack).setOnClickListener { finish() }
 
         // Layer buttons
-        val btnMaps = findViewById<Button>(R.id.btnLayerMaps)
-        val btnTopo = findViewById<Button>(R.id.btnLayerTopo)
-        val btnSat = findViewById<Button>(R.id.btnLayerSatellite)
+        val btnMaps = findViewById<View>(R.id.btnLayerMaps)
+        val btnTopo = findViewById<View>(R.id.btnLayerTopo)
+        val btnSat = findViewById<View>(R.id.btnLayerSatellite)
 
         btnMaps.setOnClickListener { switchLayer(LAYER_MAPS) }
         btnTopo.setOnClickListener { switchLayer(LAYER_TOPO) }
@@ -378,15 +386,112 @@ class MapActivity : AppCompatActivity() {
         findViewById<ImageView>(R.id.btnCloseRouteList).setOnClickListener {
             routeListContainer.visibility = View.GONE
         }
+
+        // TFT Padding Adjustment Button
+        findViewById<View>(R.id.btnTftFit).setOnClickListener {
+            showTftPaddingDialog()
+        }
+    }
+
+    // ─── TFT Black Bar Margin Adjustment ────────────────────────
+
+    private fun applyTftPadding(topDp: Int, bottomDp: Int) {
+        val density = resources.displayMetrics.density
+        val topPx = (topDp * density).toInt()
+        val bottomPx = (bottomDp * density).toInt()
+
+        val topBarView = findViewById<View>(R.id.topBlackBar) ?: return
+        val bottomBarView = findViewById<View>(R.id.bottomBlackBar) ?: return
+
+        topBarView.layoutParams = topBarView.layoutParams.apply { height = topPx }
+        bottomBarView.layoutParams = bottomBarView.layoutParams.apply { height = bottomPx }
+    }
+
+    private fun showTftPaddingDialog() {
+        val prefs = getSharedPreferences("kove_map_prefs", MODE_PRIVATE)
+        var currentTop = prefs.getInt("map_top_padding_dp", 0)
+        var currentBottom = prefs.getInt("map_bottom_padding_dp", 0)
+
+        val view = LayoutInflater.from(this).inflate(R.layout.dialog_tft_padding, null)
+        val dialog = androidx.appcompat.app.AlertDialog.Builder(this)
+            .setView(view)
+            .setCancelable(true)
+            .create()
+
+        val tvTopLabel = view.findViewById<TextView>(R.id.tvTopLabel)
+        val btnTopMinus = view.findViewById<Button>(R.id.btnTopMinus)
+        val btnTopPlus = view.findViewById<Button>(R.id.btnTopPlus)
+        val seekBarTop = view.findViewById<android.widget.SeekBar>(R.id.seekBarTop)
+
+        val tvBottomLabel = view.findViewById<TextView>(R.id.tvBottomLabel)
+        val btnBottomMinus = view.findViewById<Button>(R.id.btnBottomMinus)
+        val btnBottomPlus = view.findViewById<Button>(R.id.btnBottomPlus)
+        val seekBarBottom = view.findViewById<android.widget.SeekBar>(R.id.seekBarBottom)
+
+        val btnReset = view.findViewById<Button>(R.id.btnResetPadding)
+        val btnSave = view.findViewById<Button>(R.id.btnSavePadding)
+
+        fun updateUI() {
+            currentTop = currentTop.coerceIn(0, 200)
+            currentBottom = currentBottom.coerceIn(0, 200)
+
+            tvTopLabel.text = getString(R.string.tft_fit_top_label, currentTop)
+            tvBottomLabel.text = getString(R.string.tft_fit_bottom_label, currentBottom)
+
+            seekBarTop.progress = currentTop
+            seekBarBottom.progress = currentBottom
+
+            applyTftPadding(currentTop, currentBottom)
+        }
+
+        updateUI()
+
+        btnTopMinus.setOnClickListener { currentTop -= 5; updateUI() }
+        btnTopPlus.setOnClickListener { currentTop += 5; updateUI() }
+        seekBarTop.setOnSeekBarChangeListener(object : android.widget.SeekBar.OnSeekBarChangeListener {
+            override fun onProgressChanged(sb: android.widget.SeekBar?, progress: Int, fromUser: Boolean) {
+                if (fromUser) { currentTop = progress; updateUI() }
+            }
+            override fun onStartTrackingTouch(sb: android.widget.SeekBar?) {}
+            override fun onStopTrackingTouch(sb: android.widget.SeekBar?) {}
+        })
+
+        btnBottomMinus.setOnClickListener { currentBottom -= 5; updateUI() }
+        btnBottomPlus.setOnClickListener { currentBottom += 5; updateUI() }
+        seekBarBottom.setOnSeekBarChangeListener(object : android.widget.SeekBar.OnSeekBarChangeListener {
+            override fun onProgressChanged(sb: android.widget.SeekBar?, progress: Int, fromUser: Boolean) {
+                if (fromUser) { currentBottom = progress; updateUI() }
+            }
+            override fun onStartTrackingTouch(sb: android.widget.SeekBar?) {}
+            override fun onStopTrackingTouch(sb: android.widget.SeekBar?) {}
+        })
+
+        btnReset.setOnClickListener {
+            currentTop = 0
+            currentBottom = 0
+            updateUI()
+        }
+
+        btnSave.setOnClickListener {
+            prefs.edit().apply {
+                putInt("map_top_padding_dp", currentTop)
+                putInt("map_bottom_padding_dp", currentBottom)
+                apply()
+            }
+            Toast.makeText(this, getString(R.string.toast_tft_fit_saved), Toast.LENGTH_SHORT).show()
+            dialog.dismiss()
+        }
+
+        dialog.show()
     }
 
     // ─── Layer Switching (3 modes) ──────────────────────────────
 
     private fun switchLayer(layer: Int) {
         currentLayer = layer
-        val btnMaps = findViewById<Button>(R.id.btnLayerMaps)
-        val btnTopo = findViewById<Button>(R.id.btnLayerTopo)
-        val btnSat = findViewById<Button>(R.id.btnLayerSatellite)
+        val btnMaps = findViewById<View>(R.id.btnLayerMaps)
+        val btnTopo = findViewById<View>(R.id.btnLayerTopo)
+        val btnSat = findViewById<View>(R.id.btnLayerSatellite)
 
         val activeColor = Color.parseColor("#2979FF")
         val inactiveColor = Color.parseColor("#555555")
@@ -548,6 +653,8 @@ class MapActivity : AppCompatActivity() {
                     setPoints(parsed.points)
                     outlinePaint.color = color
                     outlinePaint.strokeWidth = width * resources.displayMetrics.density
+                    outlinePaint.strokeCap = android.graphics.Paint.Cap.ROUND
+                    outlinePaint.strokeJoin = android.graphics.Paint.Join.ROUND
                     outlinePaint.isAntiAlias = true
                 }
 

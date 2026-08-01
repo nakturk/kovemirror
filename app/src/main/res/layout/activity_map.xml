@@ -1,90 +1,133 @@
 <?xml version="1.0" encoding="utf-8"?>
-<FrameLayout xmlns:android="http://schemas.android.com/apk/res/android"
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    android:background="#0D0D0D">
+    android:orientation="vertical"
+    android:background="#000000">
 
-    <!-- Full-screen OSM Map -->
-    <org.osmdroid.views.MapView
-        android:id="@+id/mapView"
+    <!-- Adjustable Top Black Bar -->
+    <View
+        android:id="@+id/topBlackBar"
         android:layout_width="match_parent"
-        android:layout_height="match_parent" />
+        android:layout_height="0dp"
+        android:background="#000000" />
 
-    <!-- Top bar: back + title + layer buttons -->
-    <LinearLayout
-        android:id="@+id/topBar"
+    <!-- Main Map Viewport Container -->
+    <FrameLayout
+        android:id="@+id/mapContainer"
         android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:orientation="horizontal"
-        android:gravity="center_vertical"
-        android:background="#CC0D0D0D"
-        android:padding="6dp"
-        android:elevation="6dp">
+        android:layout_height="0dp"
+        android:layout_weight="1"
+        android:background="#0D0D0D">
 
-        <!-- Back button -->
-        <ImageView
-            android:id="@+id/btnBack"
-            android:layout_width="32dp"
-            android:layout_height="32dp"
-            android:padding="4dp"
-            android:src="@android:drawable/ic_menu_revert"
-            android:contentDescription="@string/map_btn_back"
-            android:background="?android:attr/selectableItemBackgroundBorderless" />
+        <!-- Full-screen OSM Map -->
+        <org.osmdroid.views.MapView
+            android:id="@+id/mapView"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent" />
 
-        <TextView
-            android:layout_width="0dp"
+        <!-- Top bar: back + title + layer buttons + TFT frame fit button -->
+        <LinearLayout
+            android:id="@+id/topBar"
+            android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:layout_weight="1"
-            android:text="@string/map_title"
-            android:textColor="#FFFFFF"
-            android:textSize="14sp"
-            android:textStyle="bold"
-            android:layout_marginStart="6dp" />
+            android:orientation="horizontal"
+            android:gravity="center_vertical"
+            android:background="#CC0D0D0D"
+            android:padding="6dp"
+            android:elevation="6dp">
 
-        <!-- Layer: Maps -->
-        <Button
-            android:id="@+id/btnLayerMaps"
-            android:layout_width="wrap_content"
-            android:layout_height="30dp"
-            android:text="@string/map_layer_maps"
-            android:textSize="10sp"
-            android:textColor="#FFFFFF"
-            android:background="#2979FF"
-            android:paddingStart="8dp"
-            android:paddingEnd="8dp"
-            android:minWidth="0dp"
-            android:minHeight="0dp"
-            android:layout_marginEnd="4dp" />
+            <!-- Back button -->
+            <ImageView
+                android:id="@+id/btnBack"
+                android:layout_width="32dp"
+                android:layout_height="32dp"
+                android:padding="4dp"
+                android:src="@android:drawable/ic_menu_revert"
+                android:contentDescription="@string/map_btn_back"
+                android:background="?android:attr/selectableItemBackgroundBorderless" />
 
-        <!-- Layer: Topo -->
-        <Button
-            android:id="@+id/btnLayerTopo"
-            android:layout_width="wrap_content"
-            android:layout_height="30dp"
-            android:text="@string/map_layer_topo"
-            android:textSize="10sp"
-            android:textColor="#FFFFFF"
-            android:background="#555555"
-            android:paddingStart="8dp"
-            android:paddingEnd="8dp"
-            android:minWidth="0dp"
-            android:minHeight="0dp"
-            android:layout_marginEnd="4dp" />
+            <TextView
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_weight="1"
+                android:text="@string/map_title"
+                android:textColor="#FFFFFF"
+                android:textSize="14sp"
+                android:textStyle="bold"
+                android:layout_marginStart="6dp" />
 
-        <!-- Layer: Satellite -->
-        <Button
-            android:id="@+id/btnLayerSatellite"
-            android:layout_width="wrap_content"
-            android:layout_height="30dp"
-            android:text="@string/map_layer_sat"
-            android:textSize="10sp"
-            android:textColor="#FFFFFF"
-            android:background="#555555"
-            android:paddingStart="8dp"
-            android:paddingEnd="8dp"
-            android:minWidth="0dp"
-            android:minHeight="0dp" />
-    </LinearLayout>
+            <!-- TFT Fit Frame Button -->
+            <TextView
+                android:id="@+id/btnTftFit"
+                android:layout_width="wrap_content"
+                android:layout_height="32dp"
+                android:text="@string/btn_tft_fit"
+                android:textSize="11sp"
+                android:textStyle="bold"
+                android:textColor="#FFFFFF"
+                android:background="#475569"
+                android:paddingStart="8dp"
+                android:paddingEnd="8dp"
+                android:gravity="center"
+                android:includeFontPadding="false"
+                android:clickable="true"
+                android:focusable="true"
+                android:layout_marginEnd="4dp" />
+
+            <!-- Layer: Maps -->
+            <TextView
+                android:id="@+id/btnLayerMaps"
+                android:layout_width="wrap_content"
+                android:layout_height="32dp"
+                android:text="@string/map_layer_maps"
+                android:textSize="11sp"
+                android:textStyle="bold"
+                android:textColor="#FFFFFF"
+                android:background="#2979FF"
+                android:paddingStart="8dp"
+                android:paddingEnd="8dp"
+                android:gravity="center"
+                android:includeFontPadding="false"
+                android:clickable="true"
+                android:focusable="true"
+                android:layout_marginEnd="4dp" />
+
+            <!-- Layer: Topo -->
+            <TextView
+                android:id="@+id/btnLayerTopo"
+                android:layout_width="wrap_content"
+                android:layout_height="32dp"
+                android:text="@string/map_layer_topo"
+                android:textSize="11sp"
+                android:textStyle="bold"
+                android:textColor="#FFFFFF"
+                android:background="#555555"
+                android:paddingStart="8dp"
+                android:paddingEnd="8dp"
+                android:gravity="center"
+                android:includeFontPadding="false"
+                android:clickable="true"
+                android:focusable="true"
+                android:layout_marginEnd="4dp" />
+
+            <!-- Layer: Satellite -->
+            <TextView
+                android:id="@+id/btnLayerSatellite"
+                android:layout_width="wrap_content"
+                android:layout_height="32dp"
+                android:text="@string/map_layer_sat"
+                android:textSize="11sp"
+                android:textStyle="bold"
+                android:textColor="#FFFFFF"
+                android:background="#555555"
+                android:paddingStart="8dp"
+                android:paddingEnd="8dp"
+                android:gravity="center"
+                android:includeFontPadding="false"
+                android:clickable="true"
+                android:focusable="true" />
+        </LinearLayout>
 
     <!-- Top Turn Banner (Active during Navigation) -->
     <LinearLayout
@@ -384,4 +427,13 @@
         </ScrollView>
     </LinearLayout>
 
-</FrameLayout>
+    </FrameLayout>
+
+    <!-- Adjustable Bottom Black Bar -->
+    <View
+        android:id="@+id/bottomBlackBar"
+        android:layout_width="match_parent"
+        android:layout_height="0dp"
+        android:background="#000000" />
+
+</LinearLayout>

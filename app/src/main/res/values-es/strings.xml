@@ -222,4 +222,30 @@
 
     <!-- Servicio de Accesibilidad -->
     <string name="accessibility_service_description">KoveMirror Control de Manillar permite controlar las aplicaciones de tu teléfono con los botones del manillar de tu motocicleta (zoom, desplazamiento, controles multimedia, volumen, cambio de app).</string>
+
+    <!-- Handlebar Mode Names -->
+    <string name="handlebar_mode_title">🎮 Menú del Manillar</string>
+    <string name="handlebar_mode_my_location">Volver a mi ubicación</string>
+    <string name="handlebar_mode_zoom">Acercar / Alejar</string>
+    <string name="handlebar_mode_pan_vertical">Mover Arriba / Abajo</string>
+    <string name="handlebar_mode_pan_horizontal">Mover Izquierda / Derecha</string>
+    <string name="handlebar_mode_media_track">Siguiente / Anterior Pista</string>
+    <string name="handlebar_mode_volume">Subir / Bajar Volumen</string>
+    <string name="handlebar_mode_play">Reproducir</string>
+    <string name="handlebar_mode_pause">Pausar</string>
+    <string name="handlebar_mode_app_switch">Siguiente / Anterior Aplicación</string>
+
+    <!-- Handlebar Toasts -->
+    <string name="toast_handlebar_mode_assigned">✅ Modo Manillar: %1$s</string>
+    <string name="toast_my_location">📍 Volver a mi ubicación</string>
+
+    <!-- TFT Frame Fit Dialog -->
+    <string name="btn_tft_fit">📺 TFT</string>
+    <string name="tft_fit_dialog_title">📺 Ajuste de Marco TFT</string>
+    <string name="tft_fit_dialog_description">Ajuste las barras negras superior e inferior para alinear el mapa con la pantalla TFT:</string>
+    <string name="tft_fit_top_label">Barra Negra Superior: %1$d dp</string>
+    <string name="tft_fit_bottom_label">Barra Negra Inferior: %1$d dp</string>
+    <string name="tft_fit_reset">Restablecer</string>
+    <string name="tft_fit_save">Guardar y Cerrar</string>
+    <string name="toast_tft_fit_saved">✅ Marco TFT Guardado</string>
 </resources>

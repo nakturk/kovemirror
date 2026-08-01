@@ -220,6 +220,32 @@
     <string name="btn_grant_permission">İzin Ver</string>
     <string name="toast_enable_accessibility">Lütfen Erişilebilirlik ayarlarında \"KoveMirror Gidon Kumandası\"nı etkinleştirin</string>
 
-    <!-- Erişilebilirlik Servisi -->
-    <string name="accessibility_service_description">KoveMirror Gidon Kumandası, motosikletinizdeki gidon tuşlarıyla telefonunuzdaki uygulamaları kontrol etmenizi sağlar (yakınlaştırma, kaydırma, medya kontrolü, ses, uygulama değiştirme).</string>
+    <!-- Accessibility Service -->
+    <string name="accessibility_service_description">KoveMirror Gidon Kontrolörü, motosiklet gidon tuşlarınızın telefonunuzdaki uygulamaları (yakınlaştırma, kaydırma, medya kontrolleri, ses, uygulama değiştirme) kontrol etmesini sağlar.</string>
+
+    <!-- Handlebar Mode Names -->
+    <string name="handlebar_mode_title">🎮 Gidon Menüsü</string>
+    <string name="handlebar_mode_my_location">Konumuma Dön</string>
+    <string name="handlebar_mode_zoom">Yakınlaştır / Uzaklaştır</string>
+    <string name="handlebar_mode_pan_vertical">Yukarı / Aşağı Kaydır</string>
+    <string name="handlebar_mode_pan_horizontal">Sola / Sağa Kaydır</string>
+    <string name="handlebar_mode_media_track">Sonraki / Önceki Parça</string>
+    <string name="handlebar_mode_volume">Ses Aç / Kıs</string>
+    <string name="handlebar_mode_play">Oynat</string>
+    <string name="handlebar_mode_pause">Duraklat</string>
+    <string name="handlebar_mode_app_switch">Sonraki / Önceki Uygulama</string>
+
+    <!-- Handlebar Toasts -->
+    <string name="toast_handlebar_mode_assigned">✅ Gidon Tuşları: %1$s</string>
+    <string name="toast_my_location">📍 Konumuma Dön</string>
+
+    <!-- TFT Frame Fit Dialog -->
+    <string name="btn_tft_fit">📺 TFT</string>
+    <string name="tft_fit_dialog_title">📺 TFT Ekran Çerçeve Ayarı</string>
+    <string name="tft_fit_dialog_description">Haritanın TFT ekranda tam gözükmesi için üst ve alt siyah bar yüksekliklerini ayarlayın:</string>
+    <string name="tft_fit_top_label">Üst Siyah Bar: %1$d dp</string>
+    <string name="tft_fit_bottom_label">Alt Siyah Bar: %1$d dp</string>
+    <string name="tft_fit_reset">Sıfırla</string>
+    <string name="tft_fit_save">Kaydet &amp; Kapat</string>
+    <string name="toast_tft_fit_saved">✅ TFT Çerçeve Ayarı Kaydedildi</string>
 </resources>

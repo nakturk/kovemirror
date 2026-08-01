@@ -222,4 +222,30 @@
 
     <!-- Accessibility Service -->
     <string name="accessibility_service_description">KoveMirror Handlebar Controller allows your motorcycle handlebar buttons to control apps on your phone (zoom, pan, media controls, volume, app switching).</string>
+
+    <!-- Handlebar Mode Names -->
+    <string name="handlebar_mode_title">🎮 Handlebar Mode</string>
+    <string name="handlebar_mode_my_location">Get back to my location</string>
+    <string name="handlebar_mode_zoom">Zoom In / Zoom Out</string>
+    <string name="handlebar_mode_pan_vertical">Up / Down Pan</string>
+    <string name="handlebar_mode_pan_horizontal">Left / Right Pan</string>
+    <string name="handlebar_mode_media_track">Next Track / Prev Track</string>
+    <string name="handlebar_mode_volume">Volume Up / Down</string>
+    <string name="handlebar_mode_play">Play</string>
+    <string name="handlebar_mode_pause">Pause</string>
+    <string name="handlebar_mode_app_switch">Next App / Prev App</string>
+
+    <!-- Handlebar Toasts -->
+    <string name="toast_handlebar_mode_assigned">✅ Handlebar Mode: %1$s</string>
+    <string name="toast_my_location">📍 Get back to my location</string>
+
+    <!-- TFT Frame Fit Dialog -->
+    <string name="btn_tft_fit">📺 TFT</string>
+    <string name="tft_fit_dialog_title">📺 TFT Screen Fit Adjustment</string>
+    <string name="tft_fit_dialog_description">Adjust top and bottom black bar heights to align the map with your motorcycle TFT display:</string>
+    <string name="tft_fit_top_label">Top Black Bar: %1$d dp</string>
+    <string name="tft_fit_bottom_label">Bottom Black Bar: %1$d dp</string>
+    <string name="tft_fit_reset">Reset</string>
+    <string name="tft_fit_save">Save &amp; Close</string>
+    <string name="toast_tft_fit_saved">✅ TFT Frame Fit Saved</string>
 </resources>

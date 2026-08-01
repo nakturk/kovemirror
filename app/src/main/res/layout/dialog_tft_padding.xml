@@ -1,0 +1,149 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:orientation="vertical"
+    android:background="#1E293B"
+    android:padding="20dp">
+
+    <!-- Title -->
+    <TextView
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:text="@string/tft_fit_dialog_title"
+        android:textColor="#FFFFFF"
+        android:textSize="18sp"
+        android:textStyle="bold"
+        android:gravity="center"
+        android:layout_marginBottom="16dp" />
+
+    <TextView
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:text="@string/tft_fit_dialog_description"
+        android:textColor="#94A3B8"
+        android:textSize="12sp"
+        android:layout_marginBottom="16dp" />
+
+    <!-- Top Black Bar Section -->
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="horizontal"
+        android:gravity="center_vertical"
+        android:layout_marginBottom="6dp">
+
+        <TextView
+            android:id="@+id/tvTopLabel"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_weight="1"
+            android:text="Üst Siyah Bar: 0 dp"
+            android:textColor="#F8FAFC"
+            android:textSize="14sp"
+            android:textStyle="bold" />
+
+        <Button
+            android:id="@+id/btnTopMinus"
+            android:layout_width="40dp"
+            android:layout_height="40dp"
+            android:text="-"
+            android:textSize="18sp"
+            android:textColor="#FFFFFF"
+            android:background="#334155" />
+
+        <Button
+            android:id="@+id/btnTopPlus"
+            android:layout_width="40dp"
+            android:layout_height="40dp"
+            android:text="+"
+            android:textSize="18sp"
+            android:textColor="#FFFFFF"
+            android:background="#334155"
+            android:layout_marginStart="8dp" />
+    </LinearLayout>
+
+    <SeekBar
+        android:id="@+id/seekBarTop"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:max="200"
+        android:progress="0"
+        android:progressTint="#2979FF"
+        android:thumbTint="#2979FF"
+        android:layout_marginBottom="20dp" />
+
+    <!-- Bottom Black Bar Section -->
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="horizontal"
+        android:gravity="center_vertical"
+        android:layout_marginBottom="6dp">
+
+        <TextView
+            android:id="@+id/tvBottomLabel"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_weight="1"
+            android:text="Alt Siyah Bar: 0 dp"
+            android:textColor="#F8FAFC"
+            android:textSize="14sp"
+            android:textStyle="bold" />
+
+        <Button
+            android:id="@+id/btnBottomMinus"
+            android:layout_width="40dp"
+            android:layout_height="40dp"
+            android:text="-"
+            android:textSize="18sp"
+            android:textColor="#FFFFFF"
+            android:background="#334155" />
+
+        <Button
+            android:id="@+id/btnBottomPlus"
+            android:layout_width="40dp"
+            android:layout_height="40dp"
+            android:text="+"
+            android:textSize="18sp"
+            android:textColor="#FFFFFF"
+            android:background="#334155"
+            android:layout_marginStart="8dp" />
+    </LinearLayout>
+
+    <SeekBar
+        android:id="@+id/seekBarBottom"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:max="200"
+        android:progress="0"
+        android:progressTint="#2979FF"
+        android:thumbTint="#2979FF"
+        android:layout_marginBottom="20dp" />
+
+    <!-- Action Buttons -->
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="horizontal"
+        android:gravity="end">
+
+        <Button
+            android:id="@+id/btnResetPadding"
+            android:layout_width="wrap_content"
+            android:layout_height="40dp"
+            android:text="@string/tft_fit_reset"
+            android:textColor="#94A3B8"
+            android:background="#1E293B"
+            android:layout_marginEnd="8dp" />
+
+        <Button
+            android:id="@+id/btnSavePadding"
+            android:layout_width="wrap_content"
+            android:layout_height="40dp"
+            android:text="@string/tft_fit_save"
+            android:textColor="#FFFFFF"
+            android:background="#2979FF"
+            android:textStyle="bold" />
+    </LinearLayout>
+</LinearLayout>

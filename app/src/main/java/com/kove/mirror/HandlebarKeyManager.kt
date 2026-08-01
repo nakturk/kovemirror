@@ -1,8 +1,10 @@
 package com.kove.mirror
 
+import android.content.Context
 import android.os.Handler
 import android.os.Looper
 import android.view.KeyEvent
+import androidx.annotation.StringRes
 import org.json.JSONObject
 import java.util.concurrent.CopyOnWriteArraySet
 
@@ -15,23 +17,28 @@ enum class HandlebarKey {
 
 /**
  * Defines the action modes in the overlay menu.
+ * @param nameResId String resource ID for localized display name.
  * @param isEntAction If true, this is a one-time ENT action (My Location, Play, Pause).
  *                    If false, this is a continuous UP/DOWN mode assignment (Zoom, Pan, Media, Volume, App Switch).
  */
 enum class HandlebarActionMode(
-    val displayName: String,
-    val displayNameTr: String,
+    @StringRes val nameResId: Int,
     val isEntAction: Boolean
 ) {
-    MY_LOCATION("Get back to my location", "Konumuma Dön", isEntAction = true),
-    ZOOM("Zoom In / Zoom Out", "Yakınlaştır / Uzaklaştır", isEntAction = false),
-    PAN_VERTICAL("Up / Down Pan", "Yukarı / Aşağı Kaydır", isEntAction = false),
-    PAN_HORIZONTAL("Left / Right Pan", "Sola / Sağa Kaydır", isEntAction = false),
-    MEDIA_TRACK("Next Track / Prev Track", "Sonraki / Önceki Parça", isEntAction = false),
-    VOLUME("Volume Up / Down", "Ses Aç / Kıs", isEntAction = false),
-    PLAY("Play", "Oynat", isEntAction = true),
-    PAUSE("Pause", "Duraklat", isEntAction = true),
-    APP_SWITCH("Next App / Prev App", "Sonraki / Önceki Uygulama", isEntAction = false);
+    MY_LOCATION(R.string.handlebar_mode_my_location, isEntAction = true),
+    ZOOM(R.string.handlebar_mode_zoom, isEntAction = false),
+    PAN_VERTICAL(R.string.handlebar_mode_pan_vertical, isEntAction = false),
+    PAN_HORIZONTAL(R.string.handlebar_mode_pan_horizontal, isEntAction = false),
+    MEDIA_TRACK(R.string.handlebar_mode_media_track, isEntAction = false),
+    VOLUME(R.string.handlebar_mode_volume, isEntAction = false),
+    PLAY(R.string.handlebar_mode_play, isEntAction = true),
+    PAUSE(R.string.handlebar_mode_pause, isEntAction = true),
+    APP_SWITCH(R.string.handlebar_mode_app_switch, isEntAction = false);
+
+    fun getDisplayName(context: Context): String {
+        val localizedCtx = LocaleHelper.applyLocale(context)
+        return localizedCtx.getString(nameResId)
+    }
 }
 
 object HandlebarKeyManager {
@@ -117,21 +124,16 @@ object HandlebarKeyManager {
                     if (listener(key)) break
                 }
             }
-            HandlebarKey.ENTER -> {
-                // Single ENT when overlay is closed → Open Overlay Menu
+            HandlebarKey.ENTER, HandlebarKey.ESC -> {
+                // Both ENT (status 1) and ESC (status 0) when overlay is closed → Open Overlay Menu
                 // ALWAYS reset highlightedIndex to 0 ("Get back to my location")
+                // This eliminates any state desync caused by TFT hardware Play/Pause toggling.
                 isOverlayMenuOpen = true
                 highlightedIndex = 0
                 onOverlayToggle?.invoke(true)
                 onHighlightChanged?.invoke(highlightedIndex)
                 startAutoConfirmTimer()
-                DebugLogger.info("🎮 ENT → Opening Overlay Menu (Defaulting selection to 'Get back to my location')")
-            }
-            HandlebarKey.ESC -> {
-                // Propagate ESC to legacy listeners
-                for (listener in listeners) {
-                    if (listener(key)) break
-                }
+                DebugLogger.info("🎮 Key trigger ($key) → Opening Overlay Menu (Defaulting selection to 'Get back to my location')")
             }
         }
     }
