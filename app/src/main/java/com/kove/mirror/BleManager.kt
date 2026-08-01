@@ -189,6 +189,8 @@ class BleManager(private val context: Context, private val logCallback: (String)
             val text = String(data)
             logCallback("📥 TFT -> BLE: $text")
             
+            HandlebarKeyManager.processJson(text)
+
             try {
                 val json = JSONObject(text)
                 if (json.optInt("msg_id") == 27 && json.optString("act") == "send_pairresult" && json.optInt("result") == 1) {

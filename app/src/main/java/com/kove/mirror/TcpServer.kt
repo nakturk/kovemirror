@@ -320,6 +320,7 @@ class TcpServer(
                                 val text = String(buf, 0, n, StandardCharsets.UTF_8).filter { it.code in 32..126 }
                                 if (text.isNotBlank()) {
                                     DebugLogger.info("   [ASCII Text]: $text")
+                                    HandlebarKeyManager.processJson(text)
                                 }
                             } catch (_: Exception) {}
 

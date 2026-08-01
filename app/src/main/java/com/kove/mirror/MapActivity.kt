@@ -687,15 +687,63 @@ class MapActivity : AppCompatActivity() {
         }
     }
 
+    // ─── Motorcycle Handlebar Buttons ────────────────────────────
+
+    private val handlebarKeyListener: (HandlebarKey) -> Boolean = { key ->
+        when (key) {
+            HandlebarKey.UP -> {
+                mapView.controller.zoomOut()
+                Toast.makeText(this, "🔍 Zoom Out (UP)", Toast.LENGTH_SHORT).show()
+                true
+            }
+            HandlebarKey.DOWN -> {
+                mapView.controller.zoomIn()
+                Toast.makeText(this, "🔍 Zoom In (DOWN)", Toast.LENGTH_SHORT).show()
+                true
+            }
+            HandlebarKey.ENTER -> {
+                if (findViewById<LinearLayout>(R.id.destCard).visibility == View.VISIBLE) {
+                    startNavigation()
+                } else {
+                    centerOnMyLocation()
+                }
+                Toast.makeText(this, "🎮 ENTER", Toast.LENGTH_SHORT).show()
+                true
+            }
+            HandlebarKey.ESC -> {
+                if (isNavigating) {
+                    stopNavigation()
+                } else if (findViewById<LinearLayout>(R.id.destCard).visibility == View.VISIBLE) {
+                    cancelDestinationSelection()
+                } else {
+                    finish()
+                }
+                Toast.makeText(this, "🎮 ESC", Toast.LENGTH_SHORT).show()
+                true
+            }
+        }
+    }
+
+    override fun dispatchKeyEvent(event: android.view.KeyEvent): Boolean {
+        if (event.action == android.view.KeyEvent.ACTION_DOWN) {
+            if (HandlebarKeyManager.processKeyEvent(event)) {
+                return true
+            }
+        }
+        return super.dispatchKeyEvent(event)
+    }
+
     // ─── Lifecycle ──────────────────────────────────────────────
 
     override fun onResume() {
         super.onResume()
         mapView.onResume()
+        HandlebarKeyManager.addListener(handlebarKeyListener)
     }
 
     override fun onPause() {
         super.onPause()
+        HandlebarKeyManager.removeListener(handlebarKeyListener)
         mapView.onPause()
 
         val center = mapView.mapCenter

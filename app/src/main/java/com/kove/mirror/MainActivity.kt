@@ -68,9 +68,51 @@ class MainActivity : AppCompatActivity() {
         DebugLogger.info(getString(R.string.log_app_started))
     }
 
+    private val handlebarKeyListener: (HandlebarKey) -> Boolean = { key ->
+        when (key) {
+            HandlebarKey.UP -> {
+                DebugLogger.info("🎮 Handlebar key UP on MainActivity")
+                Toast.makeText(this, "🎮 Handlebar: UP", Toast.LENGTH_SHORT).show()
+                true
+            }
+            HandlebarKey.DOWN -> {
+                DebugLogger.info("🎮 Handlebar key DOWN on MainActivity")
+                Toast.makeText(this, "🎮 Handlebar: DOWN", Toast.LENGTH_SHORT).show()
+                true
+            }
+            HandlebarKey.ENTER -> {
+                DebugLogger.info("🎮 Handlebar key ENTER on MainActivity")
+                startActivity(Intent(this, MapActivity::class.java))
+                true
+            }
+            HandlebarKey.ESC -> {
+                DebugLogger.info("🎮 Handlebar key ESC on MainActivity")
+                if (isStreaming) {
+                    stopMirroring()
+                }
+                true
+            }
+        }
+    }
+
+    override fun dispatchKeyEvent(event: android.view.KeyEvent): Boolean {
+        if (event.action == android.view.KeyEvent.ACTION_DOWN) {
+            if (HandlebarKeyManager.processKeyEvent(event)) {
+                return true
+            }
+        }
+        return super.dispatchKeyEvent(event)
+    }
+
     override fun onResume() {
         super.onResume()
         refreshWifiStatus()
+        HandlebarKeyManager.addListener(handlebarKeyListener)
+    }
+
+    override fun onPause() {
+        super.onPause()
+        HandlebarKeyManager.removeListener(handlebarKeyListener)
     }
 
     // ─── Language Selector ───────────────────────────────────────
