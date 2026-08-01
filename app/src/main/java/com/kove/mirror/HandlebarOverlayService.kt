@@ -16,6 +16,7 @@ import android.view.View
 import android.view.WindowManager
 import android.widget.LinearLayout
 import android.widget.TextView
+import android.widget.Toast
 
 /**
  * Floating system overlay service that renders the handlebar action mode selector.
@@ -286,6 +287,7 @@ class HandlebarOverlayService : Service() {
     private fun showActiveModeIndicator(mode: HandlebarActionMode) {
         mainHandler.post {
             activeModeIndicator?.text = "🎮 ▲▼: ${mode.displayName}"
+            Toast.makeText(this, "✅ Gidon Tuşları: ${mode.displayNameTr}", Toast.LENGTH_SHORT).show()
         }
     }
 
@@ -305,7 +307,7 @@ class HandlebarOverlayService : Service() {
         when (mode) {
             HandlebarActionMode.MY_LOCATION -> {
                 DebugLogger.info("🎮 Action: Get back to my location")
-                // Broadcast to MapActivity to recenter
+                Toast.makeText(this, "📍 Konumuma Dön", Toast.LENGTH_SHORT).show()
                 val intent = Intent("com.kove.mirror.ACTION_MY_LOCATION")
                 sendBroadcast(intent)
             }

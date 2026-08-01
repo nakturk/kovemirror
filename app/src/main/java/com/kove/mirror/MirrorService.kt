@@ -85,6 +85,7 @@ class MirrorService : Service() {
         DebugLogger.setContext(this)
         runningInstance = this
         createNotificationChannel()
+        HandlebarOverlayService.startService(this)
         DebugLogger.info("🚀 MirrorService started")
     }
 

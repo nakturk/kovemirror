@@ -50,6 +50,10 @@ object HandlebarKeyManager {
     var highlightedIndex: Int = 0
         private set
 
+    // ─── Auto-Confirm Dwell Timer (1.5 seconds) ────────────
+    private var autoConfirmRunnable: Runnable? = null
+    private const val AUTO_CONFIRM_DELAY_MS = 1500L
+
     // ─── Callbacks for Overlay & Actions ────────────────────
     var onOverlayToggle: ((Boolean) -> Unit)? = null
     var onHighlightChanged: ((Int) -> Unit)? = null
@@ -88,34 +92,17 @@ object HandlebarKeyManager {
             HandlebarKey.UP -> {
                 highlightedIndex = (highlightedIndex - 1 + allModes.size) % allModes.size
                 onHighlightChanged?.invoke(highlightedIndex)
+                startAutoConfirmTimer()
             }
             HandlebarKey.DOWN -> {
                 highlightedIndex = (highlightedIndex + 1) % allModes.size
                 onHighlightChanged?.invoke(highlightedIndex)
+                startAutoConfirmTimer()
             }
-            HandlebarKey.ENTER -> {
-                val selectedOption = allModes[highlightedIndex]
-
-                if (selectedOption.isEntAction) {
-                    // ENT Action (MY_LOCATION, PLAY, PAUSE): execute action once, do NOT change activeUpDownMode
-                    DebugLogger.info("🎮 Executing ENT action: ${selectedOption.name}")
-                    onActionDispatch?.invoke(selectedOption, HandlebarKey.ENTER)
-                } else {
-                    // Continuous UP/DOWN Mode Assignment (ZOOM, PAN, MEDIA, VOLUME, APP_SWITCH):
-                    // Set as active UP/DOWN assignment!
-                    activeUpDownMode = selectedOption
-                    DebugLogger.info("🎮 Active UP/DOWN mode assigned to: ${activeUpDownMode.name}")
-                    onModeActivated?.invoke(activeUpDownMode)
-                }
-
-                // Close overlay menu
-                isOverlayMenuOpen = false
-                onOverlayToggle?.invoke(false)
-            }
-            HandlebarKey.ESC -> {
-                // Close overlay without action
-                isOverlayMenuOpen = false
-                onOverlayToggle?.invoke(false)
+            HandlebarKey.ENTER, HandlebarKey.ESC -> {
+                // Both ENTER and ESC confirm the currently highlighted selection while overlay is open!
+                // This solves the Kove TFT hardware behavior where a second ENT press sends ESC (status 0).
+                confirmCurrentSelection()
             }
         }
     }
@@ -137,6 +124,7 @@ object HandlebarKeyManager {
                 highlightedIndex = 0
                 onOverlayToggle?.invoke(true)
                 onHighlightChanged?.invoke(highlightedIndex)
+                startAutoConfirmTimer()
                 DebugLogger.info("🎮 ENT → Opening Overlay Menu (Defaulting selection to 'Get back to my location')")
             }
             HandlebarKey.ESC -> {
@@ -146,6 +134,44 @@ object HandlebarKeyManager {
                 }
             }
         }
+    }
+
+    private fun confirmCurrentSelection() {
+        cancelAutoConfirmTimer()
+        val selectedOption = allModes[highlightedIndex]
+
+        if (selectedOption.isEntAction) {
+            // ENT Action (MY_LOCATION, PLAY, PAUSE): execute action once, do NOT change activeUpDownMode
+            DebugLogger.info("🎮 Executing ENT action: ${selectedOption.name}")
+            onActionDispatch?.invoke(selectedOption, HandlebarKey.ENTER)
+        } else {
+            // Continuous UP/DOWN Mode Assignment (ZOOM, PAN, MEDIA, VOLUME, APP_SWITCH):
+            // Set as active UP/DOWN assignment!
+            activeUpDownMode = selectedOption
+            DebugLogger.info("🎮 Active UP/DOWN mode assigned to: ${activeUpDownMode.name}")
+            onModeActivated?.invoke(activeUpDownMode)
+        }
+
+        // Close overlay menu
+        isOverlayMenuOpen = false
+        onOverlayToggle?.invoke(false)
+    }
+
+    private fun startAutoConfirmTimer() {
+        cancelAutoConfirmTimer()
+        val runnable = Runnable {
+            if (isOverlayMenuOpen) {
+                DebugLogger.info("🎮 Auto-confirming selection: ${allModes[highlightedIndex].name}")
+                confirmCurrentSelection()
+            }
+        }
+        autoConfirmRunnable = runnable
+        mainHandler.postDelayed(runnable, AUTO_CONFIRM_DELAY_MS)
+    }
+
+    private fun cancelAutoConfirmTimer() {
+        autoConfirmRunnable?.let { mainHandler.removeCallbacks(it) }
+        autoConfirmRunnable = null
     }
 
     /**
