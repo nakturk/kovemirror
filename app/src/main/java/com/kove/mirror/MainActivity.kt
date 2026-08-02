@@ -30,8 +30,8 @@ class MainActivity : AppCompatActivity() {
         const val REQ_NOTIFICATION   = 101
         const val REQ_OVERLAY        = 102
 
-        const val APP_MODE_MIRRORING     = 0
-        const val APP_MODE_CONTROL_ONLY  = 1
+        const val APP_MODE_MIRRORING        = 0
+        const val APP_MODE_CONTROL_ONLY     = 1
     }
 
     private lateinit var binding: ActivityMainBinding
@@ -63,8 +63,9 @@ class MainActivity : AppCompatActivity() {
         
         checkSecurityConstraints()
 
-        setupLanguageSpinner()
-        setupBluetoothSpinner()
+        setupLanguageButton()
+        setupBluetoothButton()
+        setupAboutButton()
         setupAppModeRadioGroup()
         setupDisplayModeSpinner()
         setupResolutionSpinner()
@@ -125,24 +126,23 @@ class MainActivity : AppCompatActivity() {
 
     // ─── Language Selector ───────────────────────────────────────
 
-    private fun setupLanguageSpinner() {
-        val adapter = ArrayAdapter(this, android.R.layout.simple_spinner_item, languageNames)
-        adapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item)
-        binding.spLanguage.adapter = adapter
-
+    private fun setupLanguageButton() {
         val currentLang = LocaleHelper.getSavedLanguage(this)
         val currentIdx = languageCodes.indexOf(currentLang).let { if (it >= 0) it else 0 }
-        binding.spLanguage.setSelection(currentIdx, false)
+        val currentLangName = languageNames.getOrNull(currentIdx) ?: "English"
+        binding.btnSelectLanguage.text = getString(R.string.btn_select_language, currentLangName)
 
-        binding.spLanguage.onItemSelectedListener = object : AdapterView.OnItemSelectedListener {
-            override fun onItemSelected(parent: AdapterView<*>?, view: View?, position: Int, id: Long) {
-                val selectedLang = languageCodes[position]
-                if (selectedLang != LocaleHelper.getSavedLanguage(this@MainActivity)) {
-                    LocaleHelper.setLocale(this@MainActivity, selectedLang)
-                    recreate()
+        binding.btnSelectLanguage.setOnClickListener {
+            AlertDialog.Builder(this)
+                .setTitle(R.string.label_language)
+                .setItems(languageNames.toTypedArray()) { _, which ->
+                    val selectedLang = languageCodes[which]
+                    if (selectedLang != LocaleHelper.getSavedLanguage(this@MainActivity)) {
+                        LocaleHelper.setLocale(this@MainActivity, selectedLang)
+                        recreate()
+                    }
                 }
-            }
-            override fun onNothingSelected(parent: AdapterView<*>?) {}
+                .show()
         }
     }
 
@@ -150,13 +150,13 @@ class MainActivity : AppCompatActivity() {
 
     private fun setupAppModeRadioGroup() {
         val savedMode = getSharedPreferences("kove_prefs", MODE_PRIVATE).getInt("app_mode", APP_MODE_MIRRORING)
-        currentAppMode = savedMode
-        if (savedMode == APP_MODE_CONTROL_ONLY) {
+        currentAppMode = if (savedMode == APP_MODE_CONTROL_ONLY) APP_MODE_CONTROL_ONLY else APP_MODE_MIRRORING
+        if (currentAppMode == APP_MODE_CONTROL_ONLY) {
             binding.rbModeControlOnly.isChecked = true
         } else {
             binding.rbModeMirroring.isChecked = true
         }
-        updateUiForMode(savedMode)
+        updateUiForMode(currentAppMode)
 
         binding.rgAppMode.setOnCheckedChangeListener { _, checkedId ->
             val newMode = if (checkedId == R.id.rbModeControlOnly) APP_MODE_CONTROL_ONLY else APP_MODE_MIRRORING
@@ -234,13 +234,50 @@ class MainActivity : AppCompatActivity() {
         }
     }
 
+    private fun setupAboutButton() {
+        binding.btnAbout.setOnClickListener {
+            AlertDialog.Builder(this)
+                .setTitle(R.string.about_dialog_title)
+                .setMessage(R.string.about_developer_credit)
+                .setPositiveButton(R.string.btn_ok, null)
+                .show()
+        }
+    }
+
     // ─── Setup ───────────────────────────────────────────────────
 
+    @android.annotation.SuppressLint("ClickableViewAccessibility")
     private fun setupButtons() {
         binding.btnStartStop.setOnClickListener { onStartStopClick() }
         binding.btnShareLogs.setOnClickListener { shareLogs() }
         binding.btnOpenMap.setOnClickListener {
             startActivity(Intent(this, MapActivity::class.java))
+        }
+
+        binding.btnToggleDebug.setOnClickListener {
+            val isVisible = binding.svDebug.visibility == View.VISIBLE
+            if (isVisible) {
+                binding.svDebug.visibility = View.GONE
+                binding.btnToggleDebug.text = getString(R.string.btn_toggle_debug_show)
+            } else {
+                binding.svDebug.visibility = View.VISIBLE
+                binding.btnToggleDebug.text = getString(R.string.btn_toggle_debug_hide)
+                binding.svDebug.post {
+                    binding.svDebug.fullScroll(View.FOCUS_DOWN)
+                }
+            }
+        }
+
+        binding.svDebug.setOnTouchListener { v, event ->
+            when (event.action) {
+                android.view.MotionEvent.ACTION_DOWN, android.view.MotionEvent.ACTION_MOVE -> {
+                    v.parent.requestDisallowInterceptTouchEvent(true)
+                }
+                android.view.MotionEvent.ACTION_UP, android.view.MotionEvent.ACTION_CANCEL -> {
+                    v.parent.requestDisallowInterceptTouchEvent(false)
+                }
+            }
+            false
         }
 
         // Test Handlebar Simulation Buttons
@@ -267,9 +304,11 @@ class MainActivity : AppCompatActivity() {
                 }
                 binding.tvDebugLog.text = newText
                 
-                // Auto-scroll to bottom
-                binding.svDebug.post {
-                    binding.svDebug.fullScroll(View.FOCUS_DOWN)
+                // Auto-scroll to bottom if visible
+                if (binding.svDebug.visibility == View.VISIBLE) {
+                    binding.svDebug.post {
+                        binding.svDebug.fullScroll(View.FOCUS_DOWN)
+                    }
                 }
             }
         }
@@ -421,8 +460,8 @@ class MainActivity : AppCompatActivity() {
             getString(R.string.mode_fit),
             getString(R.string.mode_stretch)
         )
-        val adapter = ArrayAdapter(this, android.R.layout.simple_spinner_item, options)
-        adapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item)
+        val adapter = ArrayAdapter(this, R.layout.spinner_item_compact, options)
+        adapter.setDropDownViewResource(R.layout.spinner_dropdown_item_compact)
         binding.spDisplayMode.adapter = adapter
 
         val savedModeIdx = getSharedPreferences("kove_prefs", MODE_PRIVATE).getInt("display_mode", 0)
@@ -438,8 +477,8 @@ class MainActivity : AppCompatActivity() {
 
     private fun setupResolutionSpinner() {
         val options = tftPresets.map { getString(it.titleResId) }
-        val adapter = ArrayAdapter(this, android.R.layout.simple_spinner_item, options)
-        adapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item)
+        val adapter = ArrayAdapter(this, R.layout.spinner_item_compact, options)
+        adapter.setDropDownViewResource(R.layout.spinner_dropdown_item_compact)
         binding.spTftResolution.adapter = adapter
 
         val savedPresetIdx = getSharedPreferences("kove_prefs", MODE_PRIVATE).getInt("tft_preset", 0)
@@ -541,54 +580,64 @@ class MainActivity : AppCompatActivity() {
         binding.tvStatus.setTextColor(Color.parseColor("#AAAAAA"))
     }
 
-    // ─── Bluetooth Spinner ───────────────────────────────────────
+    // ─── Bluetooth Selector ───────────────────────────────────────
 
     @SuppressLint("MissingPermission")
-    private fun setupBluetoothSpinner() {
-        val adapter = BluetoothAdapter.getDefaultAdapter()
-        if (adapter == null) {
-            binding.spBtDevices.adapter = ArrayAdapter(this, android.R.layout.simple_spinner_item, arrayOf(getString(R.string.bt_not_supported)))
-            return
-        }
+    private fun setupBluetoothButton() {
+        fun updateBtButtonText() {
+            val savedMac = getSharedPreferences("kove_prefs", MODE_PRIVATE).getString("bt_mac", "")
+            val adapter = BluetoothAdapter.getDefaultAdapter()
+            var displayName = getString(R.string.bt_device_none)
 
-        if (!adapter.isEnabled) {
-            binding.spBtDevices.adapter = ArrayAdapter(this, android.R.layout.simple_spinner_item, arrayOf(getString(R.string.bt_off)))
-            return
-        }
-
-        val bonded = try {
-            adapter.bondedDevices
-        } catch (e: SecurityException) {
-            DebugLogger.warning(getString(R.string.log_bt_permissions_missing))
-            binding.spBtDevices.adapter = ArrayAdapter(this, android.R.layout.simple_spinner_item, arrayOf(getString(R.string.bt_permission_missing)))
-            return
-        }
-
-        val names = bonded.map { "${it.name} (${it.address})" }.toMutableList()
-        if (names.isEmpty()) {
-            names.add(getString(R.string.bt_no_paired_devices))
-        }
-
-        binding.spBtDevices.adapter = ArrayAdapter(this, android.R.layout.simple_spinner_item, names.toTypedArray())
-
-        // Load saved selection
-        val savedMac = getSharedPreferences("kove_prefs", MODE_PRIVATE).getString("bt_mac", "")
-        if (!savedMac.isNullOrEmpty()) {
-            val idx = bonded.indexOfFirst { it.address == savedMac }
-            if (idx >= 0) {
-                binding.spBtDevices.setSelection(idx)
+            if (!savedMac.isNullOrEmpty() && adapter != null && adapter.isEnabled) {
+                try {
+                    val bonded = adapter.bondedDevices
+                    val dev = bonded?.firstOrNull { it.address == savedMac }
+                    if (dev != null) {
+                        displayName = dev.name ?: savedMac
+                    }
+                } catch (_: SecurityException) {}
             }
+            binding.btnSelectBtDevice.text = getString(R.string.btn_select_bt_device, displayName)
         }
 
-        binding.spBtDevices.onItemSelectedListener = object : android.widget.AdapterView.OnItemSelectedListener {
-            override fun onItemSelected(parent: android.widget.AdapterView<*>?, view: View?, position: Int, id: Long) {
-                if (position < bonded.size) {
-                    val dev = bonded.toList()[position]
+        updateBtButtonText()
+
+        binding.btnSelectBtDevice.setOnClickListener {
+            val adapter = BluetoothAdapter.getDefaultAdapter()
+            if (adapter == null) {
+                Toast.makeText(this, getString(R.string.bt_not_supported), Toast.LENGTH_SHORT).show()
+                return@setOnClickListener
+            }
+            if (!adapter.isEnabled) {
+                Toast.makeText(this, getString(R.string.bt_off), Toast.LENGTH_SHORT).show()
+                return@setOnClickListener
+            }
+
+            val bonded = try {
+                adapter.bondedDevices?.toList() ?: emptyList()
+            } catch (e: SecurityException) {
+                DebugLogger.warning(getString(R.string.log_bt_permissions_missing))
+                Toast.makeText(this, getString(R.string.bt_permission_missing), Toast.LENGTH_SHORT).show()
+                return@setOnClickListener
+            }
+
+            if (bonded.isEmpty()) {
+                Toast.makeText(this, getString(R.string.bt_no_paired_devices), Toast.LENGTH_SHORT).show()
+                return@setOnClickListener
+            }
+
+            val names = bonded.map { "${it.name} (${it.address})" }.toTypedArray()
+
+            AlertDialog.Builder(this)
+                .setTitle(R.string.label_select_bt_device)
+                .setItems(names) { _, which ->
+                    val dev = bonded[which]
                     getSharedPreferences("kove_prefs", MODE_PRIVATE).edit().putString("bt_mac", dev.address).apply()
                     DebugLogger.info(getString(R.string.log_selected_bt, dev.name ?: "Unknown", dev.address))
+                    updateBtButtonText()
                 }
-            }
-            override fun onNothingSelected(parent: android.widget.AdapterView<*>?) {}
+                .show()
         }
     }
 
@@ -632,7 +681,7 @@ class MainActivity : AppCompatActivity() {
         if (requestCode == 999) {
             if (grantResults.all { it == PackageManager.PERMISSION_GRANTED }) {
                 DebugLogger.success(getString(R.string.log_bt_permissions_granted))
-                setupBluetoothSpinner()
+                setupBluetoothButton()
             } else {
                 DebugLogger.warning(getString(R.string.log_bt_permissions_denied))
             }

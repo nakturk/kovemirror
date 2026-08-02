@@ -1,337 +1,435 @@
 <?xml version="1.0" encoding="utf-8"?>
-<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+<ScrollView xmlns:android="http://schemas.android.com/apk/res/android"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    android:orientation="vertical"
-    android:background="#0D0D0D"
-    android:gravity="center_horizontal"
-    android:paddingStart="16dp"
-    android:paddingEnd="16dp"
-    android:paddingTop="12dp"
-    android:paddingBottom="8dp">
+    android:background="#0D1117"
+    android:fillViewport="true">
 
-    <!-- Top bar: App title + Subtitle (compact) -->
     <LinearLayout
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:orientation="horizontal"
-        android:gravity="center_vertical"
-        android:layout_marginBottom="6dp">
-
-        <TextView
-            android:id="@+id/tvAppTitle"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:text="🏍️ KoveMirror"
-            android:textColor="#FFFFFF"
-            android:textSize="18sp"
-            android:textStyle="bold" />
-
-        <TextView
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:text="@string/header_subtitle"
-            android:textColor="#7777AA"
-            android:textSize="11sp"
-            android:layout_marginStart="8dp" />
-    </LinearLayout>
-
-    <!-- Spacer -->
-    <View
-        android:layout_width="match_parent"
-        android:layout_height="1dp"
-        android:background="#1A1A2E"
-        android:layout_marginBottom="6dp" />
-
-    <!-- Status indicator -->
-    <TextView
-        android:id="@+id/tvStatus"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:text="@string/status_ready"
-        android:textColor="#AAAAAA"
-        android:textSize="14sp"
-        android:layout_marginBottom="6dp" />
-
-    <!-- Language selector -->
-    <TextView
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:text="@string/label_language"
-        android:textColor="#888888"
-        android:textSize="12sp"
-        android:layout_marginBottom="2dp" />
-
-    <Spinner
-        android:id="@+id/spLanguage"
-        android:layout_width="match_parent"
-        android:layout_height="36dp"
-        android:background="#1A1A2E"
-        android:popupBackground="#1A1A2E"
-        android:layout_marginBottom="6dp" />
-
-    <!-- Bluetooth device selector -->
-    <TextView
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:text="@string/label_select_bt_device"
-        android:textColor="#888888"
-        android:textSize="12sp"
-        android:layout_marginBottom="2dp" />
-
-    <Spinner
-        android:id="@+id/spBtDevices"
-        android:layout_width="match_parent"
-        android:layout_height="36dp"
-        android:background="#1A1A2E"
-        android:popupBackground="#1A1A2E"
-        android:layout_marginBottom="6dp" />
-
-    <!-- App Mode selector -->
-    <TextView
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:text="@string/label_app_mode"
-        android:textColor="#FFFFFF"
-        android:textSize="13sp"
-        android:textStyle="bold"
-        android:layout_marginBottom="4dp" />
-
-    <RadioGroup
-        android:id="@+id/rgAppMode"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:orientation="vertical"
-        android:background="#1A1A2E"
-        android:padding="6dp"
-        android:layout_marginBottom="6dp">
+        android:paddingStart="16dp"
+        android:paddingEnd="16dp"
+        android:paddingTop="16dp"
+        android:paddingBottom="16dp">
 
-        <RadioButton
-            android:id="@+id/rbModeMirroring"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:text="@string/mode_mirroring"
-            android:textColor="#FFFFFF"
-            android:textSize="13sp"
-            android:checked="true" />
-
-        <RadioButton
-            android:id="@+id/rbModeControlOnly"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:text="@string/mode_control_only"
-            android:textColor="#FFFFFF"
-            android:textSize="13sp" />
-    </RadioGroup>
-
-    <!-- Permission status buttons -->
-    <LinearLayout
-        android:id="@+id/llPermissions"
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:orientation="horizontal"
-        android:layout_marginBottom="6dp"
-        android:visibility="gone">
-
-        <Button
-            android:id="@+id/btnOverlayPermission"
-            android:layout_width="0dp"
-            android:layout_height="32dp"
-            android:layout_weight="1"
-            android:text="@string/btn_overlay_permission"
-            android:textSize="10sp"
-            android:textColor="#FFFFFF"
-            android:background="#FF6F00"
-            android:layout_marginEnd="4dp" />
-
-        <Button
-            android:id="@+id/btnAccessibilityPermission"
-            android:layout_width="0dp"
-            android:layout_height="32dp"
-            android:layout_weight="1"
-            android:text="@string/btn_accessibility_permission"
-            android:textSize="10sp"
-            android:textColor="#FFFFFF"
-            android:background="#FF6F00"
-            android:layout_marginStart="4dp" />
-    </LinearLayout>
-
-    <!-- Display Mode + Resolution side by side -->
-    <LinearLayout
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:orientation="horizontal"
-        android:layout_marginBottom="6dp">
-
+        <!-- Top bar: App title + Subtitle + About button -->
         <LinearLayout
-            android:layout_width="0dp"
+            android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:layout_weight="1"
+            android:orientation="horizontal"
+            android:gravity="center_vertical"
+            android:layout_marginBottom="12dp">
+
+            <LinearLayout
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_weight="1"
+                android:orientation="vertical">
+
+                <TextView
+                    android:id="@+id/tvAppTitle"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="🏍️ KoveMirror"
+                    android:textColor="#F0F6FC"
+                    android:textSize="20sp"
+                    android:textStyle="bold" />
+
+                <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="@string/header_subtitle"
+                    android:textColor="#8B949E"
+                    android:textSize="11sp"
+                    android:layout_marginTop="2dp" />
+            </LinearLayout>
+
+            <androidx.appcompat.widget.AppCompatButton
+                android:id="@+id/btnAbout"
+                android:layout_width="wrap_content"
+                android:layout_height="36dp"
+                android:text="@string/btn_about"
+                android:textSize="11sp"
+                android:textColor="#F0F6FC"
+                android:textAllCaps="false"
+                android:background="@drawable/bg_button_secondary"
+                android:paddingStart="10dp"
+                android:paddingEnd="10dp"
+                android:paddingTop="0dp"
+                android:paddingBottom="0dp"
+                android:minHeight="0dp"
+                android:minWidth="0dp" />
+        </LinearLayout>
+
+        <!-- Status Card -->
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
             android:orientation="vertical"
-            android:layout_marginEnd="4dp">
+            android:background="@drawable/bg_card"
+            android:padding="12dp"
+            android:gravity="center"
+            android:layout_marginBottom="12dp">
+
+            <TextView
+                android:id="@+id/tvStatus"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="@string/status_ready"
+                android:textColor="#8B949E"
+                android:textSize="13sp"
+                android:textStyle="bold"
+                android:background="@drawable/bg_badge_status"
+                android:paddingStart="16dp"
+                android:paddingEnd="16dp"
+                android:paddingTop="6dp"
+                android:paddingBottom="6dp" />
+        </LinearLayout>
+
+        <!-- Quick Actions Card: Language & Bluetooth Row + Map Button -->
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="vertical"
+            android:background="@drawable/bg_card"
+            android:padding="12dp"
+            android:layout_marginBottom="12dp">
+
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:orientation="horizontal"
+                android:layout_marginBottom="8dp">
+
+                <androidx.appcompat.widget.AppCompatButton
+                    android:id="@+id/btnSelectLanguage"
+                    android:layout_width="0dp"
+                    android:layout_height="40dp"
+                    android:layout_weight="1"
+                    android:text="🌐 Language"
+                    android:textSize="11sp"
+                    android:textColor="#F0F6FC"
+                    android:textAllCaps="false"
+                    android:background="@drawable/bg_button_secondary"
+                    android:paddingStart="4dp"
+                    android:paddingEnd="4dp"
+                    android:paddingTop="0dp"
+                    android:paddingBottom="0dp"
+                    android:minHeight="0dp"
+                    android:minWidth="0dp"
+                    android:layout_marginEnd="4dp"
+                    android:maxLines="2" />
+
+                <androidx.appcompat.widget.AppCompatButton
+                    android:id="@+id/btnSelectBtDevice"
+                    android:layout_width="0dp"
+                    android:layout_height="40dp"
+                    android:layout_weight="1"
+                    android:text="📶 Bluetooth"
+                    android:textSize="11sp"
+                    android:textColor="#F0F6FC"
+                    android:textAllCaps="false"
+                    android:background="@drawable/bg_button_secondary"
+                    android:paddingStart="4dp"
+                    android:paddingEnd="4dp"
+                    android:paddingTop="0dp"
+                    android:paddingBottom="0dp"
+                    android:minHeight="0dp"
+                    android:minWidth="0dp"
+                    android:layout_marginStart="4dp"
+                    android:maxLines="2" />
+            </LinearLayout>
+
+            <androidx.appcompat.widget.AppCompatButton
+                android:id="@+id/btnOpenMap"
+                android:layout_width="match_parent"
+                android:layout_height="40dp"
+                android:text="@string/btn_open_map"
+                android:textSize="12sp"
+                android:textColor="#F0F6FC"
+                android:textAllCaps="false"
+                android:background="@drawable/bg_button_secondary"
+                android:paddingStart="8dp"
+                android:paddingEnd="8dp"
+                android:paddingTop="0dp"
+                android:paddingBottom="0dp"
+                android:minHeight="0dp"
+                android:minWidth="0dp" />
+        </LinearLayout>
+
+        <!-- App Mode Selector Card -->
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="vertical"
+            android:background="@drawable/bg_card"
+            android:padding="14dp"
+            android:layout_marginBottom="12dp">
 
             <TextView
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:text="@string/label_display_mode"
-                android:textColor="#888888"
-                android:textSize="11sp"
-                android:layout_marginBottom="2dp" />
+                android:text="@string/label_app_mode"
+                android:textColor="#F0F6FC"
+                android:textSize="13sp"
+                android:textStyle="bold"
+                android:layout_marginBottom="8dp" />
 
-            <Spinner
-                android:id="@+id/spDisplayMode"
-                android:layout_width="match_parent"
-                android:layout_height="36dp"
-                android:background="#1A1A2E"
-                android:popupBackground="#1A1A2E" />
-        </LinearLayout>
-
-        <LinearLayout
-            android:layout_width="0dp"
-            android:layout_height="wrap_content"
-            android:layout_weight="1"
-            android:orientation="vertical"
-            android:layout_marginStart="4dp">
-
-            <TextView
+            <RadioGroup
+                android:id="@+id/rgAppMode"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:text="@string/label_tft_resolution"
-                android:textColor="#888888"
-                android:textSize="11sp"
-                android:layout_marginBottom="2dp" />
+                android:orientation="vertical">
 
-            <Spinner
-                android:id="@+id/spTftResolution"
+                <RadioButton
+                    android:id="@+id/rbModeMirroring"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:text="@string/mode_mirroring"
+                    android:textColor="#C9D1D9"
+                    android:textSize="13sp"
+                    android:checked="true"
+                    android:paddingBottom="4dp" />
+
+                <RadioButton
+                    android:id="@+id/rbModeControlOnly"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:text="@string/mode_control_only"
+                    android:textColor="#C9D1D9"
+                    android:textSize="13sp" />
+            </RadioGroup>
+
+            <!-- Permission status buttons -->
+            <LinearLayout
+                android:id="@+id/llPermissions"
                 android:layout_width="match_parent"
-                android:layout_height="36dp"
-                android:background="#1A1A2E"
-                android:popupBackground="#1A1A2E" />
+                android:layout_height="wrap_content"
+                android:orientation="horizontal"
+                android:layout_marginTop="8dp"
+                android:visibility="gone">
+
+                <androidx.appcompat.widget.AppCompatButton
+                    android:id="@+id/btnOverlayPermission"
+                    android:layout_width="0dp"
+                    android:layout_height="36dp"
+                    android:layout_weight="1"
+                    android:text="@string/btn_overlay_permission"
+                    android:textSize="10sp"
+                    android:textColor="#FFFFFF"
+                    android:textAllCaps="false"
+                    android:background="#D97706"
+                    android:paddingStart="4dp"
+                    android:paddingEnd="4dp"
+                    android:paddingTop="0dp"
+                    android:paddingBottom="0dp"
+                    android:minHeight="0dp"
+                    android:minWidth="0dp"
+                    android:layout_marginEnd="4dp" />
+
+                <androidx.appcompat.widget.AppCompatButton
+                    android:id="@+id/btnAccessibilityPermission"
+                    android:layout_width="0dp"
+                    android:layout_height="36dp"
+                    android:layout_weight="1"
+                    android:text="@string/btn_accessibility_permission"
+                    android:textSize="10sp"
+                    android:textColor="#FFFFFF"
+                    android:textAllCaps="false"
+                    android:background="#D97706"
+                    android:paddingStart="4dp"
+                    android:paddingEnd="4dp"
+                    android:paddingTop="0dp"
+                    android:paddingBottom="0dp"
+                    android:minHeight="0dp"
+                    android:minWidth="0dp"
+                    android:layout_marginStart="4dp" />
+            </LinearLayout>
         </LinearLayout>
-    </LinearLayout>
 
-    <!-- Spacer -->
-    <View
-        android:layout_width="match_parent"
-        android:layout_height="1dp"
-        android:background="#1A1A2E"
-        android:layout_marginBottom="6dp" />
-
-    <!-- Start / Stop button -->
-    <Button
-        android:id="@+id/btnStartStop"
-        android:layout_width="match_parent"
-        android:layout_height="48dp"
-        android:text="@string/btn_start_mirroring"
-        android:textSize="15sp"
-        android:textColor="#FFFFFF"
-        android:background="#2E7D32"
-        android:textStyle="bold"
-        android:layout_marginBottom="4dp"/>
-
-    <!-- Test Handlebar Simulation Buttons -->
-    <LinearLayout
-        android:id="@+id/llTestButtons"
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:orientation="horizontal"
-        android:layout_marginBottom="6dp"
-        android:visibility="gone">
-
-        <Button
-            android:id="@+id/btnTestUp"
-            android:layout_width="0dp"
-            android:layout_height="36dp"
-            android:layout_weight="1"
-            android:text="▲ UP"
-            android:textSize="11sp"
-            android:textColor="#FFFFFF"
-            android:background="#4A148C"
-            android:textStyle="bold"
-            android:layout_marginEnd="2dp" />
-
-        <Button
-            android:id="@+id/btnTestEnt"
-            android:layout_width="0dp"
-            android:layout_height="36dp"
-            android:layout_weight="1"
-            android:text="🔘 ENT"
-            android:textSize="11sp"
-            android:textColor="#FFFFFF"
-            android:background="#4A148C"
-            android:textStyle="bold"
-            android:layout_marginStart="2dp"
-            android:layout_marginEnd="2dp" />
-
-        <Button
-            android:id="@+id/btnTestDown"
-            android:layout_width="0dp"
-            android:layout_height="36dp"
-            android:layout_weight="1"
-            android:text="▼ DOWN"
-            android:textSize="11sp"
-            android:textColor="#FFFFFF"
-            android:background="#4A148C"
-            android:textStyle="bold"
-            android:layout_marginStart="2dp" />
-    </LinearLayout>
-
-    <!-- Map & Route + Share Logs side by side -->
-    <LinearLayout
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:orientation="horizontal"
-        android:layout_marginBottom="6dp">
-
-        <Button
-            android:id="@+id/btnOpenMap"
-            android:layout_width="0dp"
-            android:layout_height="36dp"
-            android:layout_weight="1"
-            android:text="@string/btn_open_map"
-            android:textSize="12sp"
-            android:textColor="#FFFFFF"
-            android:background="#1565C0"
-            android:textStyle="bold"
-            android:layout_marginEnd="4dp" />
-
-        <Button
-            android:id="@+id/btnShareLogs"
-            android:layout_width="0dp"
-            android:layout_height="36dp"
-            android:layout_weight="1"
-            android:text="@string/btn_share_logs"
-            android:textSize="12sp"
-            android:textColor="#FFFFFF"
-            android:background="#1976D2"
-            android:textStyle="bold"
-            android:layout_marginStart="4dp" />
-    </LinearLayout>
-
-    <!-- Debug Log Terminal -->
-    <TextView
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:text="@string/label_debug_terminal"
-        android:textColor="#888888"
-        android:textSize="11sp"
-        android:layout_marginBottom="2dp" />
-
-    <ScrollView
-        android:id="@+id/svDebug"
-        android:layout_width="match_parent"
-        android:layout_height="0dp"
-        android:layout_weight="1"
-        android:background="#000000"
-        android:padding="6dp">
-
-        <TextView
-            android:id="@+id/tvDebugLog"
+        <!-- Display Settings Card (Display Mode + Resolution) -->
+        <LinearLayout
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:textColor="#00FF00"
-            android:textSize="10sp"
-            android:fontFamily="monospace" />
-    </ScrollView>
+            android:orientation="horizontal"
+            android:background="@drawable/bg_card"
+            android:padding="14dp"
+            android:layout_marginBottom="12dp">
 
-</LinearLayout>
+            <LinearLayout
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_weight="1"
+                android:orientation="vertical"
+                android:layout_marginEnd="6dp">
+
+                <TextView
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:text="@string/label_display_mode"
+                    android:textColor="#8B949E"
+                    android:textSize="11sp"
+                    android:layout_marginBottom="4dp" />
+
+                <Spinner
+                    android:id="@+id/spDisplayMode"
+                    android:layout_width="match_parent"
+                    android:layout_height="38dp"
+                    android:background="@drawable/bg_button_secondary"
+                    android:popupBackground="#161B22" />
+            </LinearLayout>
+
+            <LinearLayout
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_weight="1"
+                android:orientation="vertical"
+                android:layout_marginStart="6dp">
+
+                <TextView
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:text="@string/label_tft_resolution"
+                    android:textColor="#8B949E"
+                    android:textSize="11sp"
+                    android:layout_marginBottom="4dp" />
+
+                <Spinner
+                    android:id="@+id/spTftResolution"
+                    android:layout_width="match_parent"
+                    android:layout_height="38dp"
+                    android:background="@drawable/bg_button_secondary"
+                    android:popupBackground="#161B22" />
+            </LinearLayout>
+        </LinearLayout>
+
+        <!-- Start / Stop Button -->
+        <androidx.appcompat.widget.AppCompatButton
+            android:id="@+id/btnStartStop"
+            android:layout_width="match_parent"
+            android:layout_height="52dp"
+            android:text="@string/btn_start_mirroring"
+            android:textSize="16sp"
+            android:textColor="#FFFFFF"
+            android:textAllCaps="false"
+            android:background="#10B981"
+            android:textStyle="bold"
+            android:layout_marginBottom="12dp"/>
+
+        <!-- Test Handlebar Simulation Buttons (Hidden by default, unlocked via easter egg) -->
+        <LinearLayout
+            android:id="@+id/llTestButtons"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="horizontal"
+            android:layout_marginBottom="12dp"
+            android:visibility="gone">
+
+            <androidx.appcompat.widget.AppCompatButton
+                android:id="@+id/btnTestUp"
+                android:layout_width="0dp"
+                android:layout_height="36dp"
+                android:layout_weight="1"
+                android:text="▲ UP"
+                android:textSize="11sp"
+                android:textColor="#FFFFFF"
+                android:textAllCaps="false"
+                android:background="#6D28D9"
+                android:textStyle="bold"
+                android:layout_marginEnd="2dp" />
+
+            <androidx.appcompat.widget.AppCompatButton
+                android:id="@+id/btnTestEnt"
+                android:layout_width="0dp"
+                android:layout_height="36dp"
+                android:layout_weight="1"
+                android:text="🔘 ENT"
+                android:textSize="11sp"
+                android:textColor="#FFFFFF"
+                android:textAllCaps="false"
+                android:background="#6D28D9"
+                android:textStyle="bold"
+                android:layout_marginStart="2dp"
+                android:layout_marginEnd="2dp" />
+
+            <androidx.appcompat.widget.AppCompatButton
+                android:id="@+id/btnTestDown"
+                android:layout_width="0dp"
+                android:layout_height="36dp"
+                android:layout_weight="1"
+                android:text="▼ DOWN"
+                android:textSize="11sp"
+                android:textColor="#FFFFFF"
+                android:textAllCaps="false"
+                android:background="#6D28D9"
+                android:textStyle="bold"
+                android:layout_marginStart="2dp" />
+        </LinearLayout>
+
+        <!-- Secondary Actions Row: Share Logs & Toggle Debug Terminal -->
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="horizontal"
+            android:layout_marginBottom="12dp">
+
+            <androidx.appcompat.widget.AppCompatButton
+                android:id="@+id/btnShareLogs"
+                android:layout_width="0dp"
+                android:layout_height="40dp"
+                android:layout_weight="1"
+                android:text="@string/btn_share_logs"
+                android:textSize="11sp"
+                android:textColor="#F0F6FC"
+                android:textAllCaps="false"
+                android:background="@drawable/bg_button_secondary"
+                android:paddingStart="4dp"
+                android:paddingEnd="4dp"
+                android:paddingTop="0dp"
+                android:paddingBottom="0dp"
+                android:minHeight="0dp"
+                android:minWidth="0dp"
+                android:layout_marginEnd="4dp" />
+
+            <androidx.appcompat.widget.AppCompatButton
+                android:id="@+id/btnToggleDebug"
+                android:layout_width="0dp"
+                android:layout_height="40dp"
+                android:layout_weight="1"
+                android:text="@string/btn_toggle_debug_show"
+                android:textSize="11sp"
+                android:textColor="#F0F6FC"
+                android:textAllCaps="false"
+                android:background="@drawable/bg_button_secondary"
+                android:paddingStart="4dp"
+                android:paddingEnd="4dp"
+                android:paddingTop="0dp"
+                android:paddingBottom="0dp"
+                android:minHeight="0dp"
+                android:minWidth="0dp"
+                android:layout_marginStart="4dp" />
+        </LinearLayout>
+
+        <!-- Debug Log Terminal Container (Hidden by default, scrollable inside) -->
+        <ScrollView
+            android:id="@+id/svDebug"
+            android:layout_width="match_parent"
+            android:layout_height="220dp"
+            android:background="@drawable/bg_terminal"
+            android:padding="10dp"
+            android:visibility="gone">
+
+            <TextView
+                android:id="@+id/tvDebugLog"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:textColor="#10B981"
+                android:textSize="10sp"
+                android:fontFamily="monospace"
+                android:lineSpacingExtra="2dp" />
+        </ScrollView>
+
+    </LinearLayout>
+</ScrollView>

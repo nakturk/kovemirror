@@ -201,8 +201,14 @@
 
     <!-- Selección de Modo -->
     <string name="label_app_mode">🎮 Modo de Aplicación:</string>
-    <string name="mode_mirroring">📺 Duplicación de Pantalla + Control de Manillar</string>
-    <string name="mode_control_only">🎮 Solo Control de Manillar (Sin Duplicación)</string>
+    <string name="mode_mirroring">📺 Duplicación de Pantalla</string>
+    <string name="mode_virtual_display">🖥️ Duplicación de Pantalla Virtual</string>
+    <string name="mode_control_only">🎮 Solo Control</string>
+    <string name="label_select_target_app">📱 Seleccionar Aplicación para Pantalla Virtual:</string>
+    <string name="option_internal_map">🗺️ Mapa Interno KoveMirror OSM &amp; Panel</string>
+    <string name="btn_select_language">🌐 Idioma: %1$s</string>
+    <string name="btn_select_bt_device">📶 Bluetooth: %1$s</string>
+    <string name="bt_device_none">No Seleccionado</string>
 
     <!-- Modo Solo Control -->
     <string name="btn_start_controller">▶  Iniciar Control</string>
@@ -242,10 +248,17 @@
     <!-- TFT Frame Fit Dialog -->
     <string name="btn_tft_fit">📺 TFT</string>
     <string name="tft_fit_dialog_title">📺 Ajuste de Marco TFT</string>
-    <string name="tft_fit_dialog_description">Ajuste las barras negras superior e inferior para alinear el mapa con la pantalla TFT:</string>
+    <string name="tft_fit_dialog_description">Ajuste las alturas de las barras negras superior e inferior para alinear el mapa con la pantalla TFT:</string>
     <string name="tft_fit_top_label">Barra Negra Superior: %1$d dp</string>
     <string name="tft_fit_bottom_label">Barra Negra Inferior: %1$d dp</string>
     <string name="tft_fit_reset">Restablecer</string>
     <string name="tft_fit_save">Guardar y Cerrar</string>
     <string name="toast_tft_fit_saved">✅ Marco TFT Guardado</string>
+
+    <!-- Acerca de & Debug Toggle -->
+    <string name="btn_about">ℹ️ Acerca de</string>
+    <string name="about_dialog_title">Acerca de KoveMirror</string>
+    <string name="about_developer_credit">Diseñado y desarrollado por H. Nakturk</string>
+    <string name="btn_toggle_debug_show">📋 Mostrar Terminal Debug</string>
+    <string name="btn_toggle_debug_hide">📋 Ocultar Terminal Debug</string>
 </resources>

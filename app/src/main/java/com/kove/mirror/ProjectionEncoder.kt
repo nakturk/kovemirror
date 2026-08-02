@@ -1,5 +1,8 @@
 package com.kove.mirror
 
+import android.app.ActivityOptions
+import android.content.Context
+import android.content.Intent
 import android.hardware.display.DisplayManager
 import android.hardware.display.VirtualDisplay
 import android.media.MediaCodec
@@ -7,7 +10,10 @@ import android.media.MediaCodecInfo
 import android.media.MediaFormat
 import android.media.projection.MediaProjection
 import android.os.Build
+import android.os.Handler
+import android.os.Looper
 import android.view.Surface
+import android.widget.Toast
 import java.util.concurrent.atomic.AtomicBoolean
 import java.util.concurrent.atomic.AtomicLong
 
@@ -25,12 +31,14 @@ class ProjectionEncoder(
     val fps:    Int = 30,
     var padding: Int = 0,
     val displayMode: DisplayMode = DisplayMode.CENTER_CROP,
-    val phoneAspectRatio: Float = 0.45f
+    val phoneAspectRatio: Float = 0.45f,
+    private val context: android.content.Context? = null
 ) {
 
-    private var mediaCodec:     MediaCodec?     = null
-    private var inputSurface:   Surface?        = null
-    private var virtualDisplay: VirtualDisplay? = null
+    private var mediaCodec:       MediaCodec?       = null
+    private var inputSurface:     Surface?          = null
+    private var virtualDisplay:   VirtualDisplay?   = null
+    private val mainHandler = Handler(Looper.getMainLooper())
 
     private val streaming    = AtomicBoolean(false)
     val frameCount           = AtomicLong(0)
@@ -95,10 +103,12 @@ class ProjectionEncoder(
             DebugLogger.info(R.string.log_vd_creating)
             DebugLogger.info("   VD Resolution    : ${vdWidth}×${vdHeight}")
             DebugLogger.info(R.string.log_codec_output_res, width, height)
+            val vdFlags = DisplayManager.VIRTUAL_DISPLAY_FLAG_AUTO_MIRROR
+
             virtualDisplay = mediaProjection.createVirtualDisplay(
                 "KoveMirror",
                 vdWidth, vdHeight, dpi,
-                DisplayManager.VIRTUAL_DISPLAY_FLAG_AUTO_MIRROR,
+                vdFlags,
                 surface,
                 null, null
             )

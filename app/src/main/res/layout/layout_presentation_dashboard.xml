@@ -1,0 +1,145 @@
+<?xml version="1.0" encoding="utf-8"?>
+<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:background="#0F172A">
+
+    <!-- Fullscreen OSM Map -->
+    <org.osmdroid.views.MapView
+        android:id="@+id/presentationMapView"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent" />
+
+    <!-- Top Instrument Cluster Banner -->
+    <LinearLayout
+        android:id="@+id/topInstrumentCluster"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="horizontal"
+        android:background="#DD0F172A"
+        android:padding="10dp"
+        android:gravity="center_vertical"
+        android:layout_alignParentTop="true">
+
+        <!-- Speedometer Section -->
+        <LinearLayout
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_weight="1"
+            android:orientation="vertical"
+            android:gravity="center">
+
+            <TextView
+                android:id="@+id/tvSpeedValue"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="0"
+                android:textColor="#38BDF8"
+                android:textSize="36sp"
+                android:textStyle="bold"
+                android:includeFontPadding="false" />
+
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="KM/H"
+                android:textColor="#94A3B8"
+                android:textSize="11sp"
+                android:textStyle="bold" />
+        </LinearLayout>
+
+        <View
+            android:layout_width="1dp"
+            android:layout_height="36dp"
+            android:background="#334155" />
+
+        <!-- Compass / Heading Section -->
+        <LinearLayout
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_weight="1"
+            android:orientation="vertical"
+            android:gravity="center">
+
+            <TextView
+                android:id="@+id/tvHeadingValue"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="N 0°"
+                android:textColor="#F59E0B"
+                android:textSize="22sp"
+                android:textStyle="bold"
+                android:includeFontPadding="false" />
+
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="COMPASS"
+                android:textColor="#94A3B8"
+                android:textSize="10sp"
+                android:textStyle="bold" />
+        </LinearLayout>
+
+        <View
+            android:layout_width="1dp"
+            android:layout_height="36dp"
+            android:background="#334155" />
+
+        <!-- GPS / Alt Section -->
+        <LinearLayout
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_weight="1"
+            android:orientation="vertical"
+            android:gravity="center">
+
+            <TextView
+                android:id="@+id/tvAltValue"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="-- m"
+                android:textColor="#10B981"
+                android:textSize="18sp"
+                android:textStyle="bold"
+                android:includeFontPadding="false" />
+
+            <TextView
+                android:id="@+id/tvGpsStatus"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="GPS FIXED"
+                android:textColor="#94A3B8"
+                android:textSize="10sp"
+                android:textStyle="bold" />
+        </LinearLayout>
+    </LinearLayout>
+
+    <!-- Bottom Status Watermark Banner -->
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="horizontal"
+        android:background="#CC0F172A"
+        android:padding="6dp"
+        android:gravity="center_vertical"
+        android:layout_alignParentBottom="true">
+
+        <TextView
+            android:id="@+id/tvPresentationHandlebarMode"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_weight="1"
+            android:text="🎮 KOVE VIRTUAL DISPLAY"
+            android:textColor="#F8FAFC"
+            android:textSize="12sp"
+            android:textStyle="bold" />
+
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="KOVE MIRROR 🏍️"
+            android:textColor="#38BDF8"
+            android:textSize="11sp"
+            android:textStyle="bold" />
+    </LinearLayout>
+</RelativeLayout>

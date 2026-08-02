@@ -21,17 +21,17 @@
     
     <!-- Display Modes -->
     <string name="label_display_mode">📺 Ekran Modu:</string>
-    <string name="label_tft_resolution">🖥️ TFT Ekran Modeli / Çözünürlüğü:</string>
-    <string name="mode_center_crop">🟢 Orantılı Tam Ekran (Center Crop - Siyah Boşluksuz)</string>
-    <string name="mode_fit">🔵 Orantılı Kenarlıklı (Fit - Siyah Bantlı)</string>
-    <string name="mode_stretch">🟠 Esnetilmiş Tam Ekran (Stretch)</string>
+    <string name="label_tft_resolution">🖥️ TFT Çözünürlüğü:</string>
+    <string name="mode_center_crop">🟢 Center Crop (Tam Ekran)</string>
+    <string name="mode_fit">🔵 Fit (Kenarlıklı)</string>
+    <string name="mode_stretch">🟠 Stretch (Esnetilmiş)</string>
 
     <!-- Presets -->
-    <string name="preset_600x1024">600 × 1024 (Kove 800X / Dikey Standart)</string>
-    <string name="preset_480x800">480 × 800 (Kove Dikey Küçük)</string>
-    <string name="preset_640x1284">640 × 1284 (Kove Dikey Büyük)</string>
-    <string name="preset_1280x720">1280 × 720 (Kove Yatay Ekran)</string>
-    <string name="preset_800x800">800 × 800 (Kove Kare Ekran)</string>
+    <string name="preset_600x1024">600×1024 (Kove 800X)</string>
+    <string name="preset_480x800">480×800 (Dikey Küçük)</string>
+    <string name="preset_640x1284">640×1284 (Dikey Büyük)</string>
+    <string name="preset_1280x720">1280×720 (Yatay)</string>
+    <string name="preset_800x800">800×800 (Kare Ekran)</string>
 
     <!-- WiFi States -->
     <string name="wifi_waiting">WiFi bekleniyor...</string>
@@ -201,8 +201,14 @@
 
     <!-- Uygulama Modu Seçimi -->
     <string name="label_app_mode">🎮 Uygulama Modu:</string>
-    <string name="mode_mirroring">📺 Ekran Yansıtma + Gidon Kumandası</string>
-    <string name="mode_control_only">🎮 Sadece Gidon Kumandası (Yansıtma Yok)</string>
+    <string name="mode_mirroring">📺 Ekran Yansıtma</string>
+    <string name="mode_virtual_display">🖥️ Sanal Ekran Yansıtma</string>
+    <string name="mode_control_only">🎮 Sadece Kontrol</string>
+    <string name="label_select_target_app">📱 Sanal Ekranda Başlatılacak Uygulama:</string>
+    <string name="option_internal_map">🗺️ KoveMirror Dahili OSM Harita &amp; Gösterge</string>
+    <string name="btn_select_language">🌐 Dil: %1$s</string>
+    <string name="btn_select_bt_device">📶 Bluetooth: %1$s</string>
+    <string name="bt_device_none">Seçilmedi</string>
 
     <!-- Sadece Kontrol Modu -->
     <string name="btn_start_controller">▶  Kumandayı Başlat</string>
@@ -248,4 +254,11 @@
     <string name="tft_fit_reset">Sıfırla</string>
     <string name="tft_fit_save">Kaydet &amp; Kapat</string>
     <string name="toast_tft_fit_saved">✅ TFT Çerçeve Ayarı Kaydedildi</string>
+
+    <!-- Hakkında & Debug Toggle -->
+    <string name="btn_about">ℹ️ Hakkında</string>
+    <string name="about_dialog_title">KoveMirror Hakkında</string>
+    <string name="about_developer_credit">H. Nakturk tarafından dizayn edilip geliştirildi</string>
+    <string name="btn_toggle_debug_show">📋 Debug Terminali Göster</string>
+    <string name="btn_toggle_debug_hide">📋 Debug Terminali Gizle</string>
 </resources>

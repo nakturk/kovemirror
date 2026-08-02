@@ -21,17 +21,17 @@
     
     <!-- Display Modes -->
     <string name="label_display_mode">📺 Display Mode:</string>
-    <string name="label_tft_resolution">🖥️ TFT Screen Model / Resolution:</string>
-    <string name="mode_center_crop">🟢 Proportional Fullscreen (Center Crop)</string>
-    <string name="mode_fit">🔵 Proportional with Borders (Fit)</string>
-    <string name="mode_stretch">🟠 Stretched Fullscreen (Stretch)</string>
+    <string name="label_tft_resolution">🖥️ TFT Model / Resolution:</string>
+    <string name="mode_center_crop">🟢 Center Crop (Full)</string>
+    <string name="mode_fit">🔵 Fit (Borders)</string>
+    <string name="mode_stretch">🟠 Stretch</string>
 
     <!-- Presets -->
-    <string name="preset_600x1024">600 × 1024 (Kove 800X / Portrait Standard)</string>
-    <string name="preset_480x800">480 × 800 (Kove Portrait Small)</string>
-    <string name="preset_640x1284">640 × 1284 (Kove Portrait Large)</string>
-    <string name="preset_1280x720">1280 × 720 (Kove Landscape Screen)</string>
-    <string name="preset_800x800">800 × 800 (Kove Square Screen)</string>
+    <string name="preset_600x1024">600×1024 (Kove 800X)</string>
+    <string name="preset_480x800">480×800 (Portrait Small)</string>
+    <string name="preset_640x1284">640×1284 (Portrait Large)</string>
+    <string name="preset_1280x720">1280×720 (Landscape)</string>
+    <string name="preset_800x800">800×800 (Square)</string>
 
     <!-- WiFi States -->
     <string name="wifi_waiting">Waiting for WiFi...</string>
@@ -201,8 +201,14 @@
 
     <!-- App Mode Selection -->
     <string name="label_app_mode">🎮 App Mode:</string>
-    <string name="mode_mirroring">📺 Screen Mirroring + Handlebar Control</string>
-    <string name="mode_control_only">🎮 Handlebar Control Only (No Mirroring)</string>
+    <string name="mode_mirroring">📺 Screen Mirroring</string>
+    <string name="mode_virtual_display">🖥️ Virtual Display Mirroring</string>
+    <string name="mode_control_only">🎮 Control Only</string>
+    <string name="label_select_target_app">📱 Select App to Launch on Virtual Display:</string>
+    <string name="option_internal_map">🗺️ KoveMirror Internal OSM Map &amp; Dashboard</string>
+    <string name="btn_select_language">🌐 Language: %1$s</string>
+    <string name="btn_select_bt_device">📶 Bluetooth: %1$s</string>
+    <string name="bt_device_none">Not Selected</string>
 
     <!-- Control Only Mode -->
     <string name="btn_start_controller">▶  Start Controller</string>
@@ -248,4 +254,11 @@
     <string name="tft_fit_reset">Reset</string>
     <string name="tft_fit_save">Save &amp; Close</string>
     <string name="toast_tft_fit_saved">✅ TFT Frame Fit Saved</string>
+
+    <!-- About & Debug Toggle -->
+    <string name="btn_about">ℹ️ About</string>
+    <string name="about_dialog_title">KoveMirror About</string>
+    <string name="about_developer_credit">Designed and developed by H. Nakturk</string>
+    <string name="btn_toggle_debug_show">📋 Show Debug Terminal</string>
+    <string name="btn_toggle_debug_hide">📋 Hide Debug Terminal</string>
 </resources>

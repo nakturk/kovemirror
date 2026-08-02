@@ -273,7 +273,8 @@ class MirrorService : Service() {
                             height = TFT_HEIGHT,
                             padding = TFT_PADDING,
                             displayMode = DISPLAY_MODE,
-                            phoneAspectRatio = PHONE_ASPECT_RATIO
+                            phoneAspectRatio = PHONE_ASPECT_RATIO,
+                            context = applicationContext
                         )
                         projectionEncoder = encoder
                         if (encoder.init()) {

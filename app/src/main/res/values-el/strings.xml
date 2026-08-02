@@ -201,8 +201,14 @@
 
     <!-- Επιλογή Λειτουργίας -->
     <string name="label_app_mode">🎮 Λειτουργία Εφαρμογής:</string>
-    <string name="mode_mirroring">📺 Κατοπτρισμός Οθόνης + Έλεγχος Τιμονιού</string>
-    <string name="mode_control_only">🎮 Μόνο Έλεγχος Τιμονιού (Χωρίς Κατοπτρισμό)</string>
+    <string name="mode_mirroring">📺 Κατοπτρισμός Οθόνης</string>
+    <string name="mode_virtual_display">🖥️ Κατοπτρισμός Εικονικής Οθόνης</string>
+    <string name="mode_control_only">🎮 Μόνο Έλεγχος</string>
+    <string name="label_select_target_app">📱 Επιλογή Εφαρμογής για Εικονική Οθόνη:</string>
+    <string name="option_internal_map">🗺️ Εσωτερικός Χάρτης KoveMirror OSM &amp; Πίνακας</string>
+    <string name="btn_select_language">🌐 Γλώσσα: %1$s</string>
+    <string name="btn_select_bt_device">📶 Bluetooth: %1$s</string>
+    <string name="bt_device_none">Δεν Επιλέχθηκε</string>
 
     <!-- Λειτουργία Μόνο Ελέγχου -->
     <string name="btn_start_controller">▶  Εκκίνηση Ελέγχου</string>
@@ -248,4 +254,11 @@
     <string name="tft_fit_reset">Επαναφορά</string>
     <string name="tft_fit_save">Αποθήκευση &amp; Κλείσιμο</string>
     <string name="toast_tft_fit_saved">✅ Πλαίσιο TFT Αποθηκεύτηκε</string>
+
+    <!-- Σχετικά & Debug Toggle -->
+    <string name="btn_about">ℹ️ Σχετικά</string>
+    <string name="about_dialog_title">Σχετικά με το KoveMirror</string>
+    <string name="about_developer_credit">Σχεδιάστηκε και αναπτύχθηκε από τον H. Nakturk</string>
+    <string name="btn_toggle_debug_show">📋 Εμφάνιση Terminal Debug</string>
+    <string name="btn_toggle_debug_hide">📋 Απόκρυψη Terminal Debug</string>
 </resources>
