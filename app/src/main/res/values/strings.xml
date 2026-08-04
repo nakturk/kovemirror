@@ -247,6 +247,7 @@
 
     <!-- TFT Frame Fit Dialog -->
     <string name="btn_tft_fit">📺 TFT</string>
+    <string name="btn_tft_padding_settings">📺 TFT Black Bar / Margin Settings</string>
     <string name="tft_fit_dialog_title">📺 TFT Screen Fit Adjustment</string>
     <string name="tft_fit_dialog_description">Adjust top and bottom black bar heights to align the map with your motorcycle TFT display:</string>
     <string name="tft_fit_top_label">Top Black Bar: %1$d dp</string>

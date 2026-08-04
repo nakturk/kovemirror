@@ -247,6 +247,7 @@
 
     <!-- TFT Frame Fit Dialog -->
     <string name="btn_tft_fit">📺 TFT</string>
+    <string name="btn_tft_padding_settings">📺 TFT Siyah Bar Ayarları</string>
     <string name="tft_fit_dialog_title">📺 TFT Ekran Çerçeve Ayarı</string>
     <string name="tft_fit_dialog_description">Haritanın TFT ekranda tam gözükmesi için üst ve alt siyah bar yüksekliklerini ayarlayın:</string>
     <string name="tft_fit_top_label">Üst Siyah Bar: %1$d dp</string>

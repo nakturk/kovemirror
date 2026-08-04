@@ -30,14 +30,25 @@ class MirrorService : Service() {
         @Volatile var TFT_WIDTH          = 600
         @Volatile var TFT_HEIGHT         = 1024
         @Volatile var TFT_PADDING        = 0
+        @Volatile var TFT_TOP_PADDING_DP    = 0
+        @Volatile var TFT_BOTTOM_PADDING_DP = 0
         @Volatile var DISPLAY_MODE       = DisplayMode.CENTER_CROP
         @Volatile var PHONE_ASPECT_RATIO = 0.45f
 
         @Volatile var runningInstance: MirrorService? = null
 
         fun updatePadding(padding: Int) {
-            TFT_PADDING = padding
-            runningInstance?.projectionEncoder?.updatePadding(padding)
+            updatePadding(padding, padding)
+        }
+
+        fun updatePadding(topDp: Int, bottomDp: Int) {
+            TFT_TOP_PADDING_DP = topDp
+            TFT_BOTTOM_PADDING_DP = bottomDp
+            TFT_PADDING = topDp
+            val density = runningInstance?.resources?.displayMetrics?.density ?: 1f
+            val topPx = (topDp * density).toInt()
+            val bottomPx = (bottomDp * density).toInt()
+            runningInstance?.projectionEncoder?.updatePadding(topPx, bottomPx)
         }
 
         fun startService(context: Context, resultCode: Int, data: Intent) {
@@ -267,11 +278,17 @@ class MirrorService : Service() {
                 if (!isControlOnlyMode) {
                     DebugLogger.success(getString(R.string.log_tft_video_connected))
                     try {
+                        val density = resources.displayMetrics.density
+                        val topPx = (TFT_TOP_PADDING_DP * density).toInt()
+                        val bottomPx = (TFT_BOTTOM_PADDING_DP * density).toInt()
+
                         val encoder = ProjectionEncoder(
                             mediaProjection = mediaProjection!!,
                             width  = TFT_WIDTH,
                             height = TFT_HEIGHT,
                             padding = TFT_PADDING,
+                            topPaddingPx = topPx,
+                            bottomPaddingPx = bottomPx,
                             displayMode = DISPLAY_MODE,
                             phoneAspectRatio = PHONE_ASPECT_RATIO,
                             context = applicationContext

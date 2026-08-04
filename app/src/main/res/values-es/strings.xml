@@ -247,6 +247,7 @@
 
     <!-- TFT Frame Fit Dialog -->
     <string name="btn_tft_fit">📺 TFT</string>
+    <string name="btn_tft_padding_settings">📺 Ajustes de Barra Negra TFT</string>
     <string name="tft_fit_dialog_title">📺 Ajuste de Marco TFT</string>
     <string name="tft_fit_dialog_description">Ajuste las alturas de las barras negras superior e inferior para alinear el mapa con la pantalla TFT:</string>
     <string name="tft_fit_top_label">Barra Negra Superior: %1$d dp</string>

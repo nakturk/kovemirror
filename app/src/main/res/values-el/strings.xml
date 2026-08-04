@@ -247,6 +247,7 @@
 
     <!-- TFT Frame Fit Dialog -->
     <string name="btn_tft_fit">📺 TFT</string>
+    <string name="btn_tft_padding_settings">📺 Ρυθμίσεις Μαύρου Πλαισίου TFT</string>
     <string name="tft_fit_dialog_title">📺 Ρύθμιση Πλαισίου TFT</string>
     <string name="tft_fit_dialog_description">Ρυθμίστε τα μαύρα πλαίσια πάνω και κάτω για ευθυγράμμιση του χάρτη με την οθόνη TFT:</string>
     <string name="tft_fit_top_label">Πάνω Μαύρο Πλαίσιο: %1$d dp</string>

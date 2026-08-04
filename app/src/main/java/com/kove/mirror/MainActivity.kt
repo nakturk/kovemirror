@@ -249,6 +249,7 @@ class MainActivity : AppCompatActivity() {
     @android.annotation.SuppressLint("ClickableViewAccessibility")
     private fun setupButtons() {
         binding.btnStartStop.setOnClickListener { onStartStopClick() }
+        binding.btnTftPadding.setOnClickListener { showTftPaddingDialog() }
         binding.btnShareLogs.setOnClickListener { shareLogs() }
         binding.btnOpenMap.setOnClickListener {
             startActivity(Intent(this, MapActivity::class.java))
@@ -395,22 +396,106 @@ class MainActivity : AppCompatActivity() {
 
                 val ratio = getPhoneAspectRatio()
 
-                MirrorService.TFT_WIDTH          = selectedPreset.width
-                MirrorService.TFT_HEIGHT         = selectedPreset.height
-                MirrorService.DISPLAY_MODE       = selectedMode
-                MirrorService.PHONE_ASPECT_RATIO = ratio
-                MirrorService.TFT_PADDING        = 0
+                val prefs = getSharedPreferences("kove_prefs", MODE_PRIVATE)
+                val topDp = prefs.getInt("tft_top_padding_dp", 0)
+        val bottomDp = prefs.getInt("tft_bottom_padding_dp", 0)
 
-                DebugLogger.info(
-                    "🖥️ Target: ${selectedPreset.width}×${selectedPreset.height} | " +
-                    "Mode: ${selectedMode.name} | Ratio: %.3f".format(ratio)
-                )
-                requestScreenCapture()
-            }
-        } else {
-            stopService()
-        }
+        MirrorService.TFT_WIDTH          = selectedPreset.width
+        MirrorService.TFT_HEIGHT         = selectedPreset.height
+        MirrorService.DISPLAY_MODE       = selectedMode
+        MirrorService.PHONE_ASPECT_RATIO = ratio
+        MirrorService.TFT_PADDING        = topDp
+        MirrorService.TFT_TOP_PADDING_DP    = topDp
+        MirrorService.TFT_BOTTOM_PADDING_DP = bottomDp
+
+        DebugLogger.info(
+            "🖥️ Target: ${selectedPreset.width}×${selectedPreset.height} | " +
+            "Mode: ${selectedMode.name} | Ratio: %.3f | Padding: top=${topDp}dp, bottom=${bottomDp}dp".format(ratio)
+        )
+        requestScreenCapture()
     }
+} else {
+    stopService()
+}
+}
+
+private fun showTftPaddingDialog() {
+    val prefs = getSharedPreferences("kove_prefs", MODE_PRIVATE)
+    var currentTop = prefs.getInt("tft_top_padding_dp", 0)
+    var currentBottom = prefs.getInt("tft_bottom_padding_dp", 0)
+
+    val view = layoutInflater.inflate(R.layout.dialog_tft_padding, null)
+    val dialog = AlertDialog.Builder(this)
+        .setView(view)
+        .setCancelable(true)
+        .create()
+
+    val tvTopLabel = view.findViewById<TextView>(R.id.tvTopLabel)
+    val btnTopMinus = view.findViewById<Button>(R.id.btnTopMinus)
+    val btnTopPlus = view.findViewById<Button>(R.id.btnTopPlus)
+    val seekBarTop = view.findViewById<SeekBar>(R.id.seekBarTop)
+
+    val tvBottomLabel = view.findViewById<TextView>(R.id.tvBottomLabel)
+    val btnBottomMinus = view.findViewById<Button>(R.id.btnBottomMinus)
+    val btnBottomPlus = view.findViewById<Button>(R.id.btnBottomPlus)
+    val seekBarBottom = view.findViewById<SeekBar>(R.id.seekBarBottom)
+
+    val btnReset = view.findViewById<Button>(R.id.btnResetPadding)
+    val btnSave = view.findViewById<Button>(R.id.btnSavePadding)
+
+    fun updateUI() {
+        currentTop = currentTop.coerceIn(0, 200)
+        currentBottom = currentBottom.coerceIn(0, 200)
+
+        tvTopLabel.text = getString(R.string.tft_fit_top_label, currentTop)
+        tvBottomLabel.text = getString(R.string.tft_fit_bottom_label, currentBottom)
+
+        seekBarTop.progress = currentTop
+        seekBarBottom.progress = currentBottom
+
+        MirrorService.updatePadding(currentTop, currentBottom)
+    }
+
+    updateUI()
+
+    btnTopMinus.setOnClickListener { currentTop -= 5; updateUI() }
+    btnTopPlus.setOnClickListener { currentTop += 5; updateUI() }
+    seekBarTop.setOnSeekBarChangeListener(object : SeekBar.OnSeekBarChangeListener {
+        override fun onProgressChanged(sb: SeekBar?, progress: Int, fromUser: Boolean) {
+            if (fromUser) { currentTop = progress; updateUI() }
+        }
+        override fun onStartTrackingTouch(sb: SeekBar?) {}
+        override fun onStopTrackingTouch(sb: SeekBar?) {}
+    })
+
+    btnBottomMinus.setOnClickListener { currentBottom -= 5; updateUI() }
+    btnBottomPlus.setOnClickListener { currentBottom += 5; updateUI() }
+    seekBarBottom.setOnSeekBarChangeListener(object : SeekBar.OnSeekBarChangeListener {
+        override fun onProgressChanged(sb: SeekBar?, progress: Int, fromUser: Boolean) {
+            if (fromUser) { currentBottom = progress; updateUI() }
+        }
+        override fun onStartTrackingTouch(sb: SeekBar?) {}
+        override fun onStopTrackingTouch(sb: SeekBar?) {}
+    })
+
+    btnReset.setOnClickListener {
+        currentTop = 0
+        currentBottom = 0
+        updateUI()
+    }
+
+    btnSave.setOnClickListener {
+        prefs.edit().apply {
+            putInt("tft_top_padding_dp", currentTop)
+            putInt("tft_bottom_padding_dp", currentBottom)
+            apply()
+        }
+        Toast.makeText(this, getString(R.string.toast_tft_fit_saved), Toast.LENGTH_SHORT).show()
+        dialog.dismiss()
+    }
+
+    dialog.show()
+}
 
     private fun startControlOnly() {
         // Check overlay permission
