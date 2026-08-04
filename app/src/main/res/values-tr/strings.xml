@@ -168,6 +168,10 @@
     <string name="map_layer_maps">Harita</string>
     <string name="map_layer_topo">Topo</string>
     <string name="map_layer_sat">Uydu</string>
+    <string name="map_layer_offline">Çevrimdışı</string>
+    <string name="toast_select_offline_map">Lütfen bir OpenAndroMaps (.map) dosyası seçin</string>
+    <string name="toast_offline_map_loaded">✅ Çevrimdışı harita yüklendi: %1$s</string>
+    <string name="error_invalid_map_file">❌ Geçersiz veya okunamayan .map dosyası</string>
     <string name="map_layer_osm">🗺️ OSM</string>
     <string name="map_layer_satellite">🛰️ Uydu</string>
     <string name="map_btn_import">📂 İçe Aktar</string>
@@ -190,6 +194,34 @@
     <string name="map_import_error">❌ İçe aktarma hatası: %1$s</string>
     <string name="map_gps_permission_denied">⚠️ Konum izni reddedildi</string>
     <string name="map_waiting_gps">📍 GPS sinyali bekleniyor…</string>
+
+    <!-- Map & Cursor Customization -->
+    <string name="map_settings_dialog_title">⚙️ Harita &amp; İmleç Ayarları</string>
+    <string name="label_map_theme">Harita Teması:</string>
+    <string name="map_theme_day">☀️ Gündüz</string>
+    <string name="map_theme_night">🌙 Gece</string>
+    <string name="map_theme_auto">🌗 Otomatik</string>
+    <string name="label_cursor_shape">Konum İmleç Şekli:</string>
+    <string name="label_cursor_color">İmleç Rengi:</string>
+    <string name="label_cursor_preview">İmleç Önizleme:</string>
+    <string name="cursor_shape_arrow">⬆️ Navigasyon Oku</string>
+    <string name="cursor_shape_motorcycle">🏍️ Motosiklet</string>
+    <string name="cursor_shape_circle">🟢 Daire Nokta</string>
+    <string name="cursor_shape_crosshair">🎯 Hedef / Nişangah</string>
+    <string name="cursor_shape_pin">📍 Konum Pini</string>
+
+    <!-- GPX Track Recording -->
+    <string name="map_btn_record_start">🔴 Kaydet</string>
+    <string name="gpx_export_title">💾 Rotayı GPX Olarak Kaydet</string>
+    <string name="label_gpx_filename">Dosya Adı:</string>
+    <string name="label_gpx_line_color">Rota Çizgi Rengi:</string>
+    <string name="btn_gpx_save">GPX Kaydet</string>
+    <string name="btn_gpx_discard">Sil / İptal Et</string>
+    <string name="toast_gpx_saved">✅ GPX Rotası İndirilenler klasörüne kaydedildi: %1$s</string>
+    <string name="dialog_exit_recording_title">⚠️ Rota Kaydı Devam Ediyor</string>
+    <string name="dialog_exit_recording_msg">Şu anda arka planda rota kaydı yapılıyor. Kaydı durdurup kaydetmek ister misiniz?</string>
+    <string name="btn_stop_and_save">Durdur ve Kaydet</string>
+    <string name="btn_keep_recording">Kayda Devam Et</string>
 
     <!-- Turn-by-Turn Navigasyon -->
     <string name="nav_start_navigation">▶ Navigasyonu Başlat</string>

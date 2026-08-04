@@ -45,17 +45,26 @@
                 android:padding="4dp"
                 android:src="@android:drawable/ic_menu_revert"
                 android:contentDescription="@string/map_btn_back"
-                android:background="?android:attr/selectableItemBackgroundBorderless" />
+                android:background="?android:attr/selectableItemBackgroundBorderless"
+                android:layout_marginEnd="6dp" />
 
+            <!-- Map Settings Button (Theme & Cursor) -->
             <TextView
-                android:layout_width="0dp"
-                android:layout_height="wrap_content"
-                android:layout_weight="1"
-                android:text="@string/map_title"
-                android:textColor="#FFFFFF"
+                android:id="@+id/btnMapSettings"
+                android:layout_width="wrap_content"
+                android:layout_height="32dp"
+                android:text="⚙️"
                 android:textSize="14sp"
                 android:textStyle="bold"
-                android:layout_marginStart="6dp" />
+                android:textColor="#FFFFFF"
+                android:background="#475569"
+                android:paddingStart="8dp"
+                android:paddingEnd="8dp"
+                android:gravity="center"
+                android:includeFontPadding="false"
+                android:clickable="true"
+                android:focusable="true"
+                android:layout_marginEnd="4dp" />
 
             <!-- TFT Fit Frame Button -->
             <TextView
@@ -117,6 +126,24 @@
                 android:layout_width="wrap_content"
                 android:layout_height="32dp"
                 android:text="@string/map_layer_sat"
+                android:textSize="11sp"
+                android:textStyle="bold"
+                android:textColor="#FFFFFF"
+                android:background="#555555"
+                android:paddingStart="8dp"
+                android:paddingEnd="8dp"
+                android:gravity="center"
+                android:includeFontPadding="false"
+                android:clickable="true"
+                android:focusable="true"
+                android:layout_marginEnd="4dp" />
+
+            <!-- Layer: Offline (.map) -->
+            <TextView
+                android:id="@+id/btnLayerOffline"
+                android:layout_width="wrap_content"
+                android:layout_height="32dp"
+                android:text="@string/map_layer_offline"
                 android:textSize="11sp"
                 android:textStyle="bold"
                 android:textColor="#FFFFFF"
@@ -260,52 +287,78 @@
     </LinearLayout>
 
     <!-- Bottom-left: import route -->
-    <Button
-        android:id="@+id/btnImportRoute"
-        android:layout_width="wrap_content"
-        android:layout_height="40dp"
-        android:layout_gravity="bottom|start"
-        android:layout_marginStart="10dp"
-        android:layout_marginBottom="12dp"
-        android:text="@string/map_btn_import"
-        android:textSize="11sp"
-        android:textColor="#FFFFFF"
-        android:background="#2E7D32"
+    <!-- Bottom Controls Bar -->
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_gravity="bottom"
+        android:orientation="horizontal"
         android:paddingStart="10dp"
         android:paddingEnd="10dp"
-        android:elevation="4dp" />
+        android:paddingBottom="12dp"
+        android:gravity="center_vertical">
 
-    <!-- Bottom-center: route list toggle -->
-    <Button
-        android:id="@+id/btnRouteList"
-        android:layout_width="wrap_content"
-        android:layout_height="40dp"
-        android:layout_gravity="bottom|center_horizontal"
-        android:layout_marginBottom="12dp"
-        android:text="@string/map_btn_routes"
-        android:textSize="11sp"
-        android:textColor="#FFFFFF"
-        android:background="#1565C0"
-        android:paddingStart="10dp"
-        android:paddingEnd="10dp"
-        android:elevation="4dp"
-        android:visibility="gone" />
+        <!-- Bottom-left: import route -->
+        <Button
+            android:id="@+id/btnImportRoute"
+            android:layout_width="wrap_content"
+            android:layout_height="40dp"
+            android:text="@string/map_btn_import"
+            android:textSize="11sp"
+            android:textColor="#FFFFFF"
+            android:background="#2E7D32"
+            android:paddingStart="10dp"
+            android:paddingEnd="10dp"
+            android:elevation="4dp" />
 
-    <!-- Bottom-right: GPS tracking toggle -->
-    <Button
-        android:id="@+id/btnGpsToggle"
-        android:layout_width="wrap_content"
-        android:layout_height="40dp"
-        android:layout_gravity="bottom|end"
-        android:layout_marginEnd="10dp"
-        android:layout_marginBottom="12dp"
-        android:text="@string/map_btn_gps"
-        android:textSize="11sp"
-        android:textColor="#FFFFFF"
-        android:background="#1565C0"
-        android:paddingStart="10dp"
-        android:paddingEnd="10dp"
-        android:elevation="4dp" />
+        <!-- Track Record Button -->
+        <Button
+            android:id="@+id/btnRecordTrack"
+            android:layout_width="wrap_content"
+            android:layout_height="40dp"
+            android:text="@string/map_btn_record_start"
+            android:textSize="11sp"
+            android:textStyle="bold"
+            android:textColor="#FFFFFF"
+            android:background="#D97706"
+            android:paddingStart="10dp"
+            android:paddingEnd="10dp"
+            android:elevation="4dp"
+            android:layout_marginStart="8dp" />
+
+        <View
+            android:layout_width="0dp"
+            android:layout_height="1dp"
+            android:layout_weight="1" />
+
+        <!-- Bottom-center: route list toggle -->
+        <Button
+            android:id="@+id/btnRouteList"
+            android:layout_width="wrap_content"
+            android:layout_height="40dp"
+            android:text="@string/map_btn_routes"
+            android:textSize="11sp"
+            android:textColor="#FFFFFF"
+            android:background="#1565C0"
+            android:paddingStart="10dp"
+            android:paddingEnd="10dp"
+            android:elevation="4dp"
+            android:visibility="gone"
+            android:layout_marginEnd="8dp" />
+
+        <!-- Bottom-right: GPS tracking toggle -->
+        <Button
+            android:id="@+id/btnGpsToggle"
+            android:layout_width="wrap_content"
+            android:layout_height="40dp"
+            android:text="@string/map_btn_gps"
+            android:textSize="11sp"
+            android:textColor="#FFFFFF"
+            android:background="#1565C0"
+            android:paddingStart="10dp"
+            android:paddingEnd="10dp"
+            android:elevation="4dp" />
+    </LinearLayout>
 
     <!-- Destination Popup Bottom Card (When long-pressed on map) -->
     <LinearLayout

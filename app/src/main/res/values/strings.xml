@@ -168,6 +168,10 @@
     <string name="map_layer_maps">Maps</string>
     <string name="map_layer_topo">Topo</string>
     <string name="map_layer_sat">Satellite</string>
+    <string name="map_layer_offline">Offline</string>
+    <string name="toast_select_offline_map">Please select an OpenAndroMaps (.map) file</string>
+    <string name="toast_offline_map_loaded">✅ Offline map loaded: %1$s</string>
+    <string name="error_invalid_map_file">❌ Invalid or unreadable .map file</string>
     <string name="map_layer_osm">🗺️ OSM</string>
     <string name="map_layer_satellite">🛰️ Satellite</string>
     <string name="map_btn_import">📂 Import</string>
@@ -190,6 +194,34 @@
     <string name="map_import_error">❌ Import error: %1$s</string>
     <string name="map_gps_permission_denied">⚠️ Location permission denied</string>
     <string name="map_waiting_gps">📍 Waiting for GPS fix…</string>
+
+    <!-- Map & Cursor Customization -->
+    <string name="map_settings_dialog_title">⚙️ Map &amp; Cursor Settings</string>
+    <string name="label_map_theme">Map Theme:</string>
+    <string name="map_theme_day">☀️ Day</string>
+    <string name="map_theme_night">🌙 Night</string>
+    <string name="map_theme_auto">🌗 Auto</string>
+    <string name="label_cursor_shape">Location Cursor Shape:</string>
+    <string name="label_cursor_color">Cursor Color:</string>
+    <string name="label_cursor_preview">Cursor Preview:</string>
+    <string name="cursor_shape_arrow">⬆️ Navigation Arrow</string>
+    <string name="cursor_shape_motorcycle">🏍️ Motorcycle</string>
+    <string name="cursor_shape_circle">🟢 Circle Dot</string>
+    <string name="cursor_shape_crosshair">🎯 Crosshair Target</string>
+    <string name="cursor_shape_pin">📍 Location Pin</string>
+
+    <!-- GPX Track Recording -->
+    <string name="map_btn_record_start">🔴 Record</string>
+    <string name="gpx_export_title">💾 Save GPX Route</string>
+    <string name="label_gpx_filename">File Name:</string>
+    <string name="label_gpx_line_color">Route Line Color:</string>
+    <string name="btn_gpx_save">Save GPX</string>
+    <string name="btn_gpx_discard">Discard</string>
+    <string name="toast_gpx_saved">✅ GPX Route saved to Downloads: %1$s</string>
+    <string name="dialog_exit_recording_title">⚠️ Route Recording Active</string>
+    <string name="dialog_exit_recording_msg">Route recording is currently in progress. Would you like to stop and save the route?</string>
+    <string name="btn_stop_and_save">Stop &amp; Save</string>
+    <string name="btn_keep_recording">Keep Recording</string>
 
     <!-- Turn-by-Turn Navigation -->
     <string name="nav_start_navigation">▶ Start Navigation</string>

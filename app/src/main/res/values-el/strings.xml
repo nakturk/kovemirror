@@ -165,9 +165,13 @@
     <!-- Χάρτης & Διαδρομές -->
     <string name="btn_open_map">🗺️  Χάρτης &amp; Διαδρομή</string>
     <string name="map_title">🗺️ Χάρτης &amp; Παρακολούθηση Διαδρομών</string>
-    <string name="map_layer_maps">Χάρτης</string>
-    <string name="map_layer_topo">Topo</string>
+    <string name="map_layer_maps">Χάρτες</string>
+    <string name="map_layer_topo">Τοπο</string>
     <string name="map_layer_sat">Δορυφόρος</string>
+    <string name="map_layer_offline">Χωρίς σύνδεση</string>
+    <string name="toast_select_offline_map">Επιλέξτε ένα αρχείο OpenAndroMaps (.map)</string>
+    <string name="toast_offline_map_loaded">✅ Φορτώθηκε ο χάρτης χωρίς σύνδεση: %1$s</string>
+    <string name="error_invalid_map_file">❌ Μη έγκυρο ή μη αναγνώσιμο αρχείο .map</string>
     <string name="map_layer_osm">🗺️ OSM</string>
     <string name="map_layer_satellite">🛰️ Δορυφόρος</string>
     <string name="map_btn_import">📂 Εισαγωγή</string>
@@ -190,6 +194,34 @@
     <string name="map_import_error">❌ Σφάλμα εισαγωγής: %1$s</string>
     <string name="map_gps_permission_denied">⚠️ Η άδεια τοποθεσίας απορρίφθηκε</string>
     <string name="map_waiting_gps">📍 Αναμονή για σήμα GPS…</string>
+
+    <!-- Map & Cursor Customization -->
+    <string name="map_settings_dialog_title">⚙️ Ρυθμίσεις Χάρτη &amp; Δείκτη</string>
+    <string name="label_map_theme">Θέμα Χάρτη:</string>
+    <string name="map_theme_day">☀️ Ημέρα</string>
+    <string name="map_theme_night">🌙 Νύχτα</string>
+    <string name="map_theme_auto">🌗 Αυτόματο</string>
+    <string name="label_cursor_shape">Σχήμα Δείκτη:</string>
+    <string name="label_cursor_color">Χρώμα Δείκτη:</string>
+    <string name="label_cursor_preview">Προεπισκόπηση Δείκτη:</string>
+    <string name="cursor_shape_arrow">⬆️ Βέλος Πλοήγησης</string>
+    <string name="cursor_shape_motorcycle">🏍️ Μοτοσυκλέτα</string>
+    <string name="cursor_shape_circle">🟢 Κύκλος</string>
+    <string name="cursor_shape_crosshair">🎯 Στόχος</string>
+    <string name="cursor_shape_pin">📍 Πινέζα</string>
+
+    <!-- GPX Track Recording -->
+    <string name="map_btn_record_start">🔴 Εγγραφή</string>
+    <string name="gpx_export_title">💾 Αποθήκευση Διαδρομής GPX</string>
+    <string name="label_gpx_filename">Όνομα Αρχείου:</string>
+    <string name="label_gpx_line_color">Χρώμα Γραμμής Διαδρομής:</string>
+    <string name="btn_gpx_save">Αποθήκευση GPX</string>
+    <string name="btn_gpx_discard">Απόρριψη</string>
+    <string name="toast_gpx_saved">✅ Η διαδρομή GPX αποθηκεύτηκε στις Λήψεις: %1$s</string>
+    <string name="dialog_exit_recording_title">⚠️ Ενεργή Εγγραφή Διαδρομής</string>
+    <string name="dialog_exit_recording_msg">Η εγγραφή διαδρομής βρίσκεται σε εξέλιξη. Θέλετε να τη διακόψετε και να την αποθηκεύσετε;</string>
+    <string name="btn_stop_and_save">Διακοπή &amp; Αποθήκευση</string>
+    <string name="btn_keep_recording">Συνέχιση Εγγραφής</string>
 
     <!-- Turn-by-Turn Πλοήγηση -->
     <string name="nav_start_navigation">▶ Έναρξη Πλοήγησης</string>

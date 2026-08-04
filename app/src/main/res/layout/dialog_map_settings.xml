@@ -1,0 +1,206 @@
+<?xml version="1.0" encoding="utf-8"?>
+<ScrollView xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:background="#1E293B"
+    android:fillViewport="true">
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="vertical"
+        android:padding="20dp">
+
+        <!-- Title -->
+        <TextView
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="@string/map_settings_dialog_title"
+            android:textColor="#FFFFFF"
+            android:textSize="18sp"
+            android:textStyle="bold"
+            android:gravity="center"
+            android:layout_marginBottom="16dp" />
+
+        <!-- Section 1: Map Theme (Day / Night / Auto) -->
+        <TextView
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="@string/label_map_theme"
+            android:textColor="#38BDF8"
+            android:textSize="14sp"
+            android:textStyle="bold"
+            android:layout_marginBottom="6dp" />
+
+        <RadioGroup
+            android:id="@+id/rgMapTheme"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="horizontal"
+            android:layout_marginBottom="16dp">
+
+            <RadioButton
+                android:id="@+id/rbThemeDay"
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_weight="1"
+                android:text="@string/map_theme_day"
+                android:textColor="#F8FAFC"
+                android:textSize="12sp"
+                android:checked="true" />
+
+            <RadioButton
+                android:id="@+id/rbThemeNight"
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_weight="1"
+                android:text="@string/map_theme_night"
+                android:textColor="#F8FAFC"
+                android:textSize="12sp" />
+
+            <RadioButton
+                android:id="@+id/rbThemeAuto"
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_weight="1"
+                android:text="@string/map_theme_auto"
+                android:textColor="#F8FAFC"
+                android:textSize="12sp" />
+        </RadioGroup>
+
+        <!-- Section 2: Cursor Shape -->
+        <TextView
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="@string/label_cursor_shape"
+            android:textColor="#38BDF8"
+            android:textSize="14sp"
+            android:textStyle="bold"
+            android:layout_marginBottom="6dp" />
+
+        <Spinner
+            android:id="@+id/spCursorShape"
+            android:layout_width="match_parent"
+            android:layout_height="40dp"
+            android:background="@drawable/bg_button_secondary"
+            android:popupBackground="#161B22"
+            android:layout_marginBottom="16dp" />
+
+        <!-- Section 3: Cursor Color Selection -->
+        <TextView
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="@string/label_cursor_color"
+            android:textColor="#38BDF8"
+            android:textSize="14sp"
+            android:textStyle="bold"
+            android:layout_marginBottom="8dp" />
+
+        <LinearLayout
+            android:id="@+id/llColorContainer"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="horizontal"
+            android:gravity="center"
+            android:layout_marginBottom="20dp">
+
+            <View
+                android:id="@+id/colorCircleBlue"
+                android:layout_width="32dp"
+                android:layout_height="32dp"
+                android:background="#0284C7"
+                android:layout_margin="4dp" />
+
+            <View
+                android:id="@+id/colorCircleRed"
+                android:layout_width="32dp"
+                android:layout_height="32dp"
+                android:background="#EF4444"
+                android:layout_margin="4dp" />
+
+            <View
+                android:id="@+id/colorCircleGreen"
+                android:layout_width="32dp"
+                android:layout_height="32dp"
+                android:background="#10B981"
+                android:layout_margin="4dp" />
+
+            <View
+                android:id="@+id/colorCircleYellow"
+                android:layout_width="32dp"
+                android:layout_height="32dp"
+                android:background="#EAB308"
+                android:layout_margin="4dp" />
+
+            <View
+                android:id="@+id/colorCirclePurple"
+                android:layout_width="32dp"
+                android:layout_height="32dp"
+                android:background="#A855F7"
+                android:layout_margin="4dp" />
+
+            <View
+                android:id="@+id/colorCircleOrange"
+                android:layout_width="32dp"
+                android:layout_height="32dp"
+                android:background="#F97316"
+                android:layout_margin="4dp" />
+
+            <View
+                android:id="@+id/colorCircleWhite"
+                android:layout_width="32dp"
+                android:layout_height="32dp"
+                android:background="#FFFFFF"
+                android:layout_margin="4dp" />
+        </LinearLayout>
+
+        <!-- Preview Circle / Icon -->
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="horizontal"
+            android:gravity="center_vertical"
+            android:layout_marginBottom="20dp">
+
+            <TextView
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_weight="1"
+                android:text="@string/label_cursor_preview"
+                android:textColor="#94A3B8"
+                android:textSize="13sp" />
+
+            <ImageView
+                android:id="@+id/imgCursorPreview"
+                android:layout_width="44dp"
+                android:layout_height="44dp"
+                android:contentDescription="Cursor Preview" />
+        </LinearLayout>
+
+        <!-- Action Buttons -->
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="horizontal"
+            android:gravity="end">
+
+            <Button
+                android:id="@+id/btnResetMapSettings"
+                android:layout_width="wrap_content"
+                android:layout_height="40dp"
+                android:text="@string/tft_fit_reset"
+                android:textColor="#94A3B8"
+                android:background="#1E293B"
+                android:layout_marginEnd="8dp" />
+
+            <Button
+                android:id="@+id/btnSaveMapSettings"
+                android:layout_width="wrap_content"
+                android:layout_height="40dp"
+                android:text="@string/tft_fit_save"
+                android:textColor="#FFFFFF"
+                android:background="#2979FF"
+                android:textStyle="bold" />
+        </LinearLayout>
+    </LinearLayout>
+</ScrollView>

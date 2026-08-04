@@ -165,9 +165,13 @@
     <!-- Mapa y Rutas -->
     <string name="btn_open_map">🗺️  Mapa &amp; Rutas</string>
     <string name="map_title">🗺️ Mapa &amp; Seguimiento de Rutas</string>
-    <string name="map_layer_maps">Mapa</string>
+    <string name="map_layer_maps">Mapas</string>
     <string name="map_layer_topo">Topo</string>
     <string name="map_layer_sat">Satélite</string>
+    <string name="map_layer_offline">Sin conexión</string>
+    <string name="toast_select_offline_map">Por favor seleccione un archivo OpenAndroMaps (.map)</string>
+    <string name="toast_offline_map_loaded">✅ Mapa sin conexión cargado: %1$s</string>
+    <string name="error_invalid_map_file">❌ Archivo .map no válido o ilegible</string>
     <string name="map_layer_osm">🗺️ OSM</string>
     <string name="map_layer_satellite">🛰️ Satélite</string>
     <string name="map_btn_import">📂 Importar</string>
@@ -190,6 +194,34 @@
     <string name="map_import_error">❌ Error de importación: %1$s</string>
     <string name="map_gps_permission_denied">⚠️ Permiso de ubicación denegado</string>
     <string name="map_waiting_gps">📍 Esperando señal GPS…</string>
+
+    <!-- Map & Cursor Customization -->
+    <string name="map_settings_dialog_title">⚙️ Ajustes de Mapa y Cursor</string>
+    <string name="label_map_theme">Tema del Mapa:</string>
+    <string name="map_theme_day">☀️ Día</string>
+    <string name="map_theme_night">🌙 Noche</string>
+    <string name="map_theme_auto">🌗 Automático</string>
+    <string name="label_cursor_shape">Forma del Cursor:</string>
+    <string name="label_cursor_color">Color del Cursor:</string>
+    <string name="label_cursor_preview">Vista Previa:</string>
+    <string name="cursor_shape_arrow">⬆️ Flecha de Navegación</string>
+    <string name="cursor_shape_motorcycle">🏍️ Motocicleta</string>
+    <string name="cursor_shape_circle">🟢 Punto Circular</string>
+    <string name="cursor_shape_crosshair">🎯 Objetivo / Mirilla</string>
+    <string name="cursor_shape_pin">📍 Pin de Ubicación</string>
+
+    <!-- GPX Track Recording -->
+    <string name="map_btn_record_start">🔴 Grabar</string>
+    <string name="gpx_export_title">💾 Guardar Ruta GPX</string>
+    <string name="label_gpx_filename">Nombre del Archivo:</string>
+    <string name="label_gpx_line_color">Color de Línea de Ruta:</string>
+    <string name="btn_gpx_save">Guardar GPX</string>
+    <string name="btn_gpx_discard">Descartar</string>
+    <string name="toast_gpx_saved">✅ Ruta GPX guardada en Descargas: %1$s</string>
+    <string name="dialog_exit_recording_title">⚠️ Grabación de Ruta Activa</string>
+    <string name="dialog_exit_recording_msg">La grabación de ruta está en progreso. ¿Desea detenerla y guardarla?</string>
+    <string name="btn_stop_and_save">Detener y Guardar</string>
+    <string name="btn_keep_recording">Continuar Grabando</string>
 
     <!-- Turn-by-Turn Navegación -->
     <string name="nav_start_navigation">▶ Iniciar Navegación</string>

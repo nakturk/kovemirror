@@ -100,6 +100,9 @@ dependencies {
     implementation("androidx.constraintlayout:constraintlayout:2.1.4")
     implementation("androidx.lifecycle:lifecycle-service:2.7.0")
 
-    // OSM Map - osmdroid
+    // OSM Map - osmdroid & Mapsforge (OpenAndroMaps .map support)
     implementation("org.osmdroid:osmdroid-android:6.1.18")
+    implementation("org.osmdroid:osmdroid-mapsforge:6.1.18")
+    implementation("org.mapsforge:mapsforge-map-android:0.20.0")
+    implementation("org.mapsforge:mapsforge-themes:0.20.0")
 }

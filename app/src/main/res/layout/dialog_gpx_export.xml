@@ -1,0 +1,173 @@
+<?xml version="1.0" encoding="utf-8"?>
+<ScrollView xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:background="#1E293B"
+    android:fillViewport="true">
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="vertical"
+        android:padding="20dp">
+
+        <!-- Title -->
+        <TextView
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="@string/gpx_export_title"
+            android:textColor="#FFFFFF"
+            android:textSize="18sp"
+            android:textStyle="bold"
+            android:gravity="center"
+            android:layout_marginBottom="16dp" />
+
+        <!-- Stats Summary -->
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="vertical"
+            android:background="#0F172A"
+            android:padding="12dp"
+            android:layout_marginBottom="16dp">
+
+            <TextView
+                android:id="@+id/tvGpxStatsDistance"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:text="Mesafe: 0.00 km"
+                android:textColor="#38BDF8"
+                android:textSize="14sp"
+                android:textStyle="bold"
+                android:layout_marginBottom="4dp" />
+
+            <TextView
+                android:id="@+id/tvGpxStatsDuration"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:text="Süre: 00:00:00"
+                android:textColor="#F8FAFC"
+                android:textSize="13sp"
+                android:layout_marginBottom="4dp" />
+
+            <TextView
+                android:id="@+id/tvGpxStatsPoints"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:text="Nokta Sayısı: 0"
+                android:textColor="#94A3B8"
+                android:textSize="12sp" />
+        </LinearLayout>
+
+        <!-- Filename Input -->
+        <TextView
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="@string/label_gpx_filename"
+            android:textColor="#38BDF8"
+            android:textSize="14sp"
+            android:textStyle="bold"
+            android:layout_marginBottom="6dp" />
+
+        <EditText
+            android:id="@+id/etGpxFileName"
+            android:layout_width="match_parent"
+            android:layout_height="44dp"
+            android:background="@drawable/bg_button_secondary"
+            android:textColor="#FFFFFF"
+            android:textColorHint="#64748B"
+            android:textSize="14sp"
+            android:paddingStart="12dp"
+            android:paddingEnd="12dp"
+            android:singleLine="true"
+            android:inputType="text"
+            android:layout_marginBottom="16dp" />
+
+        <!-- Line Color Selection -->
+        <TextView
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="@string/label_gpx_line_color"
+            android:textColor="#38BDF8"
+            android:textSize="14sp"
+            android:textStyle="bold"
+            android:layout_marginBottom="8dp" />
+
+        <LinearLayout
+            android:id="@+id/llGpxColorContainer"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="horizontal"
+            android:gravity="center"
+            android:layout_marginBottom="24dp">
+
+            <View
+                android:id="@+id/gpxColorRed"
+                android:layout_width="32dp"
+                android:layout_height="32dp"
+                android:background="#EF4444"
+                android:layout_margin="4dp" />
+
+            <View
+                android:id="@+id/gpxColorOrange"
+                android:layout_width="32dp"
+                android:layout_height="32dp"
+                android:background="#F97316"
+                android:layout_margin="4dp" />
+
+            <View
+                android:id="@+id/gpxColorCyan"
+                android:layout_width="32dp"
+                android:layout_height="32dp"
+                android:background="#06B6D4"
+                android:layout_margin="4dp" />
+
+            <View
+                android:id="@+id/gpxColorGreen"
+                android:layout_width="32dp"
+                android:layout_height="32dp"
+                android:background="#10B981"
+                android:layout_margin="4dp" />
+
+            <View
+                android:id="@+id/gpxColorMagenta"
+                android:layout_width="32dp"
+                android:layout_height="32dp"
+                android:background="#D500F9"
+                android:layout_margin="4dp" />
+
+            <View
+                android:id="@+id/gpxColorYellow"
+                android:layout_width="32dp"
+                android:layout_height="32dp"
+                android:background="#EAB308"
+                android:layout_margin="4dp" />
+        </LinearLayout>
+
+        <!-- Action Buttons -->
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="horizontal"
+            android:gravity="end">
+
+            <Button
+                android:id="@+id/btnDiscardGpx"
+                android:layout_width="wrap_content"
+                android:layout_height="40dp"
+                android:text="@string/btn_gpx_discard"
+                android:textColor="#EF4444"
+                android:background="#1E293B"
+                android:layout_marginEnd="8dp" />
+
+            <Button
+                android:id="@+id/btnSaveGpx"
+                android:layout_width="wrap_content"
+                android:layout_height="40dp"
+                android:text="@string/btn_gpx_save"
+                android:textColor="#FFFFFF"
+                android:background="#2563EB"
+                android:textStyle="bold" />
+        </LinearLayout>
+    </LinearLayout>
+</ScrollView>

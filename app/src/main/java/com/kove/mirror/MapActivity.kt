@@ -7,6 +7,7 @@ import android.content.Context
 import android.content.Intent
 import android.content.pm.PackageManager
 import android.graphics.Color
+import android.graphics.Paint
 import android.graphics.drawable.GradientDrawable
 import android.net.Uri
 import android.os.Build
@@ -14,6 +15,7 @@ import android.os.Bundle
 import android.view.LayoutInflater
 import android.view.View
 import android.widget.Button
+import android.widget.EditText
 import android.widget.ImageView
 import android.widget.LinearLayout
 import android.widget.TextView
@@ -34,6 +36,8 @@ import org.osmdroid.views.overlay.Marker
 import org.osmdroid.views.overlay.Polyline
 import org.osmdroid.views.overlay.mylocation.GpsMyLocationProvider
 import org.osmdroid.views.overlay.mylocation.MyLocationNewOverlay
+import java.text.SimpleDateFormat
+import java.util.Date
 import java.util.Locale
 
 class MapActivity : AppCompatActivity() {
@@ -41,10 +45,12 @@ class MapActivity : AppCompatActivity() {
     companion object {
         private const val REQ_FILE_PICK = 200
         private const val REQ_LOCATION_PERM = 201
+        private const val REQ_MAP_FILE_PICK = 202
 
         private const val LAYER_MAPS = 0
         private const val LAYER_TOPO = 1
         private const val LAYER_SATELLITE = 2
+        private const val LAYER_OFFLINE = 3
     }
 
     private lateinit var mapView: MapView
@@ -58,6 +64,33 @@ class MapActivity : AppCompatActivity() {
     private var navigationPolyline: Polyline? = null
     private var isNavigating = false
     private var currentNavigationRoute: NavigationHelper.NavigationRoute? = null
+
+    // ─── GPX Track Recording ─────────────────────────────────────
+    private var isRecordingTrack = false
+    private val recordedTrackPoints = mutableListOf<TrackPoint>()
+    private var recordedPolyline: Polyline? = null
+    private var recordingColor = Color.parseColor("#EF4444") // Red default
+    private var recordingStartTimeMs = 0L
+    private val recordTimerHandler = android.os.Handler(android.os.Looper.getMainLooper())
+    private val recordTimerRunnable = object : Runnable {
+        override fun run() {
+            if (isRecordingTrack) {
+                val elapsedSec = ((System.currentTimeMillis() - recordingStartTimeMs) / 1000).coerceAtLeast(0)
+                val hours = elapsedSec / 3600
+                val mins = (elapsedSec % 3600) / 60
+                val secs = elapsedSec % 60
+                val timeStr = if (hours > 0) {
+                    String.format(Locale.US, "%02d:%02d:%02d", hours, mins, secs)
+                } else {
+                    String.format(Locale.US, "%02d:%02d", mins, secs)
+                }
+                val btnRecord = findViewById<Button>(R.id.btnRecordTrack)
+                btnRecord?.text = "⏹ REC ($timeStr)"
+                btnRecord?.setBackgroundColor(Color.parseColor("#B71C1C"))
+                recordTimerHandler.postDelayed(this, 1000)
+            }
+        }
+    }
 
     // ─── Route Management ───────────────────────────────────────
 
@@ -105,6 +138,10 @@ class MapActivity : AppCompatActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
 
+        try {
+            org.mapsforge.map.android.graphics.AndroidGraphicFactory.createInstance(application)
+        } catch (_: Exception) {}
+
         // osmdroid configuration
         val osmConf = Configuration.getInstance()
         osmConf.userAgentValue = packageName
@@ -125,6 +162,18 @@ class MapActivity : AppCompatActivity() {
         val topPadding = prefs.getInt("map_top_padding_dp", 0)
         val bottomPadding = prefs.getInt("map_bottom_padding_dp", 0)
         applyTftPadding(topPadding, bottomPadding)
+
+        // Restore active track recording if interrupted
+        val tempRecording = GpxRecorderHelper.loadTempPoints(this)
+        if (tempRecording != null && tempRecording.second.isNotEmpty()) {
+            recordingColor = tempRecording.first
+            recordedTrackPoints.clear()
+            recordedTrackPoints.addAll(tempRecording.second)
+            recordingStartTimeMs = tempRecording.second.first().timeMs
+            isRecordingTrack = true
+            updateRecordedPolylineOnMap()
+            recordTimerHandler.post(recordTimerRunnable)
+        }
     }
 
     // ─── Map Setup ──────────────────────────────────────────────
@@ -146,6 +195,8 @@ class MapActivity : AppCompatActivity() {
         val savedZoom = prefs.getFloat("map_zoom", 6.0f).toDouble()
         controller.setZoom(savedZoom)
         controller.setCenter(GeoPoint(savedLat, savedLon))
+
+        applyMapTheme()
     }
 
     // ─── Map Long Press Events ───────────────────────────────────
@@ -340,16 +391,34 @@ class MapActivity : AppCompatActivity() {
 
     private fun setupButtons() {
         // Back button
-        findViewById<ImageView>(R.id.btnBack).setOnClickListener { finish() }
+        findViewById<ImageView>(R.id.btnBack).setOnClickListener {
+            if (isRecordingTrack) {
+                showExitRecordingWarningDialog()
+            } else {
+                finish()
+            }
+        }
 
         // Layer buttons
         val btnMaps = findViewById<View>(R.id.btnLayerMaps)
         val btnTopo = findViewById<View>(R.id.btnLayerTopo)
         val btnSat = findViewById<View>(R.id.btnLayerSatellite)
+        val btnOffline = findViewById<View>(R.id.btnLayerOffline)
 
         btnMaps.setOnClickListener { switchLayer(LAYER_MAPS) }
         btnTopo.setOnClickListener { switchLayer(LAYER_TOPO) }
         btnSat.setOnClickListener { switchLayer(LAYER_SATELLITE) }
+        btnOffline.setOnClickListener {
+            if (currentLayer == LAYER_OFFLINE) {
+                selectOfflineMapFile()
+            } else {
+                switchLayer(LAYER_OFFLINE)
+            }
+        }
+        btnOffline.setOnLongClickListener {
+            selectOfflineMapFile()
+            true
+        }
 
         // Zoom buttons
         findViewById<Button>(R.id.btnZoomIn).setOnClickListener {
@@ -372,6 +441,9 @@ class MapActivity : AppCompatActivity() {
         // Import route
         findViewById<Button>(R.id.btnImportRoute).setOnClickListener { openFilePicker() }
 
+        // Track record button
+        findViewById<Button>(R.id.btnRecordTrack).setOnClickListener { toggleTrackRecording() }
+
         // GPS toggle
         findViewById<Button>(R.id.btnGpsToggle).setOnClickListener { toggleGps() }
 
@@ -385,6 +457,11 @@ class MapActivity : AppCompatActivity() {
         // Close route list
         findViewById<ImageView>(R.id.btnCloseRouteList).setOnClickListener {
             routeListContainer.visibility = View.GONE
+        }
+
+        // Map Settings Button (Theme & Cursor)
+        findViewById<View>(R.id.btnMapSettings).setOnClickListener {
+            showMapSettingsDialog()
         }
 
         // TFT Padding Adjustment Button
@@ -492,6 +569,7 @@ class MapActivity : AppCompatActivity() {
         val btnMaps = findViewById<View>(R.id.btnLayerMaps)
         val btnTopo = findViewById<View>(R.id.btnLayerTopo)
         val btnSat = findViewById<View>(R.id.btnLayerSatellite)
+        val btnOffline = findViewById<View>(R.id.btnLayerOffline)
 
         val activeColor = Color.parseColor("#2979FF")
         val inactiveColor = Color.parseColor("#555555")
@@ -499,12 +577,56 @@ class MapActivity : AppCompatActivity() {
         btnMaps.setBackgroundColor(if (layer == LAYER_MAPS) activeColor else inactiveColor)
         btnTopo.setBackgroundColor(if (layer == LAYER_TOPO) activeColor else inactiveColor)
         btnSat.setBackgroundColor(if (layer == LAYER_SATELLITE) activeColor else inactiveColor)
+        btnOffline.setBackgroundColor(if (layer == LAYER_OFFLINE) activeColor else inactiveColor)
+
+        if (layer != LAYER_OFFLINE && mapView.tileProvider !is org.osmdroid.tileprovider.MapTileProviderBasic) {
+            mapView.tileProvider = org.osmdroid.tileprovider.MapTileProviderBasic(this)
+        }
 
         when (layer) {
             LAYER_MAPS -> mapView.setTileSource(TileSourceFactory.MAPNIK)
             LAYER_TOPO -> mapView.setTileSource(openTopoTileSource)
             LAYER_SATELLITE -> mapView.setTileSource(satelliteTileSource)
+            LAYER_OFFLINE -> {
+                val prefs = getSharedPreferences("kove_map_prefs", MODE_PRIVATE)
+                val mapPath = prefs.getString("offline_map_path", null)
+                val mapFile = if (!mapPath.isNullOrEmpty()) java.io.File(mapPath) else null
+
+                if (mapFile != null && mapFile.exists()) {
+                    try {
+                        val theme = org.mapsforge.map.rendertheme.InternalRenderTheme.DEFAULT
+                        val fromFiles = org.osmdroid.mapsforge.MapsForgeTileSource.createFromFiles(
+                            arrayOf(mapFile),
+                            theme,
+                            "DEFAULT"
+                        )
+                        val receiver = org.osmdroid.tileprovider.util.SimpleRegisterReceiver(this)
+                        val moduleProvider = org.osmdroid.mapsforge.MapsForgeTileModuleProvider(
+                            receiver,
+                            fromFiles,
+                            null
+                        )
+                        val forgeProvider = org.osmdroid.tileprovider.MapTileProviderArray(
+                            fromFiles,
+                            receiver,
+                            arrayOf(moduleProvider)
+                        )
+                        mapView.tileProvider = forgeProvider
+                        mapView.setTileSource(fromFiles)
+
+                        // Keep current zoom level and map position when loading offline map
+                    } catch (e: Exception) {
+                        DebugLogger.error("❌ MapsForge tile source error: ${e.message}")
+                        Toast.makeText(this, getString(R.string.error_invalid_map_file), Toast.LENGTH_SHORT).show()
+                        selectOfflineMapFile()
+                    }
+                } else {
+                    Toast.makeText(this, getString(R.string.toast_select_offline_map), Toast.LENGTH_LONG).show()
+                    selectOfflineMapFile()
+                }
+            }
         }
+        applyMapTheme()
         mapView.invalidate()
     }
 
@@ -522,7 +644,6 @@ class MapActivity : AppCompatActivity() {
 
         locationOverlay?.myLocation?.let { loc ->
             mapView.controller.animateTo(loc)
-            mapView.controller.setZoom(16.0)
         } ?: run {
             Toast.makeText(this, getString(R.string.map_waiting_gps), Toast.LENGTH_SHORT).show()
             locationOverlay?.enableFollowLocation()
@@ -545,6 +666,7 @@ class MapActivity : AppCompatActivity() {
             mapView.overlays.remove(locationOverlay)
             locationOverlay = null
             isGpsEnabled = false
+            mapView.mapOrientation = 0f
             btnGps.text = getString(R.string.map_btn_gps)
             btnGps.setBackgroundColor(Color.parseColor("#1565C0"))
         } else {
@@ -555,9 +677,30 @@ class MapActivity : AppCompatActivity() {
             locationOverlay = object : MyLocationNewOverlay(provider, mapView) {
                 override fun onLocationChanged(location: android.location.Location?, source: org.osmdroid.views.overlay.mylocation.IMyLocationProvider?) {
                     super.onLocationChanged(location, source)
-                    if (isNavigating && location != null) {
-                        runOnUiThread {
-                            updateNavigationUi(GeoPoint(location.latitude, location.longitude))
+                    if (location != null) {
+                        if (location.hasBearing() && (location.speed > 0.5f || isNavigating)) {
+                            runOnUiThread {
+                                mapView.mapOrientation = -location.bearing
+                            }
+                        }
+                        if (isNavigating) {
+                            runOnUiThread {
+                                updateNavigationUi(GeoPoint(location.latitude, location.longitude))
+                            }
+                        }
+                        if (isRecordingTrack) {
+                            val tp = TrackPoint(
+                                lat = location.latitude,
+                                lon = location.longitude,
+                                ele = if (location.hasAltitude()) location.altitude else 0.0,
+                                speed = if (location.hasSpeed()) location.speed else 0f,
+                                timeMs = if (location.time > 0) location.time else System.currentTimeMillis()
+                            )
+                            recordedTrackPoints.add(tp)
+                            GpxRecorderHelper.saveTempPoints(this@MapActivity, recordingColor, recordedTrackPoints)
+                            runOnUiThread {
+                                updateRecordedPolylineOnMap()
+                            }
                         }
                     }
                 }
@@ -565,12 +708,315 @@ class MapActivity : AppCompatActivity() {
                 enableMyLocation()
                 enableFollowLocation()
             }
+            applyLocationCursorStyle(locationOverlay)
             mapView.overlays.add(locationOverlay)
             isGpsEnabled = true
             btnGps.text = getString(R.string.map_btn_gps_on)
             btnGps.setBackgroundColor(Color.parseColor("#2E7D32"))
         }
         mapView.invalidate()
+    }
+
+    // ─── GPX Track Recording Logic ────────────────────────────────
+
+    private fun updateRecordedPolylineOnMap() {
+        recordedPolyline?.let { mapView.overlays.remove(it) }
+        if (recordedTrackPoints.isEmpty()) return
+
+        val geoPoints = recordedTrackPoints.map { GeoPoint(it.lat, it.lon) }
+        recordedPolyline = Polyline().apply {
+            setPoints(geoPoints)
+            outlinePaint.color = recordingColor
+            outlinePaint.strokeWidth = 8f * resources.displayMetrics.density
+            outlinePaint.strokeCap = Paint.Cap.ROUND
+            outlinePaint.strokeJoin = Paint.Join.ROUND
+            outlinePaint.isAntiAlias = true
+        }
+
+        // Add at the VERY TOP of overlays so it renders on top of all imported routes
+        mapView.overlays.add(recordedPolyline)
+        mapView.invalidate()
+    }
+
+    private fun toggleTrackRecording() {
+        if (isRecordingTrack) {
+            showExportGpxDialog()
+        } else {
+            if (!isGpsEnabled) {
+                toggleGps()
+            }
+            isRecordingTrack = true
+            recordingStartTimeMs = System.currentTimeMillis()
+            recordedTrackPoints.clear()
+            recordTimerHandler.post(recordTimerRunnable)
+            GpxRecorderHelper.saveTempPoints(this, recordingColor, recordedTrackPoints)
+            Toast.makeText(this, getString(R.string.map_btn_record_start), Toast.LENGTH_SHORT).show()
+        }
+    }
+
+    private fun showExportGpxDialog() {
+        val view = layoutInflater.inflate(R.layout.dialog_gpx_export, null)
+        val dialog = androidx.appcompat.app.AlertDialog.Builder(this)
+            .setView(view)
+            .setCancelable(false)
+            .create()
+
+        val tvStatsDistance = view.findViewById<TextView>(R.id.tvGpxStatsDistance)
+        val tvStatsDuration = view.findViewById<TextView>(R.id.tvGpxStatsDuration)
+        val tvStatsPoints = view.findViewById<TextView>(R.id.tvGpxStatsPoints)
+        val etFileName = view.findViewById<EditText>(R.id.etGpxFileName)
+        val btnSave = view.findViewById<Button>(R.id.btnSaveGpx)
+        val btnDiscard = view.findViewById<Button>(R.id.btnDiscardGpx)
+
+        var distMeters = 0.0
+        for (i in 0 until recordedTrackPoints.size - 1) {
+            val p1 = recordedTrackPoints[i]
+            val p2 = recordedTrackPoints[i + 1]
+            val results = FloatArray(1)
+            android.location.Location.distanceBetween(p1.lat, p1.lon, p2.lat, p2.lon, results)
+            distMeters += results[0]
+        }
+        val distKm = distMeters / 1000.0
+        val elapsedSec = ((System.currentTimeMillis() - recordingStartTimeMs) / 1000).coerceAtLeast(0)
+        val hours = elapsedSec / 3600
+        val mins = (elapsedSec % 3600) / 60
+        val secs = elapsedSec % 60
+        val durationStr = String.format(Locale.US, "%02d:%02d:%02d", hours, mins, secs)
+
+        tvStatsDistance.text = String.format(Locale.US, "Mesafe: %.2f km", distKm)
+        tvStatsDuration.text = "Süre: $durationStr"
+        tvStatsPoints.text = "Nokta Sayısı: ${recordedTrackPoints.size}"
+
+        val defaultName = "Track_" + SimpleDateFormat("yyyyMMdd_HHmm", Locale.US).format(Date())
+        etFileName.setText(defaultName)
+
+        var selectedLineColor = recordingColor
+        val colorViews = listOf(
+            view.findViewById<View>(R.id.gpxColorRed) to Color.parseColor("#EF4444"),
+            view.findViewById<View>(R.id.gpxColorOrange) to Color.parseColor("#F97316"),
+            view.findViewById<View>(R.id.gpxColorCyan) to Color.parseColor("#06B6D4"),
+            view.findViewById<View>(R.id.gpxColorGreen) to Color.parseColor("#10B981"),
+            view.findViewById<View>(R.id.gpxColorMagenta) to Color.parseColor("#D500F9"),
+            view.findViewById<View>(R.id.gpxColorYellow) to Color.parseColor("#EAB308")
+        )
+
+        fun updateColorSelection() {
+            colorViews.forEach { (v, col) ->
+                val drawable = GradientDrawable().apply {
+                    shape = GradientDrawable.OVAL
+                    setColor(col)
+                    if (col == selectedLineColor) {
+                        setStroke(6, Color.WHITE)
+                    } else {
+                        setStroke(2, Color.parseColor("#475569"))
+                    }
+                }
+                v.background = drawable
+            }
+        }
+
+        colorViews.forEach { (v, col) ->
+            v.setOnClickListener {
+                selectedLineColor = col
+                recordingColor = col
+                updateRecordedPolylineOnMap()
+                updateColorSelection()
+            }
+        }
+        updateColorSelection()
+
+        btnSave.setOnClickListener {
+            val inputName = etFileName.text.toString().trim().ifEmpty { defaultName }
+            val gpxContent = GpxRecorderHelper.generateGpxString(inputName, recordedTrackPoints)
+            val savedUri = GpxRecorderHelper.saveGpxToDownloads(this, inputName, gpxContent)
+
+            if (savedUri != null) {
+                Toast.makeText(this, getString(R.string.toast_gpx_saved, inputName), Toast.LENGTH_LONG).show()
+            } else {
+                Toast.makeText(this, "Failed to save GPX file", Toast.LENGTH_SHORT).show()
+            }
+
+            stopRecordingAndClear()
+            dialog.dismiss()
+        }
+
+        btnDiscard.setOnClickListener {
+            stopRecordingAndClear()
+            dialog.dismiss()
+        }
+
+        dialog.show()
+    }
+
+    private fun stopRecordingAndClear() {
+        isRecordingTrack = false
+        recordTimerHandler.removeCallbacks(recordTimerRunnable)
+        recordedPolyline?.let { mapView.overlays.remove(it) }
+        recordedPolyline = null
+        recordedTrackPoints.clear()
+        GpxRecorderHelper.clearTempPoints(this)
+        val btnRecord = findViewById<Button>(R.id.btnRecordTrack)
+        btnRecord?.text = getString(R.string.map_btn_record_start)
+        btnRecord?.setBackgroundColor(Color.parseColor("#D97706"))
+        mapView.invalidate()
+    }
+
+    private fun showExitRecordingWarningDialog() {
+        androidx.appcompat.app.AlertDialog.Builder(this)
+            .setTitle(getString(R.string.dialog_exit_recording_title))
+            .setMessage(getString(R.string.dialog_exit_recording_msg))
+            .setPositiveButton(getString(R.string.btn_stop_and_save)) { _, _ ->
+                showExportGpxDialog()
+            }
+            .setNegativeButton(getString(R.string.btn_keep_recording)) { dialog, _ ->
+                dialog.dismiss()
+            }
+            .setNeutralButton(getString(R.string.btn_gpx_discard)) { _, _ ->
+                stopRecordingAndClear()
+                finish()
+            }
+            .show()
+    }
+
+    private fun applyMapTheme() {
+        val prefs = getSharedPreferences("kove_map_prefs", MODE_PRIVATE)
+        val themeMode = prefs.getInt("map_theme_mode", MapThemeHelper.THEME_AUTO)
+        MapThemeHelper.applyTheme(this, mapView, themeMode)
+    }
+
+    private fun applyLocationCursorStyle(overlay: MyLocationNewOverlay? = locationOverlay) {
+        val targetOverlay = overlay ?: return
+        val prefs = getSharedPreferences("kove_map_prefs", MODE_PRIVATE)
+        val shape = prefs.getInt("map_cursor_shape", LocationCursorHelper.SHAPE_NAV_ARROW)
+        val color = prefs.getInt("map_cursor_color", LocationCursorHelper.COLOR_PRESETS[0])
+
+        val cursorBmp = LocationCursorHelper.createCursorBitmap(this, shape, color)
+        targetOverlay.setPersonIcon(cursorBmp)
+        targetOverlay.setDirectionIcon(cursorBmp)
+        targetOverlay.setPersonAnchor(0.5f, 0.5f)
+        targetOverlay.setDirectionAnchor(0.5f, 0.5f)
+    }
+
+    private fun showMapSettingsDialog() {
+        val prefs = getSharedPreferences("kove_map_prefs", MODE_PRIVATE)
+        var selectedTheme = prefs.getInt("map_theme_mode", MapThemeHelper.THEME_AUTO)
+        var selectedShape = prefs.getInt("map_cursor_shape", LocationCursorHelper.SHAPE_NAV_ARROW)
+        var selectedColor = prefs.getInt("map_cursor_color", LocationCursorHelper.COLOR_PRESETS[0])
+
+        val view = layoutInflater.inflate(R.layout.dialog_map_settings, null)
+        val dialog = androidx.appcompat.app.AlertDialog.Builder(this)
+            .setView(view)
+            .setCancelable(true)
+            .create()
+
+        val rgTheme = view.findViewById<android.widget.RadioGroup>(R.id.rgMapTheme)
+        val spShape = view.findViewById<android.widget.Spinner>(R.id.spCursorShape)
+        val imgPreview = view.findViewById<ImageView>(R.id.imgCursorPreview)
+        val btnReset = view.findViewById<Button>(R.id.btnResetMapSettings)
+        val btnSave = view.findViewById<Button>(R.id.btnSaveMapSettings)
+
+        when (selectedTheme) {
+            MapThemeHelper.THEME_DAY -> view.findViewById<android.widget.RadioButton>(R.id.rbThemeDay).isChecked = true
+            MapThemeHelper.THEME_NIGHT -> view.findViewById<android.widget.RadioButton>(R.id.rbThemeNight).isChecked = true
+            else -> view.findViewById<android.widget.RadioButton>(R.id.rbThemeAuto).isChecked = true
+        }
+
+        rgTheme.setOnCheckedChangeListener { _, checkedId ->
+            selectedTheme = when (checkedId) {
+                R.id.rbThemeDay -> MapThemeHelper.THEME_DAY
+                R.id.rbThemeNight -> MapThemeHelper.THEME_NIGHT
+                else -> MapThemeHelper.THEME_AUTO
+            }
+        }
+
+        val shapeOptions = listOf(
+            getString(R.string.cursor_shape_arrow),
+            getString(R.string.cursor_shape_motorcycle),
+            getString(R.string.cursor_shape_circle),
+            getString(R.string.cursor_shape_crosshair),
+            getString(R.string.cursor_shape_pin)
+        )
+        val adapter = android.widget.ArrayAdapter(this, R.layout.spinner_item_compact, shapeOptions)
+        adapter.setDropDownViewResource(R.layout.spinner_dropdown_item_compact)
+        spShape.adapter = adapter
+        spShape.setSelection(selectedShape.coerceIn(0, shapeOptions.size - 1))
+
+        fun updatePreview() {
+            val bmp = LocationCursorHelper.createCursorBitmap(this, selectedShape, selectedColor, 44)
+            imgPreview.setImageBitmap(bmp)
+        }
+
+        spShape.onItemSelectedListener = object : android.widget.AdapterView.OnItemSelectedListener {
+            override fun onItemSelected(parent: android.widget.AdapterView<*>?, v: View?, position: Int, id: Long) {
+                selectedShape = position
+                updatePreview()
+            }
+            override fun onNothingSelected(parent: android.widget.AdapterView<*>?) {}
+        }
+
+        val colorViews = listOf(
+            view.findViewById<View>(R.id.colorCircleBlue) to LocationCursorHelper.COLOR_PRESETS[0],
+            view.findViewById<View>(R.id.colorCircleRed) to LocationCursorHelper.COLOR_PRESETS[1],
+            view.findViewById<View>(R.id.colorCircleGreen) to LocationCursorHelper.COLOR_PRESETS[2],
+            view.findViewById<View>(R.id.colorCircleYellow) to LocationCursorHelper.COLOR_PRESETS[3],
+            view.findViewById<View>(R.id.colorCirclePurple) to LocationCursorHelper.COLOR_PRESETS[4],
+            view.findViewById<View>(R.id.colorCircleOrange) to LocationCursorHelper.COLOR_PRESETS[5],
+            view.findViewById<View>(R.id.colorCircleWhite) to LocationCursorHelper.COLOR_PRESETS[6]
+        )
+
+        fun updateColorBorders() {
+            colorViews.forEach { (v, color) ->
+                val drawable = GradientDrawable().apply {
+                    shape = GradientDrawable.OVAL
+                    setColor(color)
+                    if (color == selectedColor) {
+                        setStroke(6, Color.WHITE)
+                    } else {
+                        setStroke(2, Color.parseColor("#475569"))
+                    }
+                }
+                v.background = drawable
+            }
+        }
+
+        colorViews.forEach { (v, color) ->
+            v.setOnClickListener {
+                selectedColor = color
+                updateColorBorders()
+                updatePreview()
+            }
+        }
+
+        updateColorBorders()
+        updatePreview()
+
+        btnReset.setOnClickListener {
+            selectedTheme = MapThemeHelper.THEME_AUTO
+            selectedShape = LocationCursorHelper.SHAPE_NAV_ARROW
+            selectedColor = LocationCursorHelper.COLOR_PRESETS[0]
+
+            view.findViewById<android.widget.RadioButton>(R.id.rbThemeAuto).isChecked = true
+            spShape.setSelection(0)
+            updateColorBorders()
+            updatePreview()
+        }
+
+        btnSave.setOnClickListener {
+            prefs.edit().apply {
+                putInt("map_theme_mode", selectedTheme)
+                putInt("map_cursor_shape", selectedShape)
+                putInt("map_cursor_color", selectedColor)
+                apply()
+            }
+
+            applyMapTheme()
+            applyLocationCursorStyle()
+
+            Toast.makeText(this, getString(R.string.toast_tft_fit_saved), Toast.LENGTH_SHORT).show()
+            dialog.dismiss()
+        }
+
+        dialog.show()
     }
 
     private fun hasLocationPermission(): Boolean {
@@ -620,11 +1066,66 @@ class MapActivity : AppCompatActivity() {
         startActivityForResult(intent, REQ_FILE_PICK)
     }
 
+    private fun selectOfflineMapFile() {
+        val intent = Intent(Intent.ACTION_OPEN_DOCUMENT).apply {
+            addCategory(Intent.CATEGORY_OPENABLE)
+            type = "*/*"
+        }
+        @Suppress("DEPRECATION")
+        startActivityForResult(intent, REQ_MAP_FILE_PICK)
+    }
+
+    private fun importMapFileFromUri(uri: Uri) {
+        Thread {
+            try {
+                val mapsDir = java.io.File(getExternalFilesDir(null), "maps").apply { mkdirs() }
+                val fileName = getFileNameFromUri(uri) ?: "offline_map.map"
+                val destFile = java.io.File(mapsDir, fileName)
+
+                contentResolver.openInputStream(uri)?.use { input ->
+                    destFile.outputStream().use { output ->
+                        input.copyTo(output)
+                    }
+                }
+
+                getSharedPreferences("kove_map_prefs", MODE_PRIVATE).edit()
+                    .putString("offline_map_path", destFile.absolutePath)
+                    .apply()
+
+                runOnUiThread {
+                    Toast.makeText(this, getString(R.string.toast_offline_map_loaded, destFile.name), Toast.LENGTH_SHORT).show()
+                    switchLayer(LAYER_OFFLINE)
+                }
+            } catch (e: Exception) {
+                runOnUiThread {
+                    Toast.makeText(this, getString(R.string.error_invalid_map_file), Toast.LENGTH_LONG).show()
+                }
+                DebugLogger.error("❌ Failed to import map file: ${e.message}")
+            }
+        }.start()
+    }
+
+    private fun getFileNameFromUri(uri: Uri): String? {
+        var name: String? = null
+        val cursor = contentResolver.query(uri, null, null, null, null)
+        cursor?.use {
+            if (it.moveToFirst()) {
+                val nameIndex = it.getColumnIndex(android.provider.OpenableColumns.DISPLAY_NAME)
+                if (nameIndex != -1) {
+                    name = it.getString(nameIndex)
+                }
+            }
+        }
+        return name
+    }
+
     @Deprecated("Deprecated in Java")
     override fun onActivityResult(requestCode: Int, resultCode: Int, data: Intent?) {
         super.onActivityResult(requestCode, resultCode, data)
         if (requestCode == REQ_FILE_PICK && resultCode == Activity.RESULT_OK) {
             data?.data?.let { uri -> showStyleDialogThenImport(uri) }
+        } else if (requestCode == REQ_MAP_FILE_PICK && resultCode == Activity.RESULT_OK) {
+            data?.data?.let { uri -> importMapFileFromUri(uri) }
         }
     }
 
@@ -819,6 +1320,15 @@ class MapActivity : AppCompatActivity() {
                 true
             }
             else -> false // Let HandlebarOverlayService execute active mode (Zoom, Pan, Media, Volume, App Switch)
+        }
+    }
+
+    @Suppress("DEPRECATION")
+    override fun onBackPressed() {
+        if (isRecordingTrack) {
+            showExitRecordingWarningDialog()
+        } else {
+            super.onBackPressed()
         }
     }
 
