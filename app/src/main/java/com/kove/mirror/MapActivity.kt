@@ -87,6 +87,7 @@ class MapActivity : AppCompatActivity() {
     private var currentLayer = LAYER_MAPS
     private var currentBaseLayer = LAYER_MAPS
     private var layerBefore3d = LAYER_MAPS
+    private var lastDiagLine = ""
 
     // ─── Long Press Navigation ──────────────────────────────────
     private var selectedDestination: GeoPoint? = null
@@ -256,14 +257,26 @@ class MapActivity : AppCompatActivity() {
             }
 
 // Cap the pitch by zoom: below a threshold the tilted camera shows mostly
-            // empty sky/horizon (looks blank), so flatten it there like Google Maps does.
+            // empty sky/horizon (looks blank), so there pitch is flat. On zoom-in we
+            // restore the normal tilted 3D view so it does not stay stuck top-down.
             map.addOnCameraIdleListener {
                 val cam = map.cameraPosition ?: return@addOnCameraIdleListener
                 val maxTilt = maxPitchForZoom(cam.zoom)
                 map.setMaxPitchPreference(maxTilt)
-                if (cam.tilt > maxTilt + 0.5) {
+                if (kotlin.math.abs(cam.tilt - maxTilt) > 1.0) {
                     map.setCameraPosition(CameraPosition.Builder(cam).tilt(maxTilt).build())
                 }
+            }
+
+            // On-screen diagnostics for the 3D map (debugging the blank-on-zoom-out issue)
+            mapView3d.addOnCameraDidChangeListener { update3dDiag() }
+            mapView3d.addOnDidFinishRenderingMapListener { fully ->
+                lastDiagLine = if (fully) "render:FULL" else "render:PARTIAL"
+                update3dDiag()
+            }
+            mapView3d.addOnDidFailLoadingMapListener { error ->
+                lastDiagLine = "LOAD_FAIL:${error.take(80)}"
+                update3dDiag()
             }
 
             // Long press on the 3D map drops a destination (same as 2D)
@@ -345,18 +358,19 @@ class MapActivity : AppCompatActivity() {
                 .withProperties(
                     PropertyFactory.fillExtrusionColor(Expression.interpolate(
                         Expression.linear(), Expression.zoom(),
+                        Expression.stop(0, Expression.color(android.graphics.Color.parseColor("#d4d4d8"))),
                         Expression.stop(14, Expression.color(android.graphics.Color.parseColor("#d4d4d8"))),
                         Expression.stop(15, Expression.color(android.graphics.Color.parseColor("#9ca3af")))
                     )),
                     PropertyFactory.fillExtrusionHeight(Expression.interpolate(
                         Expression.linear(), Expression.zoom(),
+                        Expression.stop(0, 0),
                         Expression.stop(14, 0),
                         Expression.stop(16, Expression.get("render_height"))
                     )),
                     PropertyFactory.fillExtrusionOpacity(0.75f)
                 )
             buildings.setSourceLayer("building")
-            buildings.setMinZoom(14f)
             style.addLayerAt(buildings, 0)
         } catch (e: Exception) {
             DebugLogger.error("❌ 3D buildings layer error: ${e.message}")
@@ -442,6 +456,7 @@ class MapActivity : AppCompatActivity() {
     private fun enter3dMode() {
         mapView.visibility = View.GONE
         mapView3d.visibility = View.VISIBLE
+        update3dDiag()
         if (!is3dStyleLoaded) {
             Toast.makeText(this, getString(R.string.map_3d_loading), Toast.LENGTH_SHORT).show()
         }
@@ -454,7 +469,21 @@ class MapActivity : AppCompatActivity() {
     private fun leave3dMode() {
         mapView3d.visibility = View.GONE
         mapView.visibility = View.VISIBLE
+        findViewById<View>(R.id.diag3d).visibility = View.GONE
         sync3dCameraTo2d()
+    }
+
+    // Shows the current 3D camera state (zoom/tilt/bearing) + last render/load status
+    // in the on-screen diagnostics overlay, to pinpoint the blank-on-zoom-out issue.
+    private fun update3dDiag() {
+        if (currentLayer != LAYER_3D) return
+        val tv = findViewById<TextView>(R.id.diag3d) ?: return
+        val cam = maplibreMap?.cameraPosition
+        val zoom = cam?.zoom?.let { String.format(Locale.US, "%.1f", it) } ?: "-"
+        val tilt = cam?.tilt?.let { String.format(Locale.US, "%.0f", it) } ?: "-"
+        val bearing = cam?.bearing?.let { String.format(Locale.US, "%.0f", it) } ?: "-"
+        tv.visibility = View.VISIBLE
+        tv.text = "z:$zoom tilt:$tilt b:$bearing\n$lastDiagLine"
     }
 
     // ─── Map Long Press Events ───────────────────────────────────

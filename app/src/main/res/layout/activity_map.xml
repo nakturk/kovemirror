@@ -490,6 +490,25 @@
         </ScrollView>
     </LinearLayout>
 
+    <!-- 3D diagnostics overlay (only visible in 3D mode, for debugging zoom/pitch/render) -->
+    <TextView
+        android:id="@+id/diag3d"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_gravity="top|start"
+        android:layout_marginTop="50dp"
+        android:layout_marginStart="6dp"
+        android:background="#AA000000"
+        android:paddingStart="6dp"
+        android:paddingEnd="6dp"
+        android:paddingTop="2dp"
+        android:paddingBottom="2dp"
+        android:textColor="#FFFFFF"
+        android:textSize="11sp"
+        android:textStyle="bold"
+        android:visibility="gone"
+        android:text="" />
+
     </FrameLayout>
 
     <!-- Adjustable Bottom Black Bar -->
