@@ -14,6 +14,7 @@ import android.graphics.drawable.GradientDrawable
 import android.net.Uri
 import android.os.Build
 import android.os.Bundle
+import android.text.InputType
 import android.view.LayoutInflater
 import android.view.View
 import android.widget.Button
@@ -42,7 +43,11 @@ import org.maplibre.android.MapLibre
 import org.maplibre.android.camera.CameraPosition
 import org.maplibre.android.camera.CameraUpdateFactory
 import org.maplibre.android.geometry.LatLng
+import org.maplibre.android.geometry.LatLngBounds
 import org.maplibre.android.maps.MapLibreMap
+import org.maplibre.android.offline.OfflineManager
+import org.maplibre.android.offline.OfflineRegion
+import org.maplibre.android.offline.OfflineTilePyramidRegionDefinition
 import org.maplibre.android.maps.Style
 import org.maplibre.android.maps.MapView as MapLibreMapView
 import org.maplibre.android.style.expressions.Expression
@@ -726,6 +731,15 @@ class MapActivity : AppCompatActivity() {
             else switchLayer(LAYER_3D)
         }
 
+        // 3D offline download: tap = download current visible area, long = manage regions
+        findViewById<View>(R.id.btn3dOffline).setOnClickListener {
+            ask3dOfflineDownload()
+        }
+        findViewById<View>(R.id.btn3dOffline).setOnLongClickListener {
+            manage3dOfflineRegions()
+            true
+        }
+
         // Zoom buttons
         findViewById<Button>(R.id.btnZoomIn).setOnClickListener {
             if (currentLayer == LAYER_3D) maplibreMap?.animateCamera(CameraUpdateFactory.zoomIn())
@@ -976,7 +990,167 @@ class MapActivity : AppCompatActivity() {
         btn3D.setBackgroundColor(if (currentLayer == LAYER_3D) activeColor else inactiveColor)
     }
 
-    // ─── Center on My Location ──────────────────────────────────
+    // ─── 3D Offline Regions (MapLibre) ───────────────────────────
+
+    private var offlineManager: OfflineManager? = null
+
+    private fun getOfflineManager(): OfflineManager? {
+        if (offlineManager == null) {
+            offlineManager = try {
+                OfflineManager.getInstance(this@MapActivity)
+            } catch (e: Exception) {
+                null
+            }
+        }
+        return offlineManager
+    }
+
+    // Tap on "⬇ Offline": confirm min/max zoom for the current visible area.
+    private fun ask3dOfflineDownload() {
+        val map = maplibreMap ?: return
+        if (!is3dStyleLoaded) {
+            Toast.makeText(this, getString(R.string.map_3d_loading), Toast.LENGTH_SHORT).show()
+            return
+        }
+
+        val center = map.cameraPosition?.target
+        val curZoom = (map.cameraPosition?.zoom ?: 12.0).toInt()
+        if (center == null) return
+
+        val minDefault = (curZoom - 1).coerceIn(3, 16)
+        val maxDefault = (curZoom + 2).coerceIn(3, 17)
+
+        val minInput = EditText(this).apply {
+            setText(minDefault.toString())
+            inputType = InputType.TYPE_CLASS_NUMBER
+            hint = "min zoom"
+        }
+        val maxInput = EditText(this).apply {
+            setText(maxDefault.toString())
+            inputType = InputType.TYPE_CLASS_NUMBER
+            hint = "max zoom"
+        }
+
+        androidx.appcompat.app.AlertDialog.Builder(this)
+            .setTitle("3D Offline Bölge İndir")
+            .setMessage("Görünür alan merkezi: %.4f, %.4f\nZoom aralığı (dahil). Küçük değer = küçük indirme, geniş aralık = daha çok veri.".format(center.latitude, center.longitude))
+            .setView(LinearLayout(this).apply {
+                orientation = LinearLayout.VERTICAL
+                addView(minInput)
+                addView(maxInput)
+            })
+            .setPositiveButton("İndir") { _, _ ->
+                val minZ = minInput.text.toString().toDoubleOrNull() ?: minDefault.toDouble()
+                val maxZ = maxInput.text.toString().toIntOrNull() ?: maxDefault.toInt()
+                download3dOfflineRegion(minZ, maxZ.toDouble())
+            }
+            .setNegativeButton("Vazgeç", null)
+            .show()
+    }
+
+    // Downloads the currently visible area (in the selected zoom range) as an
+    // offline region. Tiles/style are stored in MapLibre's persistent offline DB
+    // (survives app cache clears, unlike the on-demand ambient tile cache).
+    private fun download3dOfflineRegion(minZoom: Double, maxZoom: Double) {
+        val map = maplibreMap ?: return
+        val visible = map.projection.getVisibleRegion()
+        val bounds = visible.latLngBounds ?: return
+        val mgr = getOfflineManager() ?: run {
+            Toast.makeText(this, "3D offline başlatılamadı", Toast.LENGTH_SHORT).show()
+            return
+        }
+
+        val rmin = minZoom.coerceIn(0.0, 22.0)
+        val rmax = maxZoom.coerceIn(rmin, 22.0)
+
+        val definition = OfflineTilePyramidRegionDefinition(
+            THREE_D_STYLE_URL,
+            bounds,
+            rmin,
+            rmax,
+            resources.displayMetrics.density.toFloat()
+        )
+
+        val label = "3D %.3f,%.3f (z%.0f-%.0f)".format(
+            bounds.center.latitude, bounds.center.longitude, rmin, rmax
+        )
+
+        Toast.makeText(this, "İndirme başlıyor: $label", Toast.LENGTH_SHORT).show()
+
+        mgr.createOfflineRegion(
+            definition,
+            label.toByteArray(),
+            object : OfflineManager.CreateOfflineRegionCallback {
+                override fun onCreate(region: OfflineRegion) {
+                    // Start the download
+                    region.setDownloadState(OfflineRegion.STATE_ACTIVE)
+                }
+
+                override fun onError(error: String) {
+                    runOnUiThread {
+                        Toast.makeText(this@MapActivity, "İndirme hatası: ${error.take(80)}", Toast.LENGTH_LONG).show()
+                    }
+                }
+            }
+        )
+    }
+
+    // Long-press: list downloaded offline regions with a delete option.
+    private fun manage3dOfflineRegions() {
+        val mgr = getOfflineManager() ?: run {
+            Toast.makeText(this, "3D offline kullanılamıyor", Toast.LENGTH_SHORT).show()
+            return
+        }
+
+        mgr.listOfflineRegions(
+            object : OfflineManager.ListOfflineRegionsCallback {
+                override fun onList(regions: Array<OfflineRegion>?) {
+                    if (regions == null || regions.isEmpty()) {
+                        runOnUiThread {
+                            Toast.makeText(this@MapActivity, "İndirilmiş offline bölge yok", Toast.LENGTH_LONG).show()
+                        }
+                        return
+                    }
+                    val labels = regions.map { r -> String(r.metadata ?: byteArrayOf()) }
+                    runOnUiThread {
+                        val dialog = androidx.appcompat.app.AlertDialog.Builder(this@MapActivity)
+                            .setTitle("İndirilen Offline Bölgeler (${regions.size})")
+                            .setItems(labels.toTypedArray()) { _, which ->
+                                askDelete3dOfflineRegion(regions[which])
+                            }
+                            .setNegativeButton("Kapat", null)
+                            .create()
+                        dialog.show()
+                    }
+                }
+
+                override fun onError(error: String) {
+                    runOnUiThread {
+                        Toast.makeText(this@MapActivity, "Liste alınamadı: $error", Toast.LENGTH_SHORT).show()
+                    }
+                }
+            }
+        )
+    }
+
+    private fun askDelete3dOfflineRegion(region: OfflineRegion) {
+        androidx.appcompat.app.AlertDialog.Builder(this)
+            .setTitle("Offline Bölgeyi Sil")
+            .setMessage("Bu indirilen bölgeyi kalıcı olarak silmek istiyor musunuz?")
+            .setPositiveButton("Sil") { _, _ ->
+                region.delete(object : OfflineRegion.OfflineRegionDeleteCallback {
+                    override fun onDelete() {
+                        Toast.makeText(this@MapActivity, "Bölge silindi.", Toast.LENGTH_SHORT).show()
+                    }
+
+                    override fun onError(error: String) {
+                        Toast.makeText(this@MapActivity, "Silinemedi: ${error.take(80)}", Toast.LENGTH_SHORT).show()
+                    }
+                })
+            }
+            .setNegativeButton("Vazgeç", null)
+            .show()
+    }
 
     private fun centerOnMyLocation() {
         if (!hasLocationPermission()) {
