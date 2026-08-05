@@ -105,4 +105,8 @@ dependencies {
     implementation("org.osmdroid:osmdroid-mapsforge:6.1.18")
     implementation("org.mapsforge:mapsforge-map-android:0.20.0")
     implementation("org.mapsforge:mapsforge-themes:0.20.0")
+
+    // 3D Map - MapLibre GL Native (3D buildings, tilt/rotate camera).
+    // v11.0.0 uses kotlin-stdlib 1.9.x, compatible with project's Kotlin 1.9.22.
+    implementation("org.maplibre.gl:android-sdk:11.0.0")
 }

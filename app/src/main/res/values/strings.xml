@@ -169,6 +169,8 @@
     <string name="map_layer_topo">Topo</string>
     <string name="map_layer_sat">Satellite</string>
     <string name="map_layer_offline">Offline</string>
+    <string name="map_layer_3d">3D</string>
+    <string name="map_3d_loading">🌍 3D map loading…</string>
     <string name="toast_select_offline_map">Please select an OpenAndroMaps (.map) file</string>
     <string name="toast_offline_map_loaded">✅ Offline map loaded: %1$s</string>
     <string name="error_invalid_map_file">❌ Invalid or unreadable .map file</string>

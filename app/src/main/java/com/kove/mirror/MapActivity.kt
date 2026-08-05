@@ -6,6 +6,8 @@ import android.app.Activity
 import android.content.Context
 import android.content.Intent
 import android.content.pm.PackageManager
+import android.graphics.Bitmap
+import android.graphics.Canvas
 import android.graphics.Color
 import android.graphics.Paint
 import android.graphics.drawable.GradientDrawable
@@ -36,6 +38,21 @@ import org.osmdroid.views.overlay.Marker
 import org.osmdroid.views.overlay.Polyline
 import org.osmdroid.views.overlay.mylocation.GpsMyLocationProvider
 import org.osmdroid.views.overlay.mylocation.MyLocationNewOverlay
+import org.maplibre.android.MapLibre
+import org.maplibre.android.camera.CameraPosition
+import org.maplibre.android.camera.CameraUpdateFactory
+import org.maplibre.android.geometry.LatLng
+import org.maplibre.android.maps.MapLibreMap
+import org.maplibre.android.maps.Style
+import org.maplibre.android.maps.MapView as MapLibreMapView
+import org.maplibre.android.style.expressions.Expression
+import org.maplibre.android.style.layers.BackgroundLayer
+import org.maplibre.android.style.layers.FillExtrusionLayer
+import org.maplibre.android.style.layers.PropertyFactory
+import org.maplibre.android.style.layers.RasterLayer
+import org.maplibre.android.style.sources.RasterSource
+import org.maplibre.android.style.sources.TileSet
+import org.maplibre.android.style.sources.VectorSource
 import java.text.SimpleDateFormat
 import java.util.Date
 import java.util.Locale
@@ -51,12 +68,25 @@ class MapActivity : AppCompatActivity() {
         private const val LAYER_TOPO = 1
         private const val LAYER_SATELLITE = 2
         private const val LAYER_OFFLINE = 3
+        private const val LAYER_3D = 4
+
+        private const val THREE_D_STYLE_URL = "https://tiles.openfreemap.org/styles/liberty"
+        private const val THREE_D_BUILDINGS_URL = "https://tiles.openfreemap.org/planet"
+        private const val THREE_D_SATELLITE_URL =
+            "https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}"
     }
 
     private lateinit var mapView: MapView
+    private lateinit var mapView3d: MapLibreMapView
+    private var map3d: Map3dOverlays? = null
+    private var maplibreMap: MapLibreMap? = null
+    private var is3dStyleLoaded = false
+    private var follow3d = false
     private var locationOverlay: MyLocationNewOverlay? = null
     private var isGpsEnabled = false
     private var currentLayer = LAYER_MAPS
+    private var currentBaseLayer = LAYER_MAPS
+    private var layerBefore3d = LAYER_MAPS
 
     // ─── Long Press Navigation ──────────────────────────────────
     private var selectedDestination: GeoPoint? = null
@@ -147,13 +177,18 @@ class MapActivity : AppCompatActivity() {
         osmConf.userAgentValue = packageName
         osmConf.load(this, getSharedPreferences("osmdroid_prefs", MODE_PRIVATE))
 
+        // MapLibre GL Native initialization (must happen before MapView creation)
+        MapLibre.getInstance(applicationContext)
+
         setContentView(R.layout.activity_map)
 
         // Keep screen on
         window.addFlags(android.view.WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON)
 
         mapView = findViewById(R.id.mapView)
+        mapView3d = findViewById(R.id.mapView3D)
         setupMap()
+        setup3dMap()
         setupButtons()
         setupMapEvents()
 
@@ -199,6 +234,229 @@ class MapActivity : AppCompatActivity() {
         applyMapTheme()
     }
 
+    // ─── 3D Map Setup (MapLibre GL Native) ─────────────────────
+
+    private fun setup3dMap() {
+        mapView3d.getMapAsync { map ->
+            maplibreMap = map
+            map3d = Map3dOverlays(map, resources.displayMetrics.density)
+            refresh3dCursor()
+            map3d?.setDestinationIcon(createDestinationPinBitmap())
+            map.uiSettings.isCompassEnabled = false
+            map.uiSettings.isAttributionEnabled = false
+            map.uiSettings.isTiltGesturesEnabled = true
+            map.uiSettings.isRotateGesturesEnabled = true
+            map.setMinZoomPreference(8.0)
+
+            // Disable 3D GPS auto-follow when the user drags/rotates the camera manually
+            map.addOnCameraMoveStartedListener { reason ->
+                if (reason == MapLibreMap.OnCameraMoveStartedListener.REASON_API_GESTURE) {
+                    follow3d = false
+                }
+            }
+
+// Cap the pitch by zoom: below a threshold the tilted camera shows mostly
+            // empty sky/horizon (looks blank), so flatten it there like Google Maps does.
+            map.addOnCameraIdleListener {
+                val cam = map.cameraPosition ?: return@addOnCameraIdleListener
+                val maxTilt = maxPitchForZoom(cam.zoom)
+                map.setMaxPitchPreference(maxTilt)
+                if (cam.tilt > maxTilt + 0.5) {
+                    map.setCameraPosition(CameraPosition.Builder(cam).tilt(maxTilt).build())
+                }
+            }
+
+            // Long press on the 3D map drops a destination (same as 2D)
+            map.addOnMapLongClickListener { point ->
+                if (!isNavigating) {
+                    onMapLongPressed(GeoPoint(point.latitude, point.longitude))
+                }
+                true
+            }
+
+            map.setStyle(styleFor3dBaseLayer()) { style ->
+                is3dStyleLoaded = true
+                add3dBuildingsLayer(style)
+                map3d?.onStyleLoaded(style)
+
+                // Re-push all current 2D overlay state onto the freshly loaded 3D map
+                refresh3dRoutes()
+                if (recordedTrackPoints.isNotEmpty()) {
+                    map3d?.setTrack(recordedTrackPoints.map { LatLng(it.lat, it.lon) }, recordingColor)
+                }
+                currentNavigationRoute?.let { route ->
+                    map3d?.setNavigationRoute(
+                        route.geometryPoints.map { LatLng(it.latitude, it.longitude) }
+                    )
+                }
+                selectedDestination?.let {
+                    map3d?.setDestination(LatLng(it.latitude, it.longitude))
+                }
+                sync2dCameraTo3d()
+            }
+        }
+    }
+
+    // Builds the MapLibre style corresponding to the current base layer
+    // (Maps/Topo -> OpenFreeMap liberty, Satellite -> Esri World Imagery raster).
+    private fun styleFor3dBaseLayer(): Style.Builder {
+        return if (currentBaseLayer == LAYER_SATELLITE) {
+            Style.Builder()
+                .withSource(RasterSource("esri-satellite", TileSet("2.1.0", THREE_D_SATELLITE_URL), 256))
+                .withLayer(
+                    BackgroundLayer("satellite-bg").withProperties(
+                        PropertyFactory.backgroundColor(Color.parseColor("#1a1a2e"))
+                    )
+                )
+                .withLayer(RasterLayer("esri-satellite-layer", "esri-satellite"))
+        } else {
+            Style.Builder().fromUri(THREE_D_STYLE_URL)
+        }
+    }
+
+    // (Re)loads the 3D style for the current base layer while staying in 3D mode.
+    private fun apply3dBaseLayer() {
+        val map = maplibreMap ?: return
+        is3dStyleLoaded = false
+        map.setStyle(styleFor3dBaseLayer()) { style ->
+            is3dStyleLoaded = true
+            add3dBuildingsLayer(style)
+            map3d?.onStyleLoaded(style)
+            refresh3dRoutes()
+            if (recordedTrackPoints.isNotEmpty()) {
+                map3d?.setTrack(recordedTrackPoints.map { LatLng(it.lat, it.lon) }, recordingColor)
+            }
+            currentNavigationRoute?.let { route ->
+                map3d?.setNavigationRoute(route.geometryPoints.map { LatLng(it.latitude, it.longitude) })
+            }
+            selectedDestination?.let {
+                map3d?.setDestination(LatLng(it.latitude, it.longitude))
+            }
+            sync2dCameraTo3d()
+        }
+    }
+
+    private fun add3dBuildingsLayer(style: Style) {
+        try {
+            val source = VectorSource("ofm-planet-3d", THREE_D_BUILDINGS_URL)
+            style.addSource(source)
+
+            val buildings = FillExtrusionLayer("3d-buildings", "ofm-planet-3d")
+                .withProperties(
+                    PropertyFactory.fillExtrusionColor(Expression.interpolate(
+                        Expression.linear(), Expression.zoom(),
+                        Expression.stop(14, Expression.color(android.graphics.Color.parseColor("#d4d4d8"))),
+                        Expression.stop(15, Expression.color(android.graphics.Color.parseColor("#9ca3af")))
+                    )),
+                    PropertyFactory.fillExtrusionHeight(Expression.interpolate(
+                        Expression.linear(), Expression.zoom(),
+                        Expression.stop(14, 0),
+                        Expression.stop(16, Expression.get("render_height"))
+                    )),
+                    PropertyFactory.fillExtrusionOpacity(0.75f)
+                )
+            buildings.setSourceLayer("building")
+            buildings.setMinZoom(14f)
+            style.addLayerAt(buildings, 0)
+        } catch (e: Exception) {
+            DebugLogger.error("❌ 3D buildings layer error: ${e.message}")
+        }
+    }
+
+    private fun update3dLocationMarker(lat: Double, lon: Double, bearing: Double? = null) {
+        if (currentLayer != LAYER_3D) return
+        map3d?.setLocation(LatLng(lat, lon), bearing)
+        if (follow3d || isNavigating) {
+            val map = maplibreMap ?: return
+            val zoom = map.cameraPosition?.zoom ?: 16.0
+            map.setCameraPosition(
+                CameraPosition.Builder()
+                    .target(LatLng(lat, lon))
+                    .zoom(zoom)
+                    .bearing(bearing ?: map.cameraPosition?.bearing ?: 0.0)
+                    .tilt(maxPitchForZoom(zoom))
+                    .build()
+            )
+        }
+    }
+
+    private fun refresh3dCursor() {
+        val prefs = getSharedPreferences("kove_map_prefs", MODE_PRIVATE)
+        val shape = prefs.getInt("map_cursor_shape", LocationCursorHelper.SHAPE_NAV_ARROW)
+        val color = prefs.getInt("map_cursor_color", LocationCursorHelper.COLOR_PRESETS[0])
+        map3d?.setCursorIcon(LocationCursorHelper.createCursorBitmap(this, shape, color))
+    }
+
+    // Renders the same osmdroid default marker pin used on the 2D map for the 3D destination.
+    private fun createDestinationPinBitmap(): Bitmap? {
+        return try {
+            val drawable = ContextCompat.getDrawable(this, org.osmdroid.library.R.drawable.marker_default)
+                ?: return null
+            val targetH = (44 * resources.displayMetrics.density).toInt().coerceAtLeast(1)
+            val srcH = drawable.intrinsicHeight
+            val srcW = drawable.intrinsicWidth
+            if (srcH <= 0 || srcW <= 0) return null
+            val scale = targetH.toFloat() / srcH
+            val targetW = (srcW * scale).toInt().coerceAtLeast(1)
+            val bmp = Bitmap.createBitmap(targetW, targetH, Bitmap.Config.ARGB_8888)
+            val canvas = Canvas(bmp)
+            drawable.setBounds(0, 0, targetW, targetH)
+            drawable.draw(canvas)
+            bmp
+        } catch (e: Exception) {
+            DebugLogger.error("❌ Destination pin bitmap error: ${e.message}")
+            null
+        }
+    }
+
+    private fun sync2dCameraTo3d() {
+        val map = maplibreMap ?: return
+        val center = mapView.mapCenter
+        val zoom = mapView.zoomLevelDouble
+        val clampedZoom = zoom.coerceIn(8.0, 18.0)
+        map.setMaxPitchPreference(maxPitchForZoom(clampedZoom))
+        val position = CameraPosition.Builder()
+            .target(LatLng(center.latitude, center.longitude))
+            .zoom(clampedZoom)
+            .tilt(maxPitchForZoom(clampedZoom))
+            .build()
+        map.moveCamera(CameraUpdateFactory.newCameraPosition(position))
+    }
+
+    // Maximum allowed pitch for a given zoom so the tilted camera never shows a blank horizon.
+    private fun maxPitchForZoom(zoom: Double): Double = when {
+        zoom < 12.0 -> 0.0
+        zoom < 14.0 -> 20.0
+        zoom < 16.0 -> 40.0
+        else -> 60.0
+    }
+
+    private fun sync3dCameraTo2d() {
+        val map = maplibreMap ?: return
+        val target = map.cameraPosition?.target ?: return
+        mapView.controller.setZoom(map.cameraPosition?.zoom ?: 6.0)
+        mapView.controller.setCenter(GeoPoint(target.latitude, target.longitude))
+        mapView.invalidate()
+    }
+
+    private fun enter3dMode() {
+        mapView.visibility = View.GONE
+        mapView3d.visibility = View.VISIBLE
+        if (!is3dStyleLoaded) {
+            Toast.makeText(this, getString(R.string.map_3d_loading), Toast.LENGTH_SHORT).show()
+        }
+        sync2dCameraTo3d()
+        locationOverlay?.myLocation?.let {
+            update3dLocationMarker(it.latitude, it.longitude)
+        }
+    }
+
+    private fun leave3dMode() {
+        mapView3d.visibility = View.GONE
+        mapView.visibility = View.VISIBLE
+        sync3dCameraTo2d()
+    }
+
     // ─── Map Long Press Events ───────────────────────────────────
 
     private fun setupMapEvents() {
@@ -232,6 +490,7 @@ class MapActivity : AppCompatActivity() {
         }
         destinationMarker?.position = point
         mapView.invalidate()
+        map3d?.setDestination(LatLng(point.latitude, point.longitude))
 
         // Show Destination Card
         val destCard = findViewById<LinearLayout>(R.id.destCard)
@@ -257,6 +516,7 @@ class MapActivity : AppCompatActivity() {
         selectedDestination = null
         destinationMarker?.let { mapView.overlays.remove(it) }
         destinationMarker = null
+        map3d?.setDestination(null)
         findViewById<LinearLayout>(R.id.destCard).visibility = View.GONE
         mapView.invalidate()
     }
@@ -288,7 +548,6 @@ class MapActivity : AppCompatActivity() {
         val tvTotalEta = findViewById<TextView>(R.id.tvTotalDistanceEta)
 
         navBanner.visibility = View.VISIBLE
-        findViewById<View>(R.id.topBar).visibility = View.GONE
         tvInstruction.text = getString(R.string.nav_calculating)
         tvTurnDist.text = ""
         tvTotalEta.text = ""
@@ -301,7 +560,11 @@ class MapActivity : AppCompatActivity() {
                     currentNavigationRoute = route
                     isNavigating = true
 
-                    // Draw navigation polyline
+                    map3d?.setNavigationRoute(
+                        route.geometryPoints.map { LatLng(it.latitude, it.longitude) }
+                    )
+
+                    // Draw navigation polyline on the 2D map
                     navigationPolyline?.let { mapView.overlays.remove(it) }
                     navigationPolyline = Polyline().apply {
                         setPoints(route.geometryPoints)
@@ -317,6 +580,15 @@ class MapActivity : AppCompatActivity() {
                     // Enable auto-follow GPS
                     locationOverlay?.enableFollowLocation()
                     mapView.controller.setZoom(16.0)
+
+                    if (currentLayer == LAYER_3D) {
+                        follow3d = true
+                        maplibreMap?.moveCamera(
+                            CameraUpdateFactory.newLatLngZoom(
+                                LatLng(myLoc.latitude, myLoc.longitude), 16.0
+                            )
+                        )
+                    }
 
                     updateNavigationUi(myLoc)
                 }
@@ -334,6 +606,9 @@ class MapActivity : AppCompatActivity() {
         isNavigating = false
         currentNavigationRoute = null
         selectedDestination = null
+
+        map3d?.setNavigationRoute(null)
+        map3d?.setDestination(null)
 
         navigationPolyline?.let { mapView.overlays.remove(it) }
         navigationPolyline = null
@@ -399,15 +674,11 @@ class MapActivity : AppCompatActivity() {
             }
         }
 
-        // Layer buttons
+        // Layer buttons (Maps/Topo/Satellite cycle, Offline, 3D)
         val btnMaps = findViewById<View>(R.id.btnLayerMaps)
-        val btnTopo = findViewById<View>(R.id.btnLayerTopo)
-        val btnSat = findViewById<View>(R.id.btnLayerSatellite)
         val btnOffline = findViewById<View>(R.id.btnLayerOffline)
 
-        btnMaps.setOnClickListener { switchLayer(LAYER_MAPS) }
-        btnTopo.setOnClickListener { switchLayer(LAYER_TOPO) }
-        btnSat.setOnClickListener { switchLayer(LAYER_SATELLITE) }
+        btnMaps.setOnClickListener { cycleBaseLayer() }
         btnOffline.setOnClickListener {
             if (currentLayer == LAYER_OFFLINE) {
                 selectOfflineMapFile()
@@ -420,12 +691,20 @@ class MapActivity : AppCompatActivity() {
             true
         }
 
+        // 3D layer button
+        findViewById<View>(R.id.btnLayer3D).setOnClickListener {
+            if (currentLayer == LAYER_3D) switchLayer(layerBefore3d)
+            else switchLayer(LAYER_3D)
+        }
+
         // Zoom buttons
         findViewById<Button>(R.id.btnZoomIn).setOnClickListener {
-            mapView.controller.zoomIn()
+            if (currentLayer == LAYER_3D) maplibreMap?.animateCamera(CameraUpdateFactory.zoomIn())
+            else mapView.controller.zoomIn()
         }
         findViewById<Button>(R.id.btnZoomOut).setOnClickListener {
-            mapView.controller.zoomOut()
+            if (currentLayer == LAYER_3D) maplibreMap?.animateCamera(CameraUpdateFactory.zoomOut())
+            else mapView.controller.zoomOut()
         }
 
         // My location button (center on GPS)
@@ -564,20 +843,37 @@ class MapActivity : AppCompatActivity() {
 
     // ─── Layer Switching (3 modes) ──────────────────────────────
 
+    private fun cycleBaseLayer() {
+        currentBaseLayer = when (currentBaseLayer) {
+            LAYER_MAPS -> LAYER_TOPO
+            LAYER_TOPO -> LAYER_SATELLITE
+            else -> LAYER_MAPS
+        }
+        if (currentLayer == LAYER_3D) {
+            layerBefore3d = currentBaseLayer
+            apply3dBaseLayer()
+            updateLayerButtons()
+        } else {
+            switchLayer(currentBaseLayer)
+        }
+    }
+
     private fun switchLayer(layer: Int) {
+        val prevLayer = currentLayer
         currentLayer = layer
-        val btnMaps = findViewById<View>(R.id.btnLayerMaps)
-        val btnTopo = findViewById<View>(R.id.btnLayerTopo)
-        val btnSat = findViewById<View>(R.id.btnLayerSatellite)
-        val btnOffline = findViewById<View>(R.id.btnLayerOffline)
+        if (layer == LAYER_MAPS || layer == LAYER_TOPO || layer == LAYER_SATELLITE) {
+            currentBaseLayer = layer
+        }
 
-        val activeColor = Color.parseColor("#2979FF")
-        val inactiveColor = Color.parseColor("#555555")
-
-        btnMaps.setBackgroundColor(if (layer == LAYER_MAPS) activeColor else inactiveColor)
-        btnTopo.setBackgroundColor(if (layer == LAYER_TOPO) activeColor else inactiveColor)
-        btnSat.setBackgroundColor(if (layer == LAYER_SATELLITE) activeColor else inactiveColor)
-        btnOffline.setBackgroundColor(if (layer == LAYER_OFFLINE) activeColor else inactiveColor)
+        if (layer == LAYER_3D) {
+            if (prevLayer != LAYER_3D) layerBefore3d = prevLayer
+            enter3dMode()
+            updateLayerButtons()
+            apply3dBaseLayer()
+            return
+        }
+        leave3dMode()
+        updateLayerButtons()
 
         if (layer != LAYER_OFFLINE && mapView.tileProvider !is org.osmdroid.tileprovider.MapTileProviderBasic) {
             mapView.tileProvider = org.osmdroid.tileprovider.MapTileProviderBasic(this)
@@ -630,6 +926,27 @@ class MapActivity : AppCompatActivity() {
         mapView.invalidate()
     }
 
+    // Refreshes base/offline/3D button highlight and text for the current state.
+    private fun updateLayerButtons() {
+        val btnBase = findViewById<TextView>(R.id.btnLayerMaps)
+        val btnOffline = findViewById<View>(R.id.btnLayerOffline)
+        val btn3D = findViewById<View>(R.id.btnLayer3D)
+
+        val activeColor = Color.parseColor("#2979FF")
+        val inactiveColor = Color.parseColor("#555555")
+
+        val isBaseActive = currentLayer == LAYER_MAPS || currentLayer == LAYER_TOPO
+            || currentLayer == LAYER_SATELLITE
+        btnBase.setBackgroundColor(if (isBaseActive) activeColor else inactiveColor)
+        btnBase.text = when (currentBaseLayer) {
+            LAYER_TOPO -> getString(R.string.map_layer_topo)
+            LAYER_SATELLITE -> getString(R.string.map_layer_sat)
+            else -> getString(R.string.map_layer_maps)
+        }
+        btnOffline.setBackgroundColor(if (currentLayer == LAYER_OFFLINE) activeColor else inactiveColor)
+        btn3D.setBackgroundColor(if (currentLayer == LAYER_3D) activeColor else inactiveColor)
+    }
+
     // ─── Center on My Location ──────────────────────────────────
 
     private fun centerOnMyLocation() {
@@ -643,10 +960,17 @@ class MapActivity : AppCompatActivity() {
         }
 
         locationOverlay?.myLocation?.let { loc ->
-            mapView.controller.animateTo(loc)
+            if (currentLayer == LAYER_3D) {
+                follow3d = true
+                maplibreMap?.moveCamera(
+                    CameraUpdateFactory.newLatLngZoom(LatLng(loc.latitude, loc.longitude), 16.0)
+                )
+            } else {
+                mapView.controller.animateTo(loc)
+            }
         } ?: run {
             Toast.makeText(this, getString(R.string.map_waiting_gps), Toast.LENGTH_SHORT).show()
-            locationOverlay?.enableFollowLocation()
+            if (currentLayer != LAYER_3D) locationOverlay?.enableFollowLocation()
         }
     }
 
@@ -688,6 +1012,10 @@ class MapActivity : AppCompatActivity() {
                                 updateNavigationUi(GeoPoint(location.latitude, location.longitude))
                             }
                         }
+                        if (currentLayer == LAYER_3D) {
+                            val bearing = if (location.hasBearing()) location.bearing.toDouble() else null
+                            update3dLocationMarker(location.latitude, location.longitude, bearing)
+                        }
                         if (isRecordingTrack) {
                             val tp = TrackPoint(
                                 lat = location.latitude,
@@ -721,6 +1049,7 @@ class MapActivity : AppCompatActivity() {
 
     private fun updateRecordedPolylineOnMap() {
         recordedPolyline?.let { mapView.overlays.remove(it) }
+        map3d?.setTrack(recordedTrackPoints.map { LatLng(it.lat, it.lon) }, recordingColor)
         if (recordedTrackPoints.isEmpty()) return
 
         val geoPoints = recordedTrackPoints.map { GeoPoint(it.lat, it.lon) }
@@ -895,6 +1224,7 @@ class MapActivity : AppCompatActivity() {
         targetOverlay.setDirectionIcon(cursorBmp)
         targetOverlay.setPersonAnchor(0.5f, 0.5f)
         targetOverlay.setDirectionAnchor(0.5f, 0.5f)
+        refresh3dCursor()
     }
 
     private fun showMapSettingsDialog() {
@@ -1173,6 +1503,7 @@ class MapActivity : AppCompatActivity() {
             }
 
             mapView.invalidate()
+            refresh3dRoutes()
 
             if (parsedRoutes.isNotEmpty()) {
                 val allPoints = parsedRoutes.flatMap { it.points }
@@ -1197,6 +1528,19 @@ class MapActivity : AppCompatActivity() {
                 Toast.LENGTH_LONG
             ).show()
         }
+    }
+
+    private fun refresh3dRoutes() {
+        val data = loadedRoutes.map {
+            Map3dOverlays.RouteData(
+                name = it.name,
+                points = it.points.map { p -> LatLng(p.latitude, p.longitude) },
+                color = it.color,
+                width = it.width,
+                visible = it.visible
+            )
+        }
+        map3d?.setRoutes(data)
     }
 
     private fun zoomToFitPoints(points: List<GeoPoint>) {
@@ -1262,6 +1606,7 @@ class MapActivity : AppCompatActivity() {
                         poly.outlinePaint.strokeWidth = newWidth * resources.displayMetrics.density
                     }
                     mapView.invalidate()
+                    refresh3dRoutes()
                     refreshRouteList()
                 }
                 dialog.show()
@@ -1277,6 +1622,7 @@ class MapActivity : AppCompatActivity() {
                     route.polyline?.let { mapView.overlays.remove(it) }
                 }
                 mapView.invalidate()
+                refresh3dRoutes()
                 refreshRouteList()
             }
 
@@ -1284,6 +1630,7 @@ class MapActivity : AppCompatActivity() {
                 route.polyline?.let { mapView.overlays.remove(it) }
                 loadedRoutes.removeAt(index)
                 mapView.invalidate()
+                refresh3dRoutes()
                 refreshRouteList()
 
                 if (loadedRoutes.isEmpty()) {
@@ -1346,6 +1693,7 @@ class MapActivity : AppCompatActivity() {
     override fun onResume() {
         super.onResume()
         mapView.onResume()
+        mapView3d.onResume()
         HandlebarKeyManager.addListener(handlebarKeyListener)
         val filter = android.content.IntentFilter("com.kove.mirror.ACTION_MY_LOCATION")
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
@@ -1360,6 +1708,7 @@ class MapActivity : AppCompatActivity() {
         try { unregisterReceiver(myLocationReceiver) } catch (_: Exception) {}
         HandlebarKeyManager.removeListener(handlebarKeyListener)
         mapView.onPause()
+        mapView3d.onPause()
 
         val center = mapView.mapCenter
         getSharedPreferences("kove_map_prefs", MODE_PRIVATE).edit().apply {
@@ -1374,5 +1723,6 @@ class MapActivity : AppCompatActivity() {
         super.onDestroy()
         locationOverlay?.disableMyLocation()
         locationOverlay?.disableFollowLocation()
+        mapView3d.onDestroy()
     }
 }
