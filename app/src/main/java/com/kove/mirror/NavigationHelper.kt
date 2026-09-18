@@ -379,6 +379,7 @@ object NavigationHelper {
             "el" -> "el-GR"
             "es" -> "es-ES"
             "it" -> "it-IT"
+            "fr" -> "fr-FR"
             else -> "en-US"
         }
     }
@@ -477,6 +478,29 @@ object NavigationHelper {
                     "roundabout", "rotary" -> "Entra nella rotatoria$street"
                     "fork" -> "Prendi il bivio $modText$street"
                     "off ramp", "on ramp" -> "Prendi la rampa $modText$street"
+                    else -> "$modText$street".trim().capitalizeFirstLetter()
+                }
+            }
+            "fr" -> {
+                val modText = when (modifier) {
+                    "left" -> "à gauche"
+                    "right" -> "à droite"
+                    "slight left" -> "légèrement à gauche"
+                    "slight right" -> "légèrement à droite"
+                    "sharp left" -> "fortement à gauche"
+                    "sharp right" -> "fortement à droite"
+                    "straight" -> "tout droit"
+                    "uturn" -> "faire demi-tour"
+                    else -> modifier
+                }
+                when (type) {
+                    "turn" -> "Tournez $modText$street"
+                    "new name", "straight" -> "Continuez $modText$street"
+                    "depart" -> "Démarrez $modText$street"
+                    "arrive" -> "Arrivé à destination"
+                    "roundabout", "rotary" -> "Entrez dans le rond-point$street"
+                    "fork" -> "Prenez la bifurcation $modText$street"
+                    "off ramp", "on ramp" -> "Prenez la bretelle $modText$street"
                     else -> "$modText$street".trim().capitalizeFirstLetter()
                 }
             }

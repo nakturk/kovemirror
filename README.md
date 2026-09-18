@@ -70,7 +70,7 @@ Uygulama içinde **"Harita & Rota"** butonu ile erişilebilen gelişmiş harita 
 
 - **🔋 Ekran Karartma / Enerji Tasarrufu Modu (Dimming):** Yansıtma açıkken telefonun aşırı ısınmasını engellemek ve pil tüketimini düşürmek amacıyla telefon ekranını karartma seçeneği.
 - **🎮 Gidon Kumandası Entegrasyonu:** Motosikletin gidon tuşları ile harita yakınlaştırma (Zoom), harita kaydırma (Pan), müzik kontrolü, ses seviyesi, uygulama değiştirme ve konumuma dönme gibi çoklu mod kontrolleri (`KoveAccessibilityService`).
-- **🌐 5 Dil Desteği:** 🇹🇷 Türkçe, 🇬🇧 İngilizce, 🇪🇸 İspanyolca, 🇮🇹 İtalyanca ve 🇬🇷 Yunanca arayüz desteği.
+- **🌐 6 Dil Desteği:** 🇹🇷 Türkçe, 🇬🇧 İngilizce, 🇪🇸 İspanyolca, 🇮🇹 İtalyanca, 🇬🇷 Yunanca ve 🇫🇷 Fransızca arayüz desteği.
 - **🛡️ Gelişmiş Kararlılık & Kaynak Yönetimi:** BLE komut kuyruğu yönetimi, Wakelock zaman aşımı korumaları, döngüsel log boyutu sınırlandırması ve optimize edilmiş TCP soket yönetimi *(Dominik Ladoš'un katkılarıyla)*.
 
 ---
@@ -184,7 +184,7 @@ Accessible via the **"Map & Route"** button on the main screen:
 
 - **🔋 Energy-Saving Screen Dimming:** Automatically dims or turns down phone screen brightness during mirroring to conserve battery and eliminate phone overheating.
 - **🎮 Handlebar Button Integration:** Multi-mode handlebar controls for Zooming, Panning, Media playback, Volume control, App switching, and Return to My Location (`KoveAccessibilityService`).
-- **🌐 5 Language Support:** Full UI localization for 🇹🇷 Turkish, 🇬🇧 English, 🇪🇸 Spanish, 🇮🇹 Italian, and 🇬🇷 Greek.
+- **🌐 6 Language Support:** Full UI localization for 🇹🇷 Turkish, 🇬🇧 English, 🇪🇸 Spanish, 🇮🇹 Italian, 🇬🇷 Greek, and 🇫🇷 French.
 - **🛡️ Enhanced Stability & Resource Management:** Robust BLE command queues, wakelock timeout protections, circular log file limits, and hardened TCP socket lifecycle management *(Special thanks to Dominik Ladoš)*.
 
 ---
