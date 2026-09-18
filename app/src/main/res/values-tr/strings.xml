@@ -317,10 +317,12 @@
     <string name="handlebar_mode_play">Oynat [ENT]</string>
     <string name="handlebar_mode_pause">Duraklat [ENT]</string>
     <string name="handlebar_mode_app_switch">Sonraki / Önceki Uygulama</string>
+    <string name="handlebar_mode_relaunch_stream">Yayını Yeniden Başlat [ENT]</string>
 
     <!-- Handlebar Toasts -->
     <string name="toast_handlebar_mode_assigned">✅ Gidon Tuşları: %1$s</string>
     <string name="toast_my_location">📍 Konumuma Dön</string>
+    <string name="toast_relaunching_stream">🚀 Video Yayını Yeniden Başlatılıyor...</string>
 
     <!-- TFT Frame Fit Dialog -->
     <string name="btn_tft_fit">Çerçeve / Bar Ayarları</string>

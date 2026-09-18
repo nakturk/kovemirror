@@ -331,10 +331,12 @@
     <string name="handlebar_mode_play">Riproduci [ENT]</string>
     <string name="handlebar_mode_pause">Pausa [ENT]</string>
     <string name="handlebar_mode_app_switch">App Successiva / Precedente</string>
+    <string name="handlebar_mode_relaunch_stream">Riavvia Streaming [ENT]</string>
 
     <!-- Handlebar Toasts -->
     <string name="toast_handlebar_mode_assigned">✅ Modalità Manubrio: %1$s</string>
     <string name="toast_my_location">📍 Torna alla mia posizione</string>
+    <string name="toast_relaunching_stream">🚀 Riavvio Streaming Video...</string>
 
     <!-- TFT Frame Fit Dialog -->
     <string name="btn_tft_fit">Impostazioni Bordo TFT</string>

@@ -330,10 +330,12 @@
     <string name="handlebar_mode_play">Lecture [ENT]</string>
     <string name="handlebar_mode_pause">Pause [ENT]</string>
     <string name="handlebar_mode_app_switch">Application suivante / Application précédente</string>
+    <string name="handlebar_mode_relaunch_stream">Relancer le flux [ENT]</string>
 
     <!-- Handlebar Toasts -->
     <string name="toast_handlebar_mode_assigned">✅ Mode Guidon : %1$s</string>
     <string name="toast_my_location">📍 Revenir à ma position</string>
+    <string name="toast_relaunching_stream">🚀 Relance du flux vidéo...</string>
 
     <!-- TFT Frame Fit Dialog -->
     <string name="btn_tft_fit">Paramètres de marge</string>

@@ -330,10 +330,12 @@
     <string name="handlebar_mode_play">Αναπαραγωγή [ENT]</string>
     <string name="handlebar_mode_pause">Παύση [ENT]</string>
     <string name="handlebar_mode_app_switch">Επόμενη / Προηγούμενη Εφαρμογή</string>
+    <string name="handlebar_mode_relaunch_stream">Επανεκκίνηση Ροής [ENT]</string>
 
     <!-- Handlebar Toasts -->
     <string name="toast_handlebar_mode_assigned">✅ Λειτουργία Τιμονιού: %1$s</string>
     <string name="toast_my_location">📍 Επιστροφή στη τοποθεσία μου</string>
+    <string name="toast_relaunching_stream">🚀 Επανεκκίνηση Ροής Βίντεο...</string>
 
     <!-- TFT Frame Fit Dialog -->
     <string name="btn_tft_fit">Ρυθμίσεις Πλαισίου TFT</string>

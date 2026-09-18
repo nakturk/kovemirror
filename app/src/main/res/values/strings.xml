@@ -330,10 +330,12 @@
     <string name="handlebar_mode_play">Play [ENT]</string>
     <string name="handlebar_mode_pause">Pause [ENT]</string>
     <string name="handlebar_mode_app_switch">Next App / Prev App</string>
+    <string name="handlebar_mode_relaunch_stream">Relaunch Stream [ENT]</string>
 
     <!-- Handlebar Toasts -->
     <string name="toast_handlebar_mode_assigned">✅ Handlebar Mode: %1$s</string>
     <string name="toast_my_location">📍 Get back to my location</string>
+    <string name="toast_relaunching_stream">🚀 Relaunching Video Stream...</string>
 
     <!-- TFT Frame Fit Dialog -->
     <string name="btn_tft_fit">Padding Settings</string>

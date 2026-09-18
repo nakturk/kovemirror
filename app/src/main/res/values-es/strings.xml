@@ -330,10 +330,12 @@
     <string name="handlebar_mode_play">Reproducir [ENT]</string>
     <string name="handlebar_mode_pause">Pausar [ENT]</string>
     <string name="handlebar_mode_app_switch">Siguiente / Anterior Aplicación</string>
+    <string name="handlebar_mode_relaunch_stream">Reiniciar Transmisión [ENT]</string>
 
     <!-- Handlebar Toasts -->
     <string name="toast_handlebar_mode_assigned">✅ Modo Manillar: %1$s</string>
     <string name="toast_my_location">📍 Volver a mi ubicación</string>
+    <string name="toast_relaunching_stream">🚀 Reiniciando Transmisión de Video...</string>
 
     <!-- TFT Frame Fit Dialog -->
     <string name="btn_tft_fit">Ajustes de Margen TFT</string>

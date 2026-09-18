@@ -34,7 +34,8 @@ enum class HandlebarActionMode(
     VOLUME(R.string.handlebar_mode_volume, isEntAction = false),
     PLAY(R.string.handlebar_mode_play, isEntAction = true),
     PAUSE(R.string.handlebar_mode_pause, isEntAction = true),
-    APP_SWITCH(R.string.handlebar_mode_app_switch, isEntAction = false);
+    APP_SWITCH(R.string.handlebar_mode_app_switch, isEntAction = false),
+    RELAUNCH_STREAM(R.string.handlebar_mode_relaunch_stream, isEntAction = true);
 
     fun getDisplayName(context: Context): String {
         val localizedCtx = LocaleHelper.applyLocale(context)
@@ -134,6 +135,14 @@ object HandlebarKeyManager {
                 }
             }
             HandlebarKey.ENTER, HandlebarKey.ESC -> {
+                // If stream is currently disconnected while mirroring is running, one-touch relaunch stream!
+                val mirrorInstance = MirrorService.runningInstance
+                if (mirrorInstance != null && !mirrorInstance.isVideoConnectedState && !mirrorInstance.isControlOnly) {
+                    DebugLogger.info("🚀 Handlebar [ENT/ESC] pressed while stream disconnected -> Triggering One-Touch Relaunch")
+                    mirrorInstance.relaunchStream()
+                    return
+                }
+
                 // Both ENT (status 1) and ESC (status 0) when overlay is closed → Open Overlay Menu
                 // ALWAYS reset highlightedIndex to 0 ("Get back to my location")
                 // This eliminates any state desync caused by TFT hardware Play/Pause toggling.

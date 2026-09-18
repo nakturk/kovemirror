@@ -425,6 +425,11 @@ class HandlebarOverlayService : Service() {
                     else -> {}
                 }
             }
+            HandlebarActionMode.RELAUNCH_STREAM -> {
+                DebugLogger.info("🎮 Action: One-Touch Relaunch Stream")
+                Toast.makeText(this, getString(R.string.toast_relaunching_stream), Toast.LENGTH_SHORT).show()
+                MirrorService.runningInstance?.relaunchStream()
+            }
         }
     }
 }

@@ -93,9 +93,38 @@ class MirrorService : Service() {
     private var isVideoConnected = false
     private var wakeLock: android.os.PowerManager.WakeLock? = null
     private val modeLock = Any()
-
     @Volatile private var cachedResultCode: Int = 0
     @Volatile private var cachedResultData: Intent? = null
+
+    val isVideoConnectedState: Boolean
+        get() = isVideoConnected
+
+    val isControlOnly: Boolean
+        get() = isControlOnlyMode
+
+    fun relaunchStream() {
+        DebugLogger.info("🚀 One-touch stream relaunch triggered!")
+        Handler(Looper.getMainLooper()).post {
+            if (!isControlOnlyMode) {
+                val projection = getOrCreateMediaProjection()
+                if (projection != null) {
+                    synchronized(modeLock) {
+                        projectionEncoder?.stop()
+                        projectionEncoder = null
+                        presentationEncoder?.stop()
+                        presentationEncoder = null
+                    }
+                    startTcpServer()
+                } else {
+                    DebugLogger.warning("⚠️ Cannot relaunch: MediaProjection token unavailable")
+                }
+            } else {
+                startTcpServer()
+            }
+            // Trigger BLE initialization packets to immediately wake and synchronize TFT
+            bleManager?.sendInitPackets()
+        }
+    }
 
     // ─── Lifecycle ───────────────────────────────────────────────
 
