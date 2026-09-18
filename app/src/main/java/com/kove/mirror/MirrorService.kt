@@ -94,6 +94,9 @@ class MirrorService : Service() {
     private var wakeLock: android.os.PowerManager.WakeLock? = null
     private val modeLock = Any()
 
+    @Volatile private var cachedResultCode: Int = 0
+    @Volatile private var cachedResultData: Intent? = null
+
     // ─── Lifecycle ───────────────────────────────────────────────
 
     override fun onCreate() {
@@ -162,8 +165,53 @@ class MirrorService : Service() {
 
     // ─── Mirroring logic ─────────────────────────────────────────
 
+    private fun getOrCreateMediaProjection(): MediaProjection? {
+        val existing = mediaProjection
+        if (existing != null) return existing
+
+        val code = cachedResultCode
+        val data = cachedResultData
+        if (code != 0 && data != null) {
+            try {
+                val pm = getSystemService(MEDIA_PROJECTION_SERVICE) as MediaProjectionManager
+                val projection = pm.getMediaProjection(code, data)
+                if (projection != null) {
+                    mediaProjection = projection
+                    registerProjectionCallback(projection)
+                    DebugLogger.info("🔄 MediaProjection re-created from cached permission token")
+                    return projection
+                }
+            } catch (e: Exception) {
+                DebugLogger.error("❌ Failed to obtain MediaProjection from cache: ${e.message}")
+            }
+        }
+        return null
+    }
+
+    private fun registerProjectionCallback(projection: MediaProjection) {
+        projection.registerCallback(object : MediaProjection.Callback() {
+            override fun onStop() {
+                DebugLogger.warning("⚠️ MediaProjection stopped by system (Screen off / Projection revoked)")
+                mediaProjection = null
+                synchronized(modeLock) {
+                    projectionEncoder?.stop()
+                    projectionEncoder = null
+                    if (presentationEncoder == null && isVideoConnected) {
+                        DebugLogger.info("🔄 Seamlessly switching to VirtualDisplay Presentation mode...")
+                        Handler(Looper.getMainLooper()).post {
+                            startPresentationPipeline()
+                        }
+                    }
+                }
+            }
+        }, null)
+    }
+
     private fun startMirroring(resultCode: Int, data: Intent) {
         try {
+            cachedResultCode = resultCode
+            cachedResultData = data
+
             DebugLogger.info(getString(R.string.log_mirroring_starting))
             DebugLogger.info("   Video Port: ${TcpServer.PORT_VIDEO}")
             DebugLogger.info("   Control Port: ${TcpServer.PORT_CONTROL}")
@@ -176,25 +224,8 @@ class MirrorService : Service() {
             )
             wakeLock?.acquire(WAKELOCK_TIMEOUT_MS)
 
-            val pm = getSystemService(MEDIA_PROJECTION_SERVICE) as MediaProjectionManager
-            val projection = pm.getMediaProjection(resultCode, data) ?: throw NullPointerException("MediaProjection is null")
+            val projection = getOrCreateMediaProjection() ?: throw NullPointerException("MediaProjection is null")
             mediaProjection = projection
-            projection.registerCallback(object : MediaProjection.Callback() {
-                override fun onStop() {
-                    DebugLogger.warning("⚠️ MediaProjection stopped by system (Screen off / Projection revoked)")
-                    mediaProjection = null
-                    synchronized(modeLock) {
-                        projectionEncoder?.stop()
-                        projectionEncoder = null
-                        if (presentationEncoder == null && isVideoConnected) {
-                            DebugLogger.info("🔄 Seamlessly switching to VirtualDisplay Presentation mode...")
-                            Handler(Looper.getMainLooper()).post {
-                                startPresentationPipeline()
-                            }
-                        }
-                    }
-                }
-            }, null)
 
             // Setup ScreenStateManager for auto-switching to VirtualDisplay Map mode on screen off
             screenStateManager = ScreenStateManager(this).apply {
@@ -303,7 +334,8 @@ class MirrorService : Service() {
 
     private fun handleScreenTurnedOn() {
         if (isControlOnlyMode || !isVideoConnected || tcpServer == null) return
-        if (presentationEncoder != null && mediaProjection != null) {
+        val projection = getOrCreateMediaProjection()
+        if (presentationEncoder != null && projection != null) {
             DebugLogger.info("📱 Screen turned ON -> Switching back to MediaProjection Mirror Mode")
             Handler(Looper.getMainLooper()).post {
                 synchronized(modeLock) {
@@ -312,13 +344,13 @@ class MirrorService : Service() {
                     startProjectionPipeline()
                 }
             }
-        } else if (presentationEncoder != null && mediaProjection == null) {
+        } else if (presentationEncoder != null && projection == null) {
             DebugLogger.info("📱 Screen turned ON (MediaProjection was released by OS, keeping VirtualDisplay Presentation active)")
         }
     }
 
     private fun startProjectionPipeline() {
-        val projection = mediaProjection ?: run {
+        val projection = getOrCreateMediaProjection() ?: run {
             DebugLogger.error("❌ startProjectionPipeline: MediaProjection is null")
             return
         }
@@ -381,10 +413,9 @@ class MirrorService : Service() {
 
     private fun startTcpServer() {
         if (!isControlOnlyMode) {
-            val projection = mediaProjection
-            if (projection == null) {
-                DebugLogger.warning("⚠️ MediaProjection not ready yet, TCP Server not started")
-                return
+            val projection = getOrCreateMediaProjection()
+            if (projection == null && presentationEncoder == null) {
+                DebugLogger.warning("⚠️ MediaProjection not ready yet, TCP Server waiting")
             }
         }
 
@@ -462,6 +493,8 @@ class MirrorService : Service() {
 
     private fun stopMirroring() {
         DebugLogger.info(getString(R.string.log_stopping_mirroring))
+        cachedResultCode = 0
+        cachedResultData = null
         screenStateManager?.unregister()
         screenStateManager = null
         bleManager?.disconnect()

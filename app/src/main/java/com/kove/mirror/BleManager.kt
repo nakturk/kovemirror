@@ -247,11 +247,23 @@ class BleManager(private val context: Context, private val logCallback: (String)
             }
 
             if (newState == BluetoothProfile.STATE_CONNECTED) {
-                logCallback("🟢 Bluetooth connected, discovering services...")
-                try {
-                    gatt.discoverServices()
+                logCallback("🟢 Bluetooth connected, requesting MTU (512)...")
+                val requested = try {
+                    gatt.requestMtu(512)
                 } catch (e: SecurityException) {
-                    logCallback("❌ Permission error discovering services: ${e.message}")
+                    logCallback("❌ Permission error requesting MTU: ${e.message}")
+                    false
+                } catch (e: Exception) {
+                    logCallback("⚠️ Error requesting MTU: ${e.message}")
+                    false
+                }
+                if (!requested) {
+                    logCallback("⚠️ MTU request could not be initiated, discovering services directly...")
+                    try {
+                        gatt.discoverServices()
+                    } catch (e: SecurityException) {
+                        logCallback("❌ Permission error discovering services: ${e.message}")
+                    }
                 }
             } else if (newState == BluetoothProfile.STATE_DISCONNECTED) {
                 isConnected = false
@@ -263,6 +275,20 @@ class BleManager(private val context: Context, private val logCallback: (String)
                     writeChar = null
                 }
                 scheduleReconnect()
+            }
+        }
+
+        override fun onMtuChanged(gatt: BluetoothGatt, mtu: Int, status: Int) {
+            if (status == BluetoothGatt.GATT_SUCCESS) {
+                logCallback("📶 BLE MTU negotiated: $mtu bytes")
+            } else {
+                logCallback("⚠️ BLE MTU negotiation failed: status=$status, current MTU: $mtu")
+            }
+            logCallback("🔍 Discovering BLE services...")
+            try {
+                gatt.discoverServices()
+            } catch (e: SecurityException) {
+                logCallback("❌ Permission error discovering services: ${e.message}")
             }
         }
 
