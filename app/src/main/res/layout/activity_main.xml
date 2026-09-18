@@ -326,6 +326,23 @@
                 android:paddingTop="0dp"
                 android:paddingBottom="0dp"
                 android:minHeight="0dp"
+                android:minWidth="0dp"
+                android:layout_marginBottom="8dp" />
+
+            <androidx.appcompat.widget.AppCompatButton
+                android:id="@+id/btnSelectSecondaryApp"
+                android:layout_width="match_parent"
+                android:layout_height="38dp"
+                android:text="@string/label_select_target_app"
+                android:textSize="12sp"
+                android:textColor="#F0F6FC"
+                android:textAllCaps="false"
+                android:background="@drawable/bg_button_secondary"
+                android:paddingStart="8dp"
+                android:paddingEnd="8dp"
+                android:paddingTop="0dp"
+                android:paddingBottom="0dp"
+                android:minHeight="0dp"
                 android:minWidth="0dp" />
         </LinearLayout>
 

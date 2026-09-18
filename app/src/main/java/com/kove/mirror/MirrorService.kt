@@ -416,20 +416,29 @@ class MirrorService : Service() {
 
     private fun startPresentationPipeline() {
         try {
+            val prefs = getSharedPreferences("kove_prefs", Context.MODE_PRIVATE)
+            val targetPkg = prefs.getString("secondary_target_package", null)
+
             val encoder = PresentationEncoder(
                 context = applicationContext,
                 width  = TFT_WIDTH,
                 height = TFT_HEIGHT,
                 dpi = 320,
-                fps = 30
+                fps = 30,
+                targetPackage = targetPkg
             )
             presentationEncoder = encoder
             if (encoder.init()) {
                 encoder.startEncoding { nalData ->
                     tcpServer?.writeData(nalData)
                 }
-                updateNotif("🏍️ TFT Harita & Navigasyon (Ekran Kapalı)")
-                DebugLogger.success("✅ VirtualDisplay Presentation encoder active (Zero-Black-Bar)")
+                val label = if (!targetPkg.isNullOrEmpty() && targetPkg != "internal_map") {
+                    "🏍️ TFT ($targetPkg)"
+                } else {
+                    "🏍️ TFT Harita & Navigasyon"
+                }
+                updateNotif(label)
+                DebugLogger.success("✅ VirtualDisplay Presentation encoder active (target=$targetPkg)")
             } else {
                 DebugLogger.error("❌ Presentation encoder init failed")
                 presentationEncoder = null

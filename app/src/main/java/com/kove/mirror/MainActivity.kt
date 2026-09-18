@@ -70,6 +70,7 @@ class MainActivity : AppCompatActivity() {
         setupBluetoothButton()
         setupAboutButton()
         setupAppModeRadioGroup()
+        setupSecondaryAppSelector()
         setupDisplayModeSpinner()
         setupResolutionSpinner()
         setupButtons()
@@ -166,6 +167,77 @@ class MainActivity : AppCompatActivity() {
             currentAppMode = newMode
             getSharedPreferences("kove_prefs", MODE_PRIVATE).edit().putInt("app_mode", newMode).apply()
             updateUiForMode(newMode)
+        }
+    }
+
+    // ─── Secondary App Selector ──────────────────────────────────
+
+    private fun setupSecondaryAppSelector() {
+        val prefs = getSharedPreferences("kove_prefs", MODE_PRIVATE)
+        val savedPkg = prefs.getString("secondary_target_package", null)
+        updateSecondaryAppButtonLabel(savedPkg)
+
+        binding.btnSelectSecondaryApp.setOnClickListener {
+            showSecondaryAppPickerDialog()
+        }
+    }
+
+    private fun updateSecondaryAppButtonLabel(pkg: String?) {
+        val label = if (pkg.isNullOrEmpty() || pkg == "internal_map") {
+            getString(R.string.option_internal_map)
+        } else {
+            val appName = try {
+                val appInfo = packageManager.getApplicationInfo(pkg, 0)
+                packageManager.getApplicationLabel(appInfo).toString()
+            } catch (_: Exception) {
+                pkg
+            }
+            "📱 TFT App: $appName"
+        }
+        binding.btnSelectSecondaryApp.text = label
+    }
+
+    private fun showSecondaryAppPickerDialog() {
+        val knownApps = listOf(
+            Triple("internal_map", getString(R.string.option_internal_map), true),
+            Triple("com.thorkracing.dmd2", "🏍️ DMD2 (Drive Mode Dashboard)", isPackageInstalled("com.thorkracing.dmd2")),
+            Triple("net.osmand", "🌍 OsmAnd Maps & Navigation", isPackageInstalled("net.osmand")),
+            Triple("net.osmand.plus", "🌍 OsmAnd+ Maps & Navigation", isPackageInstalled("net.osmand.plus")),
+            Triple("com.google.android.apps.maps", "🧭 Google Maps", isPackageInstalled("com.google.android.apps.maps")),
+            Triple("com.waze", "🧭 Waze", isPackageInstalled("com.waze")),
+            Triple("menion.android.locus", "🧭 Locus Map", isPackageInstalled("menion.android.locus")),
+            Triple("menion.android.locus.pro", "🧭 Locus Map Pro", isPackageInstalled("menion.android.locus.pro")),
+            Triple("de.kurviger.pro", "🧭 Kurviger Pro", isPackageInstalled("de.kurviger.pro")),
+            Triple("de.kurviger", "🧭 Kurviger", isPackageInstalled("de.kurviger"))
+        )
+
+        val installedOptions = knownApps.filter { it.third }
+        val names = installedOptions.map { it.second }.toTypedArray()
+        val pkgs = installedOptions.map { it.first }.toTypedArray()
+
+        val prefs = getSharedPreferences("kove_prefs", MODE_PRIVATE)
+        val currentPkg = prefs.getString("secondary_target_package", "internal_map") ?: "internal_map"
+        val selectedIdx = pkgs.indexOf(currentPkg).let { if (it >= 0) it else 0 }
+
+        AlertDialog.Builder(this)
+            .setTitle(R.string.label_select_target_app)
+            .setSingleChoiceItems(names, selectedIdx) { dialog, which ->
+                val chosenPkg = pkgs[which]
+                prefs.edit().putString("secondary_target_package", chosenPkg).apply()
+                updateSecondaryAppButtonLabel(chosenPkg)
+                Toast.makeText(this, "✅ TFT Secondary App: ${names[which]}", Toast.LENGTH_SHORT).show()
+                dialog.dismiss()
+            }
+            .setNegativeButton(R.string.btn_cancel, null)
+            .show()
+    }
+
+    private fun isPackageInstalled(packageName: String): Boolean {
+        return try {
+            packageManager.getPackageInfo(packageName, 0)
+            true
+        } catch (_: Exception) {
+            false
         }
     }
 

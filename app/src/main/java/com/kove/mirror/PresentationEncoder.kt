@@ -1,6 +1,8 @@
 package com.kove.mirror
 
+import android.app.ActivityOptions
 import android.content.Context
+import android.content.Intent
 import android.hardware.display.DisplayManager
 import android.hardware.display.VirtualDisplay
 import android.media.MediaCodec
@@ -9,21 +11,23 @@ import android.media.MediaFormat
 import android.os.Build
 import android.os.Handler
 import android.os.Looper
+import android.view.Display
 import android.view.Surface
 import java.util.concurrent.atomic.AtomicBoolean
 import java.util.concurrent.atomic.AtomicLong
 
 /**
- * Dedicated Hardware H.264 Encoder for KovePresentation.
+ * Dedicated Hardware H.264 Encoder for KovePresentation / Secondary App Display.
  * Implements Thinkerride direct zero-copy VirtualDisplay architecture.
- * Directly pipes Presentation draw surface into MediaCodec input surface.
+ * Directly pipes Presentation or target app draw surface into MediaCodec input surface.
  */
 class PresentationEncoder(
     private val context: Context,
     val width: Int = 600,
     val height: Int = 1024,
     val dpi: Int = 320,
-    val fps: Int = 30
+    val fps: Int = 30,
+    val targetPackage: String? = null
 ) {
 
     private var mediaCodec: MediaCodec? = null
@@ -39,7 +43,7 @@ class PresentationEncoder(
     fun init(): Boolean {
         return try {
             val bitrate = width * height * 3 // ~1.8 Mbps for 600x1024
-            DebugLogger.info("🎬 [PresentationEncoder] Initializing zero-copy encoder for ${width}x${height}...")
+            DebugLogger.info("🎬 [PresentationEncoder] Initializing zero-copy encoder for ${width}x${height} (targetApp=$targetPackage)...")
 
             val format = MediaFormat().apply {
                 setString(MediaFormat.KEY_MIME, "video/avc")
@@ -80,7 +84,8 @@ class PresentationEncoder(
             // Direct DisplayManager VirtualDisplay binding (Zero-Copy)
             val displayManager = context.getSystemService(Context.DISPLAY_SERVICE) as DisplayManager
             val vdFlags = DisplayManager.VIRTUAL_DISPLAY_FLAG_PRESENTATION or
-                    DisplayManager.VIRTUAL_DISPLAY_FLAG_OWN_CONTENT_ONLY
+                    DisplayManager.VIRTUAL_DISPLAY_FLAG_OWN_CONTENT_ONLY or
+                    DisplayManager.VIRTUAL_DISPLAY_FLAG_PUBLIC
             val vd = displayManager.createVirtualDisplay(
                 "KovePresentationVD",
                 width,
@@ -92,13 +97,28 @@ class PresentationEncoder(
             virtualDisplay = vd
 
             Handler(Looper.getMainLooper()).post {
-                try {
-                    val p = KovePresentation(context, vd.display)
-                    p.show()
-                    presentation = p
-                    DebugLogger.success("🏍️ [PresentationEncoder] Presentation shown on VirtualDisplay")
-                } catch (e: Exception) {
-                    DebugLogger.error("❌ Failed to show KovePresentation: ${e.message}")
+                if (!targetPackage.isNullOrEmpty() && targetPackage != "internal_map") {
+                    try {
+                        val launchIntent = context.packageManager.getLaunchIntentForPackage(targetPackage)?.apply {
+                            addFlags(Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_MULTIPLE_TASK)
+                        }
+                        if (launchIntent != null) {
+                            val options = ActivityOptions.makeBasic()
+                            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
+                                options.launchDisplayId = vd.display.displayId
+                            }
+                            context.startActivity(launchIntent, options.toBundle())
+                            DebugLogger.success("🚀 [PresentationEncoder] Launched $targetPackage on VirtualDisplay #${vd.display.displayId}")
+                        } else {
+                            DebugLogger.warning("⚠️ Target app ($targetPackage) launch intent not found, falling back to internal map")
+                            showDefaultPresentation(vd.display)
+                        }
+                    } catch (e: Exception) {
+                        DebugLogger.error("❌ Failed to launch $targetPackage on VirtualDisplay: ${e.message}")
+                        showDefaultPresentation(vd.display)
+                    }
+                } else {
+                    showDefaultPresentation(vd.display)
                 }
             }
 
@@ -108,6 +128,17 @@ class PresentationEncoder(
             DebugLogger.error("❌ [PresentationEncoder] Init failed: ${e.message}")
             e.printStackTrace()
             false
+        }
+    }
+
+    private fun showDefaultPresentation(display: Display) {
+        try {
+            val p = KovePresentation(context, display)
+            p.show()
+            presentation = p
+            DebugLogger.success("🏍️ [PresentationEncoder] Internal Map Presentation shown on VirtualDisplay")
+        } catch (e: Exception) {
+            DebugLogger.error("❌ Failed to show KovePresentation: ${e.message}")
         }
     }
 
