@@ -79,6 +79,7 @@ class MainActivity : AppCompatActivity() {
 
         checkBluetoothPermissions()
         requestNotifPermission()
+        syncStreamingStateWithService()
 
         DebugLogger.info(getString(R.string.log_app_started))
     }
@@ -122,6 +123,28 @@ class MainActivity : AppCompatActivity() {
         super.onResume()
         refreshWifiStatus()
         updatePermissionButtonStates()
+        syncStreamingStateWithService()
+    }
+
+    private fun syncStreamingStateWithService() {
+        val service = MirrorService.runningInstance
+        if (service != null) {
+            isStreaming = true
+            if (service.isControlOnly) {
+                binding.btnStartStop.text = getString(R.string.btn_stop_controller)
+                binding.btnStartStop.setBackgroundColor(Color.parseColor("#B71C1C"))
+                binding.tvStatus.text = getString(R.string.status_control_active)
+                binding.tvStatus.setTextColor(Color.parseColor("#FF9800"))
+            } else {
+                binding.btnStartStop.text = getString(R.string.btn_stop_mirroring)
+                binding.btnStartStop.setBackgroundColor(Color.parseColor("#B71C1C"))
+                binding.tvStatus.text = getString(R.string.status_stream_active)
+                binding.tvStatus.setTextColor(Color.parseColor("#EF5350"))
+            }
+            binding.btnScreenDim.visibility = View.VISIBLE
+        } else if (isStreaming) {
+            resetToStopped()
+        }
     }
 
     override fun onPause() {
