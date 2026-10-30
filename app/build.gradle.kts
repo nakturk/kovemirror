@@ -20,11 +20,18 @@ val todayDateStr = SimpleDateFormat("yyyy.MM.dd").format(Date())
 val computedVersionCode = currentBuildNumber
 val computedVersionName = "$todayDateStr.$currentBuildNumber"
 
-// Increment build number for next invocation
-val nextBuildNumber = currentBuildNumber + 1
-versionProps["build_number"] = nextBuildNumber.toString()
-versionProps["last_build_date"] = todayDateStr
-versionProps.store(FileOutputStream(versionPropsFile), "Updated by Gradle Build")
+// Increment build number only when an actual build/assemble/install task is invoked (not on IDE Gradle Sync)
+val isBuildingTask = gradle.startParameter.taskNames.any { taskName ->
+    taskName.contains("assemble", ignoreCase = true) ||
+    taskName.contains("bundle", ignoreCase = true) ||
+    taskName.contains("install", ignoreCase = true)
+}
+if (isBuildingTask) {
+    val nextBuildNumber = currentBuildNumber + 1
+    versionProps["build_number"] = nextBuildNumber.toString()
+    versionProps["last_build_date"] = todayDateStr
+    versionProps.store(FileOutputStream(versionPropsFile), "Updated by Gradle Build")
+}
 
 plugins {
     id("com.android.application")
