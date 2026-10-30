@@ -2769,10 +2769,10 @@ class MapActivity : AppCompatActivity() {
             if (kmlDoc != null && kmlDoc.placemarks.isNotEmpty()) {
                 var importedCount = 0
                 val allPoints = mutableListOf<GeoPoint>()
-                loadedKmlPlacemarks.addAll(kmlDoc.placemarks)
 
                 for (pm in kmlDoc.placemarks) {
                     if (pm.geometryType == KmlGeometryType.POINT && pm.points.isNotEmpty()) {
+                        loadedKmlPlacemarks.add(pm)
                         val pt = pm.points.first()
                         allPoints.add(pt)
 
@@ -2803,6 +2803,7 @@ class MapActivity : AppCompatActivity() {
                         mapView.overlays.add(marker)
                         importedCount++
                     } else if (pm.polygons.isNotEmpty()) {
+                        loadedKmlPlacemarks.add(pm)
                         for (ring in pm.polygons) {
                             if (ring.size >= 3) {
                                 allPoints.addAll(ring)
@@ -3078,22 +3079,24 @@ class MapActivity : AppCompatActivity() {
                 arrowColor = r.arrowColor,
                 showDistanceMarkers = r.showDistanceMarkers,
                 distanceIntervalKm = r.distanceIntervalKm,
-                placemarks = loadedKmlPlacemarks.map { pm ->
-                    SavedPlacemarkDto(
-                        name = pm.name,
-                        description = pm.description,
-                        styleUrl = pm.styleUrl,
-                        geometryType = pm.geometryType.name,
-                        points = pm.points.map { p -> SavedPointDto(p.latitude, p.longitude, p.altitude) },
-                        polygons = pm.polygons.map { ring -> ring.map { p -> SavedPointDto(p.latitude, p.longitude, p.altitude) } },
-                        lineColor = pm.inlineStyle?.lineColor,
-                        lineWidth = pm.inlineStyle?.lineWidth,
-                        polyColor = pm.inlineStyle?.polyColor
-                    )
-                }
+                placemarks = emptyList()
+            )
+        }
+        val placemarkDtos = loadedKmlPlacemarks.map { pm ->
+            SavedPlacemarkDto(
+                name = pm.name,
+                description = pm.description,
+                styleUrl = pm.styleUrl,
+                geometryType = pm.geometryType.name,
+                points = pm.points.map { p -> SavedPointDto(p.latitude, p.longitude, p.altitude) },
+                polygons = pm.polygons.map { ring -> ring.map { p -> SavedPointDto(p.latitude, p.longitude, p.altitude) } },
+                lineColor = pm.inlineStyle?.lineColor,
+                lineWidth = pm.inlineStyle?.lineWidth,
+                polyColor = pm.inlineStyle?.polyColor
             )
         }
         RouteStorageManager.saveRoutes(this, dtoList)
+        RouteStorageManager.savePlacemarks(this, placemarkDtos)
         syncRoutesToStateHolder()
     }
 
@@ -3120,10 +3123,12 @@ class MapActivity : AppCompatActivity() {
 
     private fun loadSavedRoutesFromStorage() {
         val dtoList = RouteStorageManager.loadRoutes(this)
-        if (dtoList.isEmpty()) return
+        val savedPlacemarks = RouteStorageManager.loadPlacemarks(this)
+        if (dtoList.isEmpty() && savedPlacemarks.isEmpty()) return
 
         val scaleFactor = getSharedPreferences("kove_map_prefs", MODE_PRIVATE).getFloat("map_tiles_scale_factor", 1.0f)
         val allPointsToFit = mutableListOf<GeoPoint>()
+        var hadLegacyEmbeddedPlacemarks = false
 
         for (dto in dtoList) {
             val pts = dto.points.map { GeoPoint(it.lat, it.lon, it.alt) }
@@ -3145,62 +3150,80 @@ class MapActivity : AppCompatActivity() {
             loadedRoutes.add(route)
             if (pts.isNotEmpty()) allPointsToFit.addAll(pts)
 
-            // Reconstruct KML placemarks if present
-            for (pmDto in dto.placemarks) {
-                val pmPts = pmDto.points.map { GeoPoint(it.lat, it.lon, it.alt) }
-                val pmPolys = pmDto.polygons.map { ring -> ring.map { GeoPoint(it.lat, it.lon, it.alt) } }
-                val geomType = try { KmlGeometryType.valueOf(pmDto.geometryType) } catch (_: Exception) { KmlGeometryType.LINESTRING }
-                val inlineStyle = KmlStyle(
-                    lineColor = pmDto.lineColor,
-                    lineWidth = pmDto.lineWidth,
-                    polyColor = pmDto.polyColor
-                )
+            if (dto.placemarks.isNotEmpty()) {
+                hadLegacyEmbeddedPlacemarks = true
+                savedPlacemarks.addAll(dto.placemarks)
+            }
+        }
 
-                val placemark = KmlPlacemark(
-                    name = pmDto.name,
-                    description = pmDto.description,
-                    styleUrl = pmDto.styleUrl,
-                    inlineStyle = inlineStyle,
-                    geometryType = geomType,
-                    points = pmPts,
-                    polygons = pmPolys
-                )
-                loadedKmlPlacemarks.add(placemark)
+        // Reconstruct unique KML placemarks once (deduplicating any legacy embedded copies)
+        val seenPlacemarkKeys = HashSet<String>()
+        val defaultColor = dtoList.firstOrNull()?.color ?: Color.RED
+        val defaultWidth = dtoList.firstOrNull()?.width ?: 5f
 
-                if (geomType == KmlGeometryType.POINT && pmPts.isNotEmpty()) {
-                    val pt = pmPts.first()
-                    val compositeBmp = PoiMarkerHelper.createCompositePoiBitmap(this, pmDto.name, pmDto.description, null, scaleFactor)
-                    val marker = Marker(mapView).apply {
-                        position = pt
-                        title = pmDto.name.ifEmpty { "POI" }
-                        snippet = pmDto.description
-                        icon = android.graphics.drawable.BitmapDrawable(resources, compositeBmp)
-                        setAnchor(Marker.ANCHOR_LEFT, Marker.ANCHOR_CENTER)
-                        setOnMarkerClickListener { m, _ ->
-                            m.showInfoWindow()
-                            if (pmDto.description.isNotEmpty()) {
-                                showPoiDescriptionDialog(pmDto.name, pmDto.description, pt)
-                            }
-                            true
+        for (pmDto in savedPlacemarks) {
+            val firstPt = pmDto.points.firstOrNull()
+            val firstPolyPt = pmDto.polygons.firstOrNull()?.firstOrNull()
+            val dedupKey = "${pmDto.geometryType}|${pmDto.name}|${pmDto.description}|${firstPt?.lat},${firstPt?.lon}|${firstPolyPt?.lat},${firstPolyPt?.lon}"
+            if (!seenPlacemarkKeys.add(dedupKey)) continue
+
+            val pmPts = pmDto.points.map { GeoPoint(it.lat, it.lon, it.alt) }
+            val pmPolys = pmDto.polygons.map { ring -> ring.map { GeoPoint(it.lat, it.lon, it.alt) } }
+            val geomType = try { KmlGeometryType.valueOf(pmDto.geometryType) } catch (_: Exception) { KmlGeometryType.LINESTRING }
+            val inlineStyle = KmlStyle(
+                lineColor = pmDto.lineColor,
+                lineWidth = pmDto.lineWidth,
+                polyColor = pmDto.polyColor
+            )
+
+            val placemark = KmlPlacemark(
+                name = pmDto.name,
+                description = pmDto.description,
+                styleUrl = pmDto.styleUrl,
+                inlineStyle = inlineStyle,
+                geometryType = geomType,
+                points = pmPts,
+                polygons = pmPolys
+            )
+            loadedKmlPlacemarks.add(placemark)
+
+            if (geomType == KmlGeometryType.POINT && pmPts.isNotEmpty()) {
+                val pt = pmPts.first()
+                val compositeBmp = PoiMarkerHelper.createCompositePoiBitmap(this, pmDto.name, pmDto.description, null, scaleFactor)
+                val marker = Marker(mapView).apply {
+                    position = pt
+                    title = pmDto.name.ifEmpty { "POI" }
+                    snippet = pmDto.description
+                    icon = android.graphics.drawable.BitmapDrawable(resources, compositeBmp)
+                    setAnchor(Marker.ANCHOR_LEFT, Marker.ANCHOR_CENTER)
+                    setOnMarkerClickListener { m, _ ->
+                        m.showInfoWindow()
+                        if (pmDto.description.isNotEmpty()) {
+                            showPoiDescriptionDialog(pmDto.name, pmDto.description, pt)
                         }
+                        true
                     }
-                    kmlMarkers.add(marker)
-                    mapView.overlays.add(marker)
-                } else if (pmPolys.isNotEmpty()) {
-                    for (ring in pmPolys) {
-                        if (ring.size >= 3) {
-                            val polygon = org.osmdroid.views.overlay.Polygon().apply {
-                                points = ring
-                                fillPaint.color = pmDto.polyColor ?: dto.color
-                                outlinePaint.color = pmDto.lineColor ?: dto.color
-                                outlinePaint.strokeWidth = (pmDto.lineWidth ?: dto.width) * resources.displayMetrics.density
-                            }
-                            kmlPolygons.add(polygon)
-                            mapView.overlays.add(polygon)
+                }
+                kmlMarkers.add(marker)
+                mapView.overlays.add(marker)
+            } else if (pmPolys.isNotEmpty()) {
+                for (ring in pmPolys) {
+                    if (ring.size >= 3) {
+                        val polygon = org.osmdroid.views.overlay.Polygon().apply {
+                            points = ring
+                            fillPaint.color = pmDto.polyColor ?: defaultColor
+                            outlinePaint.color = pmDto.lineColor ?: defaultColor
+                            outlinePaint.strokeWidth = (pmDto.lineWidth ?: defaultWidth) * resources.displayMetrics.density
                         }
+                        kmlPolygons.add(polygon)
+                        mapView.overlays.add(polygon)
                     }
                 }
             }
+        }
+
+        if (hadLegacyEmbeddedPlacemarks) {
+            saveCurrentRoutesToStorage()
         }
 
         mapView.invalidate()
@@ -3429,6 +3452,7 @@ class MapActivity : AppCompatActivity() {
 
         loadedKmlPlacemarks.clear()
         RouteStorageManager.saveRoutes(this, emptyList())
+        RouteStorageManager.savePlacemarks(this, emptyList())
 
         clearRouteWeatherMarkers()
         clearCurveMarkers()

@@ -42,6 +42,7 @@ data class SavedRouteDto(
 object RouteStorageManager {
 
     private const val FILE_NAME = "saved_routes.json"
+    private const val PLACEMARKS_FILE_NAME = "saved_placemarks.json"
 
     fun loadRoutes(context: Context): MutableList<SavedRouteDto> {
         val file = File(context.filesDir, FILE_NAME)
@@ -75,6 +76,128 @@ object RouteStorageManager {
         }
     }
 
+    fun loadPlacemarks(context: Context): MutableList<SavedPlacemarkDto> {
+        val file = File(context.filesDir, PLACEMARKS_FILE_NAME)
+        if (!file.exists()) return mutableListOf()
+
+        return try {
+            val text = file.readText()
+            val array = JSONArray(text)
+            parsePlacemarksArray(array)
+        } catch (e: Exception) {
+            DebugLogger.error("❌ Failed to load saved placemarks: ${e.message}")
+            mutableListOf()
+        }
+    }
+
+    fun savePlacemarks(context: Context, placemarks: List<SavedPlacemarkDto>) {
+        try {
+            val array = serializePlacemarksArray(placemarks)
+            val file = File(context.filesDir, PLACEMARKS_FILE_NAME)
+            file.writeText(array.toString(2))
+        } catch (e: Exception) {
+            DebugLogger.error("❌ Failed to save placemarks to storage: ${e.message}")
+        }
+    }
+
+    private fun parsePlacemarksArray(pmArr: JSONArray?): MutableList<SavedPlacemarkDto> {
+        val placemarks = mutableListOf<SavedPlacemarkDto>()
+        if (pmArr == null) return placemarks
+        for (i in 0 until pmArr.length()) {
+            val pmObj = pmArr.getJSONObject(i)
+            val pmPoints = mutableListOf<SavedPointDto>()
+            val pmPtsArr = pmObj.optJSONArray("points")
+            if (pmPtsArr != null) {
+                for (j in 0 until pmPtsArr.length()) {
+                    val pt = pmPtsArr.getJSONObject(j)
+                    pmPoints.add(
+                        SavedPointDto(
+                            lat = pt.getDouble("lat"),
+                            lon = pt.getDouble("lon"),
+                            alt = pt.optDouble("alt", 0.0)
+                        )
+                    )
+                }
+            }
+
+            val polygons = mutableListOf<List<SavedPointDto>>()
+            val polyArr = pmObj.optJSONArray("polygons")
+            if (polyArr != null) {
+                for (j in 0 until polyArr.length()) {
+                    val ringArr = polyArr.getJSONArray(j)
+                    val ring = mutableListOf<SavedPointDto>()
+                    for (k in 0 until ringArr.length()) {
+                        val pt = ringArr.getJSONObject(k)
+                        ring.add(
+                            SavedPointDto(
+                                lat = pt.getDouble("lat"),
+                                lon = pt.getDouble("lon"),
+                                alt = pt.optDouble("alt", 0.0)
+                            )
+                        )
+                    }
+                    polygons.add(ring)
+                }
+            }
+
+            placemarks.add(
+                SavedPlacemarkDto(
+                    name = pmObj.optString("name", ""),
+                    description = pmObj.optString("description", ""),
+                    styleUrl = pmObj.optString("styleUrl", ""),
+                    geometryType = pmObj.optString("geometryType", "LINESTRING"),
+                    points = pmPoints,
+                    polygons = polygons,
+                    lineColor = if (pmObj.has("lineColor")) pmObj.getInt("lineColor") else null,
+                    lineWidth = if (pmObj.has("lineWidth")) pmObj.getDouble("lineWidth").toFloat() else null,
+                    polyColor = if (pmObj.has("polyColor")) pmObj.getInt("polyColor") else null
+                )
+            )
+        }
+        return placemarks
+    }
+
+    private fun serializePlacemarksArray(placemarks: List<SavedPlacemarkDto>): JSONArray {
+        val pmArr = JSONArray()
+        for (pm in placemarks) {
+            pmArr.put(JSONObject().apply {
+                put("name", pm.name)
+                put("description", pm.description)
+                put("styleUrl", pm.styleUrl)
+                put("geometryType", pm.geometryType)
+
+                val pmPts = JSONArray()
+                for (p in pm.points) {
+                    pmPts.put(JSONObject().apply {
+                        put("lat", p.lat)
+                        put("lon", p.lon)
+                        put("alt", p.alt)
+                    })
+                }
+                put("points", pmPts)
+
+                val polyArr = JSONArray()
+                for (ring in pm.polygons) {
+                    val ringArr = JSONArray()
+                    for (p in ring) {
+                        ringArr.put(JSONObject().apply {
+                            put("lat", p.lat)
+                            put("lon", p.lon)
+                            put("alt", p.alt)
+                        })
+                    }
+                    polyArr.put(ringArr)
+                }
+                put("polygons", polyArr)
+
+                pm.lineColor?.let { put("lineColor", it) }
+                pm.lineWidth?.let { put("lineWidth", it) }
+                pm.polyColor?.let { put("polyColor", it) }
+            })
+        }
+        return pmArr
+    }
+
     private fun parseRouteDto(obj: JSONObject): SavedRouteDto {
         val id = obj.optString("id", UUID.randomUUID().toString())
         val name = obj.optString("name", "Route")
@@ -102,61 +225,7 @@ object RouteStorageManager {
             }
         }
 
-        val placemarks = mutableListOf<SavedPlacemarkDto>()
-        val pmArr = obj.optJSONArray("placemarks")
-        if (pmArr != null) {
-            for (i in 0 until pmArr.length()) {
-                val pmObj = pmArr.getJSONObject(i)
-                val pmPoints = mutableListOf<SavedPointDto>()
-                val pmPtsArr = pmObj.optJSONArray("points")
-                if (pmPtsArr != null) {
-                    for (j in 0 until pmPtsArr.length()) {
-                        val pt = pmPtsArr.getJSONObject(j)
-                        pmPoints.add(
-                            SavedPointDto(
-                                lat = pt.getDouble("lat"),
-                                lon = pt.getDouble("lon"),
-                                alt = pt.optDouble("alt", 0.0)
-                            )
-                        )
-                    }
-                }
-
-                val polygons = mutableListOf<List<SavedPointDto>>()
-                val polyArr = pmObj.optJSONArray("polygons")
-                if (polyArr != null) {
-                    for (j in 0 until polyArr.length()) {
-                        val ringArr = polyArr.getJSONArray(j)
-                        val ring = mutableListOf<SavedPointDto>()
-                        for (k in 0 until ringArr.length()) {
-                            val pt = ringArr.getJSONObject(k)
-                            ring.add(
-                                SavedPointDto(
-                                    lat = pt.getDouble("lat"),
-                                    lon = pt.getDouble("lon"),
-                                    alt = pt.optDouble("alt", 0.0)
-                                )
-                            )
-                        }
-                        polygons.add(ring)
-                    }
-                }
-
-                placemarks.add(
-                    SavedPlacemarkDto(
-                        name = pmObj.optString("name", ""),
-                        description = pmObj.optString("description", ""),
-                        styleUrl = pmObj.optString("styleUrl", ""),
-                        geometryType = pmObj.optString("geometryType", "LINESTRING"),
-                        points = pmPoints,
-                        polygons = polygons,
-                        lineColor = if (pmObj.has("lineColor")) pmObj.getInt("lineColor") else null,
-                        lineWidth = if (pmObj.has("lineWidth")) pmObj.getDouble("lineWidth").toFloat() else null,
-                        polyColor = if (pmObj.has("polyColor")) pmObj.getInt("polyColor") else null
-                    )
-                )
-            }
-        }
+        val placemarks = parsePlacemarksArray(obj.optJSONArray("placemarks"))
 
         return SavedRouteDto(
             id = id,
@@ -197,44 +266,9 @@ object RouteStorageManager {
             }
             put("points", ptsArr)
 
-            val pmArr = JSONArray()
-            for (pm in route.placemarks) {
-                pmArr.put(JSONObject().apply {
-                    put("name", pm.name)
-                    put("description", pm.description)
-                    put("styleUrl", pm.styleUrl)
-                    put("geometryType", pm.geometryType)
-
-                    val pmPts = JSONArray()
-                    for (p in pm.points) {
-                        pmPts.put(JSONObject().apply {
-                            put("lat", p.lat)
-                            put("lon", p.lon)
-                            put("alt", p.alt)
-                        })
-                    }
-                    put("points", pmPts)
-
-                    val polyArr = JSONArray()
-                    for (ring in pm.polygons) {
-                        val ringArr = JSONArray()
-                        for (p in ring) {
-                            ringArr.put(JSONObject().apply {
-                                put("lat", p.lat)
-                                put("lon", p.lon)
-                                put("alt", p.alt)
-                            })
-                        }
-                        polyArr.put(ringArr)
-                    }
-                    put("polygons", polyArr)
-
-                    pm.lineColor?.let { put("lineColor", it) }
-                    pm.lineWidth?.let { put("lineWidth", it) }
-                    pm.polyColor?.let { put("polyColor", it) }
-                })
+            if (route.placemarks.isNotEmpty()) {
+                put("placemarks", serializePlacemarksArray(route.placemarks))
             }
-            put("placemarks", pmArr)
         }
     }
 }
