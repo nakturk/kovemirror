@@ -88,9 +88,22 @@ object KmlParser {
         var pmName = ""
         var pmDescription = ""
         var pmStyleUrl = ""
+        var pmInlineStyle: KmlStyle? = null
         var pmGeometryType = KmlGeometryType.LINESTRING
         var pmPoints = mutableListOf<GeoPoint>()
         var pmPolygons = mutableListOf<List<GeoPoint>>()
+
+        fun resetCurrentStyleVars() {
+            currentStyleId = ""
+            currentLineColor = null
+            currentLineWidth = null
+            currentIconHref = null
+            currentIconScale = 1.0f
+            currentIconColor = null
+            currentPolyColor = null
+            currentFill = true
+            currentOutline = true
+        }
 
         var currentCoordinatesText = StringBuilder()
         var inCoordinates = false
@@ -105,17 +118,10 @@ object KmlParser {
                         "Document" -> inDocument = true
                         "Style" -> {
                             inStyle = true
+                            resetCurrentStyleVars()
                             if (!inPlacemark) {
                                 currentStyleId = parser.getAttributeValue(null, "id") ?: ""
                             }
-                            currentLineColor = null
-                            currentLineWidth = null
-                            currentIconHref = null
-                            currentIconScale = 1.0f
-                            currentIconColor = null
-                            currentPolyColor = null
-                            currentFill = true
-                            currentOutline = true
                         }
                         "IconStyle" -> inIconStyle = true
                         "LineStyle" -> inLineStyle = true
@@ -129,9 +135,11 @@ object KmlParser {
                             pmName = ""
                             pmDescription = ""
                             pmStyleUrl = ""
+                            pmInlineStyle = null
                             pmGeometryType = KmlGeometryType.LINESTRING
                             pmPoints = mutableListOf()
                             pmPolygons = mutableListOf()
+                            resetCurrentStyleVars()
                         }
                         "Point" -> if (inPlacemark) pmGeometryType = KmlGeometryType.POINT
                         "LineString" -> if (inPlacemark) pmGeometryType = KmlGeometryType.LINESTRING
@@ -190,19 +198,25 @@ object KmlParser {
                         "LineStyle" -> inLineStyle = false
                         "PolyStyle" -> inPolyStyle = false
                         "Style" -> {
-                            if (!inPlacemark && currentStyleId.isNotEmpty()) {
-                                stylesMap[currentStyleId] = KmlStyle(
-                                    id = currentStyleId,
-                                    lineColor = currentLineColor,
-                                    lineWidth = currentLineWidth,
-                                    iconHref = currentIconHref,
-                                    iconScale = currentIconScale,
-                                    iconColor = currentIconColor,
-                                    polyColor = currentPolyColor,
-                                    fill = currentFill,
-                                    outline = currentOutline
-                                )
+                            val builtStyle = KmlStyle(
+                                id = currentStyleId,
+                                lineColor = currentLineColor,
+                                lineWidth = currentLineWidth,
+                                iconHref = currentIconHref,
+                                iconScale = currentIconScale,
+                                iconColor = currentIconColor,
+                                polyColor = currentPolyColor,
+                                fill = currentFill,
+                                outline = currentOutline
+                            )
+                            if (inPlacemark) {
+                                if (currentIconHref != null || currentLineColor != null || currentPolyColor != null || currentLineWidth != null) {
+                                    pmInlineStyle = builtStyle
+                                }
+                            } else if (currentStyleId.isNotEmpty()) {
+                                stylesMap[currentStyleId] = builtStyle
                             }
+                            resetCurrentStyleVars()
                             inStyle = false
                         }
                         "Pair" -> {
@@ -227,20 +241,9 @@ object KmlParser {
                         "Placemark" -> {
                             // Resolve StyleMap alias if present
                             val resolvedStyleUrl = styleMapAliases[pmStyleUrl] ?: pmStyleUrl
-                            val matchedStyle = stylesMap[resolvedStyleUrl] ?: if (currentIconHref != null || currentLineColor != null) {
-                                KmlStyle(
-                                    lineColor = currentLineColor,
-                                    lineWidth = currentLineWidth,
-                                    iconHref = currentIconHref,
-                                    iconScale = currentIconScale,
-                                    iconColor = currentIconColor,
-                                    polyColor = currentPolyColor,
-                                    fill = currentFill,
-                                    outline = currentOutline
-                                )
-                            } else null
+                            val matchedStyle = stylesMap[resolvedStyleUrl] ?: pmInlineStyle
 
-                            val iconHref = matchedStyle?.iconHref ?: currentIconHref
+                            val iconHref = matchedStyle?.iconHref
                             val iconBmp = loadIconBitmap(iconHref, assetDir)
 
                             placemarks.add(
@@ -255,6 +258,8 @@ object KmlParser {
                                     iconBitmap = iconBmp
                                 )
                             )
+                            pmInlineStyle = null
+                            resetCurrentStyleVars()
                             inPlacemark = false
                         }
                         "Document" -> inDocument = false
