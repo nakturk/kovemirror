@@ -1,11 +1,14 @@
 package com.kove.mirror
 
+import android.net.Network
+import java.io.FileDescriptor
 import java.io.IOException
 import java.io.InputStream
 import java.io.OutputStream
 import java.net.InetSocketAddress
 import java.net.ServerSocket
 import java.net.Socket
+import java.net.SocketImpl
 import java.net.SocketTimeoutException
 import java.nio.charset.StandardCharsets
 import java.util.concurrent.atomic.AtomicBoolean
@@ -13,6 +16,7 @@ import java.util.concurrent.atomic.AtomicLong
 
 class TcpServer(
     private val hostIp: String?,
+    private val wifiNetwork: Network? = null,
     private val width: Int,
     private val height: Int,
     private val videoEnabled: Boolean = true,
@@ -153,17 +157,50 @@ class TcpServer(
         }
     }
 
+    // ─── Network Socket Binding Helpers ───────────────────────────
+
+    private fun createBoundServerSocket(port: Int): ServerSocket {
+        val ss = ServerSocket()
+        ss.reuseAddress = true
+        bindServerSocketToNetwork(ss, wifiNetwork)
+        if (!hostIp.isNullOrEmpty() && hostIp != "0.0.0.0") {
+            ss.bind(InetSocketAddress(hostIp, port))
+        } else {
+            ss.bind(InetSocketAddress(port))
+        }
+        return ss
+    }
+
+    private fun bindServerSocketToNetwork(ss: ServerSocket, network: Network?) {
+        if (network == null) return
+        try {
+            val getImplMethod = ServerSocket::class.java.getDeclaredMethod("getImpl")
+            getImplMethod.isAccessible = true
+            val socketImpl = getImplMethod.invoke(ss)
+            val getFdMethod = SocketImpl::class.java.getDeclaredMethod("getFileDescriptor")
+            getFdMethod.isAccessible = true
+            val fd = getFdMethod.invoke(socketImpl) as? FileDescriptor
+            if (fd != null && fd.valid()) {
+                network.bindSocket(fd)
+            }
+        } catch (_: Throwable) {
+            // Fallback: ServerSocket is bound to Wi-Fi interface IP (hostIp)
+            // and accepted client sockets are bound via network.bindSocket(socket)
+        }
+    }
+
+    private fun bindClientSocketToNetwork(socket: Socket) {
+        val network = wifiNetwork ?: return
+        try {
+            network.bindSocket(socket)
+        } catch (_: Throwable) {}
+    }
+
     // ─── Video Server (Port 15456) ─────────────────────────────────
 
     private fun runVideoServer() {
         try {
-            val ss = ServerSocket()
-            ss.reuseAddress = true
-            if (!hostIp.isNullOrEmpty() && hostIp != "0.0.0.0") {
-                ss.bind(InetSocketAddress(hostIp, PORT_VIDEO))
-            } else {
-                ss.bind(InetSocketAddress(PORT_VIDEO))
-            }
+            val ss = createBoundServerSocket(PORT_VIDEO)
             videoServerSocket = ss
 
             DebugLogger.success(R.string.log_video_socket_opened, PORT_VIDEO)
@@ -172,6 +209,7 @@ class TcpServer(
                 try {
                     ss.soTimeout = ACCEPT_TIMEOUT_MS
                     val socket = ss.accept() ?: continue
+                    bindClientSocketToNetwork(socket)
                     videoClientSocket = socket
 
                     DebugLogger.success(R.string.log_tft_video_connected_ip, socket.inetAddress.hostAddress ?: "", socket.port)
@@ -303,13 +341,7 @@ class TcpServer(
 
     private fun runControlServer() {
         try {
-            val ss = ServerSocket()
-            ss.reuseAddress = true
-            if (!hostIp.isNullOrEmpty() && hostIp != "0.0.0.0") {
-                ss.bind(InetSocketAddress(hostIp, PORT_CONTROL))
-            } else {
-                ss.bind(InetSocketAddress(PORT_CONTROL))
-            }
+            val ss = createBoundServerSocket(PORT_CONTROL)
             controlServerSocket = ss
             DebugLogger.success(R.string.log_control_socket_opened, PORT_CONTROL)
 
@@ -317,6 +349,7 @@ class TcpServer(
                 try {
                     ss.soTimeout = ACCEPT_TIMEOUT_MS
                     val socket = ss.accept() ?: continue
+                    bindClientSocketToNetwork(socket)
                     controlClientSocket = socket
                     DebugLogger.success(R.string.log_tft_control_connected_ip, socket.inetAddress.hostAddress ?: "", socket.port)
                     handleControlClient(socket)
@@ -545,13 +578,7 @@ class TcpServer(
 
     private fun runHeartbeatServer() {
         try {
-            val ss = ServerSocket()
-            ss.reuseAddress = true
-            if (!hostIp.isNullOrEmpty() && hostIp != "0.0.0.0") {
-                ss.bind(InetSocketAddress(hostIp, PORT_HEARTBEAT))
-            } else {
-                ss.bind(InetSocketAddress(PORT_HEARTBEAT))
-            }
+            val ss = createBoundServerSocket(PORT_HEARTBEAT)
             heartbeatServerSocket = ss
             DebugLogger.success(R.string.log_hb_socket_opened, PORT_HEARTBEAT)
 
@@ -559,6 +586,7 @@ class TcpServer(
                 try {
                     ss.soTimeout = ACCEPT_TIMEOUT_MS
                     val socket = ss.accept() ?: continue
+                    bindClientSocketToNetwork(socket)
                     
                     // Close previous socket if still open
                     try { heartbeatClientSocket?.close() } catch (_: Exception) {}

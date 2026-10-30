@@ -88,6 +88,7 @@ class MirrorService : Service() {
     private var bleManager:          BleManager?          = null
     private var screenStateManager:  ScreenStateManager?  = null
     private var wifiNetworkCallback: ConnectivityManager.NetworkCallback? = null
+    @Volatile private var wifiNetwork: Network? = null
     private var tcpServerStarted = false
     private var isControlOnlyMode = false
     private var isVideoConnected = false
@@ -463,11 +464,13 @@ class MirrorService : Service() {
             tcpServer = null
         }
 
-        val ipAddress = NetworkUtils.getWifiIpAddress(applicationContext)
+        val currentWifiNetwork = wifiNetwork
+        val ipAddress = NetworkUtils.getWifiIpAddress(applicationContext, currentWifiNetwork)
         DebugLogger.info("🔌 TCP Server starting, bind IP: $ipAddress (controlOnly=$isControlOnlyMode)")
 
         val server = TcpServer(
             hostIp = ipAddress,
+            wifiNetwork = currentWifiNetwork,
             width  = TFT_WIDTH,
             height = TFT_HEIGHT,
             videoEnabled = !isControlOnlyMode,
@@ -517,7 +520,7 @@ class MirrorService : Service() {
         server.start()
         tcpServerStarted = true
 
-        val gw = NetworkUtils.getGatewayAddress(applicationContext)
+        val gw = NetworkUtils.getGatewayAddress(applicationContext, currentWifiNetwork)
         DebugLogger.info("─────────────────────────────")
         DebugLogger.info("📡 Phone IP: $ipAddress")
         DebugLogger.info("🏍️ Gateway (TBox): $gw")
@@ -562,23 +565,29 @@ class MirrorService : Service() {
     private fun bindToWifiNetwork() {
         try {
             val connectivityManager = getSystemService(Context.CONNECTIVITY_SERVICE) as ConnectivityManager
+            // Ensure the process is NOT globally bound to the internet-less TFT Wi-Fi network,
+            // so HTTP/HTTPS requests (maps, routing, weather, speed limits, geocoding) continue
+            // to use cellular/mobile data while local TFT sockets bind directly to wifiNetwork.
+            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
+                connectivityManager.bindProcessToNetwork(null)
+            } else {
+                @Suppress("DEPRECATION")
+                ConnectivityManager.setProcessDefaultNetwork(null)
+            }
+
             val request = NetworkRequest.Builder()
                 .addTransportType(NetworkCapabilities.TRANSPORT_WIFI)
+                .removeCapability(NetworkCapabilities.NET_CAPABILITY_INTERNET)
                 .build()
 
             val callback = object : ConnectivityManager.NetworkCallback() {
                 override fun onAvailable(network: Network) {
                     super.onAvailable(network)
                     try {
-                        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
-                            connectivityManager.bindProcessToNetwork(network)
-                            DebugLogger.success(getString(R.string.log_wifi_bound_process))
-                        } else {
-                            @Suppress("DEPRECATION")
-                            ConnectivityManager.setProcessDefaultNetwork(network)
-                            DebugLogger.success(getString(R.string.log_wifi_bound_process_legacy))
-                        }
-                        if (!tcpServerStarted || tcpServer == null) {
+                        val previousNetwork = wifiNetwork
+                        wifiNetwork = network
+                        DebugLogger.success(getString(R.string.log_wifi_bound_process))
+                        if (!tcpServerStarted || tcpServer == null || previousNetwork != network) {
                             Handler(Looper.getMainLooper()).post {
                                 startTcpServer()
                             }
@@ -591,11 +600,8 @@ class MirrorService : Service() {
                 override fun onLost(network: Network) {
                     super.onLost(network)
                     try {
-                        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
-                            connectivityManager.bindProcessToNetwork(null)
-                        } else {
-                            @Suppress("DEPRECATION")
-                            ConnectivityManager.setProcessDefaultNetwork(null)
+                        if (wifiNetwork == network) {
+                            wifiNetwork = null
                         }
                         DebugLogger.warning(getString(R.string.log_wifi_lost))
                     } catch (e: Exception) {
@@ -620,6 +626,7 @@ class MirrorService : Service() {
                 connectivityManager.unregisterNetworkCallback(callback)
                 wifiNetworkCallback = null
             }
+            wifiNetwork = null
             if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
                 val connectivityManager = getSystemService(Context.CONNECTIVITY_SERVICE) as ConnectivityManager
                 connectivityManager.bindProcessToNetwork(null)
