@@ -195,6 +195,11 @@ object HandlebarKeyManager {
         autoConfirmRunnable = null
     }
 
+    fun forceCloseOverlayMenu() {
+        cancelAutoConfirmTimer()
+        isOverlayMenuOpen = false
+    }
+
     /**
      * Parses JSON string received from TFT (via BLE notification or TCP Port 17818).
      * Format: {"msg_id": 27, "func": "MUSIC", "act": "control", "status": [0|1|2|3]}

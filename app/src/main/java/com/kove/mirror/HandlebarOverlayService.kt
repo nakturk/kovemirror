@@ -79,6 +79,9 @@ class HandlebarOverlayService : Service() {
     }
 
     override fun onStartCommand(intent: Intent?, flags: Int, startId: Int): Int {
+        if (indicatorView == null) {
+            createIndicatorView()
+        }
         return START_STICKY
     }
 
@@ -100,6 +103,9 @@ class HandlebarOverlayService : Service() {
 
     private fun showMenu() {
         mainHandler.post {
+            if (indicatorView == null) {
+                createIndicatorView()
+            }
             if (overlayView != null) {
                 // Already showing, just update
                 updateHighlight(HandlebarKeyManager.highlightedIndex)
@@ -116,11 +122,8 @@ class HandlebarOverlayService : Service() {
         mainHandler.post {
             mainHandler.removeCallbacks(autoHideRunnable)
             overlayView?.visibility = View.GONE
-            HandlebarKeyManager.isOverlayMenuOpen.let {
-                if (it) {
-                    // Force close the overlay state
-                    // (handlebar key manager also sets this, but just in case)
-                }
+            if (HandlebarKeyManager.isOverlayMenuOpen) {
+                HandlebarKeyManager.forceCloseOverlayMenu()
             }
         }
     }
@@ -236,6 +239,8 @@ class HandlebarOverlayService : Service() {
     // ─── Small Active Mode Indicator (always visible) ─────────
 
     private fun createIndicatorView() {
+        if (indicatorView != null || !android.provider.Settings.canDrawOverlays(this)) return
+
         val dp = { value: Int ->
             TypedValue.applyDimension(TypedValue.COMPLEX_UNIT_DIP, value.toFloat(), resources.displayMetrics).toInt()
         }
@@ -273,12 +278,16 @@ class HandlebarOverlayService : Service() {
             windowManager?.addView(tv, params)
             indicatorView = tv
         } catch (e: Exception) {
+            activeModeIndicator = null
             DebugLogger.error("❌ Failed to add indicator: ${e.message}")
         }
     }
 
     private fun showActiveModeIndicator(mode: HandlebarActionMode) {
         mainHandler.post {
+            if (indicatorView == null) {
+                createIndicatorView()
+            }
             val modeName = mode.getDisplayName(this)
             activeModeIndicator?.text = "🎮 ▲▼: $modeName"
             Toast.makeText(this, getString(R.string.toast_handlebar_mode_assigned, modeName), Toast.LENGTH_SHORT).show()
