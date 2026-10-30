@@ -155,8 +155,11 @@ class KovePresentation(
 
         // Apply saved top/bottom padding to fit motorcycle TFT cluster bezel
         val prefs = context.getSharedPreferences("kove_map_prefs", Context.MODE_PRIVATE)
-        val topDp = prefs.getInt("map_top_padding_dp", MirrorService.TFT_TOP_PADDING_DP)
-        val bottomDp = prefs.getInt("map_bottom_padding_dp", MirrorService.TFT_BOTTOM_PADDING_DP)
+        val mainPrefs = context.getSharedPreferences("kove_prefs", Context.MODE_PRIVATE)
+        val fallbackTop = mainPrefs.getInt("tft_top_padding_dp", MirrorService.TFT_TOP_PADDING_DP)
+        val fallbackBottom = mainPrefs.getInt("tft_bottom_padding_dp", MirrorService.TFT_BOTTOM_PADDING_DP)
+        val topDp = prefs.getInt("map_top_padding_dp", fallbackTop)
+        val bottomDp = prefs.getInt("map_bottom_padding_dp", fallbackBottom)
         val density = context.resources.displayMetrics.density
         val topPx = (topDp * density).toInt()
         val bottomPx = (bottomDp * density).toInt()

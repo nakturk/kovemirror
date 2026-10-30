@@ -1534,8 +1534,12 @@ class MapActivity : AppCompatActivity() {
 
     private fun showTftPaddingDialog() {
         val prefs = getSharedPreferences("kove_map_prefs", MODE_PRIVATE)
-        var currentTop = prefs.getInt("map_top_padding_dp", 0)
-        var currentBottom = prefs.getInt("map_bottom_padding_dp", 0)
+        val mainPrefs = getSharedPreferences("kove_prefs", MODE_PRIVATE)
+        val savedTop = prefs.getInt("map_top_padding_dp", mainPrefs.getInt("tft_top_padding_dp", 0))
+        val savedBottom = prefs.getInt("map_bottom_padding_dp", mainPrefs.getInt("tft_bottom_padding_dp", 0))
+        var currentTop = savedTop
+        var currentBottom = savedBottom
+        var isSaved = false
 
         val view = LayoutInflater.from(this).inflate(R.layout.dialog_tft_padding, null)
         val dialog = androidx.appcompat.app.AlertDialog.Builder(this)
@@ -1598,13 +1602,26 @@ class MapActivity : AppCompatActivity() {
         }
 
         btnSave.setOnClickListener {
+            isSaved = true
             prefs.edit().apply {
                 putInt("map_top_padding_dp", currentTop)
                 putInt("map_bottom_padding_dp", currentBottom)
                 apply()
             }
+            mainPrefs.edit().apply {
+                putInt("tft_top_padding_dp", currentTop)
+                putInt("tft_bottom_padding_dp", currentBottom)
+                apply()
+            }
+            MirrorService.updatePadding(currentTop, currentBottom)
             Toast.makeText(this, getString(R.string.toast_tft_fit_saved), Toast.LENGTH_SHORT).show()
             dialog.dismiss()
+        }
+
+        dialog.setOnDismissListener {
+            if (!isSaved) {
+                applyTftPadding(savedTop, savedBottom)
+            }
         }
 
         dialog.show()
