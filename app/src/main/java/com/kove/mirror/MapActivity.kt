@@ -2568,6 +2568,10 @@ class MapActivity : AppCompatActivity() {
         updateTrackColorBorders()
         updatePreview()
 
+        btnClose?.setOnClickListener {
+            dialog.dismiss()
+        }
+
         btnCancel.setOnClickListener {
             dialog.dismiss()
         }
