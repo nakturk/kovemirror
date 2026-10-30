@@ -2762,74 +2762,122 @@ class MapActivity : AppCompatActivity() {
         showDistance: Boolean = true,
         intervalKm: Int = 5
     ) {
-        try {
-            val scaleFactor = getSharedPreferences("kove_map_prefs", MODE_PRIVATE).getFloat("map_tiles_scale_factor", 1.0f)
-            val fileName = getFileNameFromUri(uri)?.ifEmpty { "Imported Route" } ?: "Imported Route"
-            val kmlDoc = RouteImportHelper.parseKmlDocument(this, uri)
-            if (kmlDoc != null && kmlDoc.placemarks.isNotEmpty()) {
-                var importedCount = 0
-                val allPoints = mutableListOf<GeoPoint>()
+        val scaleFactor = getSharedPreferences("kove_map_prefs", MODE_PRIVATE).getFloat("map_tiles_scale_factor", 1.0f)
+        val fileName = getFileNameFromUri(uri)?.ifEmpty { "Imported Route" } ?: "Imported Route"
 
-                for (pm in kmlDoc.placemarks) {
-                    if (pm.geometryType == KmlGeometryType.POINT && pm.points.isNotEmpty()) {
-                        loadedKmlPlacemarks.add(pm)
-                        val pt = pm.points.first()
-                        allPoints.add(pt)
+        Thread({
+            try {
+                val kmlDoc = RouteImportHelper.parseKmlDocument(this, uri)
+                if (kmlDoc != null && kmlDoc.placemarks.isNotEmpty()) {
+                    runOnUiThread {
+                        if (isFinishing || isDestroyed) return@runOnUiThread
+                        var importedCount = 0
+                        val allPoints = mutableListOf<GeoPoint>()
 
-                        val compositeBmp = PoiMarkerHelper.createCompositePoiBitmap(
-                            this,
-                            pm.name,
-                            pm.description,
-                            pm.iconBitmap,
-                            scaleFactor
-                        )
+                        for (pm in kmlDoc.placemarks) {
+                            if (pm.geometryType == KmlGeometryType.POINT && pm.points.isNotEmpty()) {
+                                loadedKmlPlacemarks.add(pm)
+                                val pt = pm.points.first()
+                                allPoints.add(pt)
 
-                        val marker = Marker(mapView).apply {
-                            position = pt
-                            title = pm.name.ifEmpty { "POI" }
-                            snippet = pm.description
-                            icon = android.graphics.drawable.BitmapDrawable(resources, compositeBmp)
-                            setAnchor(Marker.ANCHOR_LEFT, Marker.ANCHOR_CENTER)
+                                val compositeBmp = PoiMarkerHelper.createCompositePoiBitmap(
+                                    this,
+                                    pm.name,
+                                    pm.description,
+                                    pm.iconBitmap,
+                                    scaleFactor
+                                )
 
-                            setOnMarkerClickListener { m, _ ->
-                                m.showInfoWindow()
-                                if (pm.description.isNotEmpty()) {
-                                    showPoiDescriptionDialog(pm.name, pm.description, pt)
+                                val marker = Marker(mapView).apply {
+                                    position = pt
+                                    title = pm.name.ifEmpty { "POI" }
+                                    snippet = pm.description
+                                    icon = android.graphics.drawable.BitmapDrawable(resources, compositeBmp)
+                                    setAnchor(Marker.ANCHOR_LEFT, Marker.ANCHOR_CENTER)
+
+                                    setOnMarkerClickListener { m, _ ->
+                                        m.showInfoWindow()
+                                        if (pm.description.isNotEmpty()) {
+                                            showPoiDescriptionDialog(pm.name, pm.description, pt)
+                                        }
+                                        true
+                                    }
                                 }
-                                true
-                            }
-                        }
-                        kmlMarkers.add(marker)
-                        mapView.overlays.add(marker)
-                        importedCount++
-                    } else if (pm.polygons.isNotEmpty()) {
-                        loadedKmlPlacemarks.add(pm)
-                        for (ring in pm.polygons) {
-                            if (ring.size >= 3) {
-                                allPoints.addAll(ring)
-                                val polyColor = pm.inlineStyle?.polyColor ?: color
-                                val polygon = org.osmdroid.views.overlay.Polygon().apply {
-                                    points = ring
-                                    fillPaint.color = polyColor
-                                    outlinePaint.color = pm.inlineStyle?.lineColor ?: color
-                                    outlinePaint.strokeWidth = (pm.inlineStyle?.lineWidth ?: width) * resources.displayMetrics.density
+                                kmlMarkers.add(marker)
+                                mapView.overlays.add(marker)
+                                importedCount++
+                            } else if (pm.polygons.isNotEmpty()) {
+                                loadedKmlPlacemarks.add(pm)
+                                for (ring in pm.polygons) {
+                                    if (ring.size >= 3) {
+                                        allPoints.addAll(ring)
+                                        val polyColor = pm.inlineStyle?.polyColor ?: color
+                                        val polygon = org.osmdroid.views.overlay.Polygon().apply {
+                                            points = ring
+                                            fillPaint.color = polyColor
+                                            outlinePaint.color = pm.inlineStyle?.lineColor ?: color
+                                            outlinePaint.strokeWidth = (pm.inlineStyle?.lineWidth ?: width) * resources.displayMetrics.density
+                                        }
+                                        kmlPolygons.add(polygon)
+                                        mapView.overlays.add(polygon)
+                                        importedCount++
+                                    }
                                 }
-                                kmlPolygons.add(polygon)
-                                mapView.overlays.add(polygon)
+                            } else if (pm.points.size >= 2) {
+                                allPoints.addAll(pm.points)
+                                val lineColor = pm.inlineStyle?.lineColor ?: color
+                                val lineWidth = pm.inlineStyle?.lineWidth ?: width
+
+                                val route = LoadedRoute(
+                                    name = pm.name.ifEmpty { "KML Track ${loadedRoutes.size + 1}" },
+                                    groupName = fileName,
+                                    points = pm.points,
+                                    color = lineColor,
+                                    width = lineWidth,
+                                    visible = true,
+                                    showDirectionArrows = showArrows,
+                                    arrowColor = arrowColor,
+                                    showDistanceMarkers = showDistance,
+                                    distanceIntervalKm = intervalKm
+                                )
+
+                                updateRouteOverlays(route)
+                                loadedRoutes.add(route)
                                 importedCount++
                             }
                         }
-                    } else if (pm.points.size >= 2) {
-                        allPoints.addAll(pm.points)
-                        val lineColor = pm.inlineStyle?.lineColor ?: color
-                        val lineWidth = pm.inlineStyle?.lineWidth ?: width
 
+                        expandedGroups.add(fileName)
+                        saveCurrentRoutesToStorage()
+                        mapView.invalidate()
+                        refresh3dRoutes()
+                        if (allPoints.isNotEmpty()) zoomToFitPoints(allPoints)
+
+                        val btnRouteList = findViewById<Button>(R.id.btnRouteList)
+                        btnRouteList.visibility = if (loadedRoutes.isNotEmpty()) View.VISIBLE else View.GONE
+                        Toast.makeText(this, getString(R.string.map_import_success, importedCount), Toast.LENGTH_SHORT).show()
+                        refreshRouteList()
+                    }
+                    return@Thread
+                }
+
+                // Fallback for standard GPX files
+                val parsedRoutes = RouteImportHelper.parseUri(this, uri)
+
+                runOnUiThread {
+                    if (isFinishing || isDestroyed) return@runOnUiThread
+                    if (parsedRoutes.isEmpty()) {
+                        Toast.makeText(this, getString(R.string.map_import_no_routes), Toast.LENGTH_SHORT).show()
+                        return@runOnUiThread
+                    }
+
+                    for (parsed in parsedRoutes) {
                         val route = LoadedRoute(
-                            name = pm.name.ifEmpty { "KML Track ${loadedRoutes.size + 1}" },
+                            name = parsed.name,
                             groupName = fileName,
-                            points = pm.points,
-                            color = lineColor,
-                            width = lineWidth,
+                            points = parsed.points,
+                            color = color,
+                            width = width,
                             visible = true,
                             showDirectionArrows = showArrows,
                             arrowColor = arrowColor,
@@ -2839,78 +2887,42 @@ class MapActivity : AppCompatActivity() {
 
                         updateRouteOverlays(route)
                         loadedRoutes.add(route)
-                        importedCount++
+                        nextColorIndex++
+                    }
+
+                    expandedGroups.add(fileName)
+                    saveCurrentRoutesToStorage()
+                    mapView.invalidate()
+                    refresh3dRoutes()
+
+                    if (parsedRoutes.isNotEmpty()) {
+                        val allPoints = parsedRoutes.flatMap { it.points }
+                        zoomToFitPoints(allPoints)
+                    }
+
+                    val btnRouteList = findViewById<Button>(R.id.btnRouteList)
+                    btnRouteList.visibility = if (loadedRoutes.isNotEmpty()) View.VISIBLE else View.GONE
+
+                    Toast.makeText(
+                        this,
+                        getString(R.string.map_import_success, parsedRoutes.size),
+                        Toast.LENGTH_SHORT
+                    ).show()
+
+                    refreshRouteList()
+                }
+            } catch (e: Exception) {
+                runOnUiThread {
+                    if (!isFinishing && !isDestroyed) {
+                        Toast.makeText(
+                            this,
+                            getString(R.string.map_import_error, e.message ?: "Unknown"),
+                            Toast.LENGTH_LONG
+                        ).show()
                     }
                 }
-
-                expandedGroups.add(fileName)
-                saveCurrentRoutesToStorage()
-                mapView.invalidate()
-                refresh3dRoutes()
-                if (allPoints.isNotEmpty()) zoomToFitPoints(allPoints)
-
-                val btnRouteList = findViewById<Button>(R.id.btnRouteList)
-                btnRouteList.visibility = if (loadedRoutes.isNotEmpty()) View.VISIBLE else View.GONE
-                Toast.makeText(this, getString(R.string.map_import_success, importedCount), Toast.LENGTH_SHORT).show()
-                refreshRouteList()
-                return
             }
-
-            // Fallback for standard GPX files
-            val parsedRoutes = RouteImportHelper.parseUri(this, uri)
-
-            if (parsedRoutes.isEmpty()) {
-                Toast.makeText(this, getString(R.string.map_import_no_routes), Toast.LENGTH_SHORT).show()
-                return
-            }
-
-            for (parsed in parsedRoutes) {
-                val route = LoadedRoute(
-                    name = parsed.name,
-                    groupName = fileName,
-                    points = parsed.points,
-                    color = color,
-                    width = width,
-                    visible = true,
-                    showDirectionArrows = showArrows,
-                    arrowColor = arrowColor,
-                    showDistanceMarkers = showDistance,
-                    distanceIntervalKm = intervalKm
-                )
-
-                updateRouteOverlays(route)
-                loadedRoutes.add(route)
-                nextColorIndex++
-            }
-
-            expandedGroups.add(fileName)
-            saveCurrentRoutesToStorage()
-            mapView.invalidate()
-            refresh3dRoutes()
-
-            if (parsedRoutes.isNotEmpty()) {
-                val allPoints = parsedRoutes.flatMap { it.points }
-                zoomToFitPoints(allPoints)
-            }
-
-            val btnRouteList = findViewById<Button>(R.id.btnRouteList)
-            btnRouteList.visibility = if (loadedRoutes.isNotEmpty()) View.VISIBLE else View.GONE
-
-            Toast.makeText(
-                this,
-                getString(R.string.map_import_success, parsedRoutes.size),
-                Toast.LENGTH_SHORT
-            ).show()
-
-            refreshRouteList()
-
-        } catch (e: Exception) {
-            Toast.makeText(
-                this,
-                getString(R.string.map_import_error, e.message ?: "Unknown"),
-                Toast.LENGTH_LONG
-            ).show()
-        }
+        }, "KoveMirror-RouteImport").start()
     }
 
     private fun showPoiDescriptionDialog(title: String, descriptionHtml: String, point: GeoPoint) {
