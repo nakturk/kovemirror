@@ -456,11 +456,11 @@ class MainActivity : AppCompatActivity() {
                 // Control Only Mode — no screen capture or motorcycle WiFi required
                 startControlOnly()
             } else {
-                // Mirroring Mode — requires motorcycle WiFi
+                // Mirroring Mode — allow starting even if Wi-Fi is not connected yet,
+                // so BLE handshake can wake up the TFT Wi-Fi AP and bindToWifiNetwork() will start TCP server once connected.
                 val ip = NetworkUtils.getWifiIpAddress(this)
                 if (ip.startsWith("0.0") || ip == "null") {
-                    Toast.makeText(this, getString(R.string.wifi_required_toast), Toast.LENGTH_LONG).show()
-                    return
+                    DebugLogger.warning(getString(R.string.wifi_required_toast))
                 }
 
                 val presetIdx = binding.spTftResolution.selectedItemPosition.coerceIn(0, tftPresets.size - 1)
