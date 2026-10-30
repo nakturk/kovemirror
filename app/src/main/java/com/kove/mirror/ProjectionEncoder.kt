@@ -48,12 +48,14 @@ class ProjectionEncoder(
     var bottomPaddingPx: Int = 0,
     val displayMode: DisplayMode = DisplayMode.CENTER_CROP,
     val phoneAspectRatio: Float = 0.45f,
-    private val context: android.content.Context? = null
+    private val context: android.content.Context? = null,
+    existingVirtualDisplay: VirtualDisplay? = null
 ) {
 
     private var mediaCodec:       MediaCodec?         = null
     private var inputSurface:     Surface?            = null
-    private var virtualDisplay:   VirtualDisplay?     = null
+    var virtualDisplay:           VirtualDisplay?     = existingVirtualDisplay
+        private set
     private var oesRenderer:      OesTextureRenderer? = null
     private var encoderThread:    Thread?             = null
     private val mainHandler = Handler(Looper.getMainLooper())
@@ -137,21 +139,35 @@ class ProjectionEncoder(
             DebugLogger.info(R.string.log_vd_creating)
             DebugLogger.info("   VD Resolution    : ${vdWidth}×${vdHeight}")
             DebugLogger.info(R.string.log_codec_output_res, width, height)
-            val vdFlags = DisplayManager.VIRTUAL_DISPLAY_FLAG_AUTO_MIRROR
 
-            virtualDisplay = mediaProjection.createVirtualDisplay(
-                "KoveMirror",
-                vdWidth, vdHeight, dpi,
-                vdFlags,
-                vdSurface,
-                null, null
-            )
-            DebugLogger.success(R.string.log_vd_ready, displayMode.name)
+            val existingVd = virtualDisplay
+            if (existingVd != null) {
+                existingVd.resize(vdWidth, vdHeight, dpi)
+                existingVd.surface = vdSurface
+                DebugLogger.success("🔄 Reused existing VirtualDisplay (${vdWidth}×${vdHeight}, mode=${displayMode.name})")
+            } else {
+                val vdFlags = DisplayManager.VIRTUAL_DISPLAY_FLAG_AUTO_MIRROR
+                virtualDisplay = mediaProjection.createVirtualDisplay(
+                    "KoveMirror",
+                    vdWidth, vdHeight, dpi,
+                    vdFlags,
+                    vdSurface,
+                    null, null
+                )
+                DebugLogger.success(R.string.log_vd_ready, displayMode.name)
+            }
             true
 
         } catch (e: Exception) {
             DebugLogger.error(R.string.log_encoder_init_error, e.message ?: "")
             e.printStackTrace()
+            try { oesRenderer?.release() } catch (_: Exception) {}
+            try { mediaCodec?.stop() } catch (_: Exception) {}
+            try { mediaCodec?.release() } catch (_: Exception) {}
+            try { inputSurface?.release() } catch (_: Exception) {}
+            oesRenderer = null
+            mediaCodec = null
+            inputSurface = null
             false
         }
     }
@@ -261,7 +277,7 @@ class ProjectionEncoder(
 
     // ─── cleanup ─────────────────────────────────────────────────
 
-    fun stop() {
+    fun stop(releaseVirtualDisplay: Boolean = false) {
         streaming.set(false)
         try {
             encoderThread?.interrupt()
@@ -269,12 +285,16 @@ class ProjectionEncoder(
         } catch (_: Exception) {}
         encoderThread = null
 
-        try { virtualDisplay?.release() } catch (_: Exception) {}
+        if (releaseVirtualDisplay) {
+            try { virtualDisplay?.release() } catch (_: Exception) {}
+            virtualDisplay = null
+        } else {
+            try { virtualDisplay?.surface = null } catch (_: Exception) {}
+        }
         try { oesRenderer?.release() } catch (_: Exception) {}
         try { mediaCodec?.stop()    } catch (_: Exception) {}
         try { mediaCodec?.release() } catch (_: Exception) {}
         try { inputSurface?.release()   } catch (_: Exception) {}
-        virtualDisplay = null
         oesRenderer    = null
         mediaCodec     = null
         inputSurface   = null

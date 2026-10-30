@@ -4,6 +4,7 @@ import android.app.*
 import android.content.Context
 import android.content.Intent
 import android.content.pm.ServiceInfo
+import android.hardware.display.VirtualDisplay
 import android.media.projection.MediaProjection
 import android.media.projection.MediaProjectionManager
 import android.net.ConnectivityManager
@@ -85,6 +86,7 @@ class MirrorService : Service() {
     private var projectionEncoder:   ProjectionEncoder?   = null
     private var presentationEncoder: PresentationEncoder? = null
     private var mediaProjection:     MediaProjection?     = null
+    private var projectionVirtualDisplay: VirtualDisplay? = null
     private var bleManager:          BleManager?          = null
     private var screenStateManager:  ScreenStateManager?  = null
     private var wifiNetworkCallback: ConnectivityManager.NetworkCallback? = null
@@ -202,17 +204,21 @@ class MirrorService : Service() {
         val code = cachedResultCode
         val data = cachedResultData
         if (code != 0 && data != null) {
+            // On Android 14+ (targetSdk 34), the MediaProjection permission token is single-use.
+            // Consume and clear it immediately so getMediaProjection() is never called twice with the same token.
+            cachedResultCode = 0
+            cachedResultData = null
             try {
                 val pm = getSystemService(MEDIA_PROJECTION_SERVICE) as MediaProjectionManager
                 val projection = pm.getMediaProjection(code, data)
                 if (projection != null) {
                     mediaProjection = projection
                     registerProjectionCallback(projection)
-                    DebugLogger.info("🔄 MediaProjection re-created from cached permission token")
+                    DebugLogger.info("🔄 MediaProjection created from permission token")
                     return projection
                 }
             } catch (e: Exception) {
-                DebugLogger.error("❌ Failed to obtain MediaProjection from cache: ${e.message}")
+                DebugLogger.error("❌ Failed to obtain MediaProjection: ${e.message}")
             }
         }
         return null
@@ -224,8 +230,10 @@ class MirrorService : Service() {
                 DebugLogger.warning("⚠️ MediaProjection stopped by system (Screen off / Projection revoked)")
                 mediaProjection = null
                 synchronized(modeLock) {
-                    projectionEncoder?.stop()
+                    projectionEncoder?.stop(releaseVirtualDisplay = true)
                     projectionEncoder = null
+                    try { projectionVirtualDisplay?.release() } catch (_: Exception) {}
+                    projectionVirtualDisplay = null
                     if (presentationEncoder == null && isVideoConnected) {
                         DebugLogger.info("🔄 Seamlessly switching to VirtualDisplay Presentation mode...")
                         Handler(Looper.getMainLooper()).post {
@@ -234,11 +242,20 @@ class MirrorService : Service() {
                     }
                 }
             }
-        }, null)
+        }, Handler(Looper.getMainLooper()))
     }
 
     private fun startMirroring(resultCode: Int, data: Intent) {
         try {
+            synchronized(modeLock) {
+                projectionEncoder?.stop(releaseVirtualDisplay = true)
+                projectionEncoder = null
+                try { projectionVirtualDisplay?.release() } catch (_: Exception) {}
+                projectionVirtualDisplay = null
+            }
+            mediaProjection?.stop()
+            mediaProjection = null
+
             cachedResultCode = resultCode
             cachedResultData = data
 
@@ -398,16 +415,19 @@ class MirrorService : Service() {
                 bottomPaddingPx = bottomPx,
                 displayMode = DISPLAY_MODE,
                 phoneAspectRatio = PHONE_ASPECT_RATIO,
-                context = applicationContext
+                context = applicationContext,
+                existingVirtualDisplay = projectionVirtualDisplay
             )
             projectionEncoder = encoder
             if (encoder.init()) {
+                projectionVirtualDisplay = encoder.virtualDisplay
                 encoder.startEncoding { nalData ->
                     tcpServer?.writeData(nalData)
                 }
                 updateNotif(getString(R.string.notif_tft_connected))
                 DebugLogger.success("✅ MediaProjection screen encoder active")
             } else {
+                projectionEncoder = null
                 DebugLogger.error("❌ MediaProjection encoder init failed")
             }
         } catch (e: Exception) {
@@ -543,8 +563,10 @@ class MirrorService : Service() {
         unbindFromWifiNetwork()
         isVideoConnected = false
         synchronized(modeLock) {
-            projectionEncoder?.stop()
+            projectionEncoder?.stop(releaseVirtualDisplay = true)
             projectionEncoder = null
+            try { projectionVirtualDisplay?.release() } catch (_: Exception) {}
+            projectionVirtualDisplay = null
             presentationEncoder?.stop()
             presentationEncoder = null
         }
