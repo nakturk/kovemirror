@@ -302,13 +302,13 @@ class HandlebarOverlayService : Service() {
             HandlebarActionMode.MY_LOCATION -> {
                 DebugLogger.info("🎮 Action: Get back to my location")
                 Toast.makeText(this, getString(R.string.toast_my_location), Toast.LENGTH_SHORT).show()
-                val intent = Intent("com.kove.mirror.ACTION_MY_LOCATION")
+                val intent = Intent("com.kove.mirror.ACTION_MY_LOCATION").setPackage(packageName)
                 sendBroadcast(intent)
             }
             HandlebarActionMode.TOGGLE_3D -> {
                 DebugLogger.info("🎮 Action: Toggle 3D / 2D Map")
                 Toast.makeText(this, getString(R.string.handlebar_mode_toggle_3d), Toast.LENGTH_SHORT).show()
-                val intent = Intent("com.kove.mirror.ACTION_TOGGLE_3D")
+                val intent = Intent("com.kove.mirror.ACTION_TOGGLE_3D").setPackage(packageName)
                 sendBroadcast(intent)
             }
             HandlebarActionMode.ZOOM -> {
@@ -322,7 +322,7 @@ class HandlebarOverlayService : Service() {
                         svc?.performZoom(zoomIn = false)
                     }
                     HandlebarKey.ENTER -> {
-                        val intent = Intent("com.kove.mirror.ACTION_MY_LOCATION")
+                        val intent = Intent("com.kove.mirror.ACTION_MY_LOCATION").setPackage(packageName)
                         sendBroadcast(intent)
                     }
                     else -> {}
@@ -339,7 +339,7 @@ class HandlebarOverlayService : Service() {
                         svc?.performPan("down")
                     }
                     HandlebarKey.ENTER -> {
-                        val intent = Intent("com.kove.mirror.ACTION_MY_LOCATION")
+                        val intent = Intent("com.kove.mirror.ACTION_MY_LOCATION").setPackage(packageName)
                         sendBroadcast(intent)
                     }
                     else -> {}
@@ -356,7 +356,7 @@ class HandlebarOverlayService : Service() {
                         svc?.performPan("right")
                     }
                     HandlebarKey.ENTER -> {
-                        val intent = Intent("com.kove.mirror.ACTION_MY_LOCATION")
+                        val intent = Intent("com.kove.mirror.ACTION_MY_LOCATION").setPackage(packageName)
                         sendBroadcast(intent)
                     }
                     else -> {}
