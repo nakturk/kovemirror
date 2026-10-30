@@ -133,12 +133,23 @@ class PresentationEncoder(
 
     private fun showDefaultPresentation(display: Display) {
         try {
-            val p = KovePresentation(context, display)
+            val displayContext = context.createDisplayContext(display)
+            val p = KovePresentation(displayContext, display)
+            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O && android.provider.Settings.canDrawOverlays(context)) {
+                p.window?.setType(android.view.WindowManager.LayoutParams.TYPE_APPLICATION_OVERLAY)
+            }
             p.show()
             presentation = p
             DebugLogger.success("🏍️ [PresentationEncoder] Internal Map Presentation shown on VirtualDisplay")
         } catch (e: Exception) {
-            DebugLogger.error("❌ Failed to show KovePresentation: ${e.message}")
+            try {
+                val pFallback = KovePresentation(context, display)
+                pFallback.show()
+                presentation = pFallback
+                DebugLogger.success("🏍️ [PresentationEncoder] Internal Map Presentation shown on VirtualDisplay (fallback)")
+            } catch (e2: Exception) {
+                DebugLogger.error("❌ Failed to show KovePresentation: ${e2.message}")
+            }
         }
     }
 

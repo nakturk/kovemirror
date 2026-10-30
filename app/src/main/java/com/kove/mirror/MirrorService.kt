@@ -441,7 +441,7 @@ class MirrorService : Service() {
             val targetPkg = prefs.getString("secondary_target_package", null)
 
             val encoder = PresentationEncoder(
-                context = applicationContext,
+                context = this,
                 width  = TFT_WIDTH,
                 height = TFT_HEIGHT,
                 dpi = 320,
