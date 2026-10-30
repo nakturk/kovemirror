@@ -3569,6 +3569,9 @@ class MapActivity : AppCompatActivity() {
         super.onPause()
         try { unregisterReceiver(handlebarActionReceiver) } catch (_: Exception) {}
         HandlebarKeyManager.removeListener(handlebarKeyListener)
+        if (currentLayer == LAYER_3D) {
+            sync3dCameraTo2d()
+        }
         mapView.onPause()
         mapView3d.onPause()
 
