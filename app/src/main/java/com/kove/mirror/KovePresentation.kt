@@ -213,7 +213,17 @@ class KovePresentation(
         }
 
         val provider = GpsMyLocationProvider(context)
-        myLocationOverlay = MyLocationNewOverlay(provider, mapView).apply {
+        myLocationOverlay = object : MyLocationNewOverlay(provider, mapView) {
+            override fun onLocationChanged(
+                location: Location?,
+                source: org.osmdroid.views.overlay.mylocation.IMyLocationProvider?
+            ) {
+                super.onLocationChanged(location, source)
+                if (location != null && !MapStateHolder.isMapOpen) {
+                    this@KovePresentation.onLocationChanged(location)
+                }
+            }
+        }.apply {
             enableMyLocation()
             enableFollowLocation()
         }
@@ -298,19 +308,9 @@ class KovePresentation(
     }
 
     private fun setupLocationTracking() {
-        try {
-            locationManager = context.getSystemService(Context.LOCATION_SERVICE) as? LocationManager
-            val providers = listOfNotNull(
-                if (locationManager?.isProviderEnabled(LocationManager.GPS_PROVIDER) == true) LocationManager.GPS_PROVIDER else null,
-                if (locationManager?.isProviderEnabled(LocationManager.NETWORK_PROVIDER) == true) LocationManager.NETWORK_PROVIDER else null
-            )
-            for (p in providers) {
-                locationManager?.requestLocationUpdates(p, 1000L, 1f, this)
-            }
-            DebugLogger.info("📍 [TFT Presentation] Location tracking active with providers: $providers")
-        } catch (e: Exception) {
-            DebugLogger.error("❌ [TFT Presentation] Location init error: ${e.message}")
-        }
+        // Location updates are already provided by MyLocationNewOverlay (GpsMyLocationProvider)
+        // when MapActivity is closed, or by MapActivity via MapStateHolder when MapActivity is open.
+        DebugLogger.info("📍 [TFT Presentation] Location tracking active via MyLocationNewOverlay / MapStateHolder")
     }
 
     private val weatherMarkers = mutableListOf<Marker>()
@@ -471,9 +471,10 @@ class KovePresentation(
     private fun updateLocationMetrics(location: GeoPoint, bearing: Float, speedKmH: Int, altitude: Double) {
         tvSpeedValue.text = speedKmH.toString()
 
-        val dir = if (bearing > 0f) getCompassDirection(bearing.toInt()) else "N"
-        if (bearing > 0f) {
-            tvHeadingValue.text = "$dir ${bearing.toInt()}°"
+        val normalizedBearing = ((bearing % 360f) + 360f) % 360f
+        val dir = getCompassDirection(normalizedBearing.toInt())
+        if (bearing >= 0f) {
+            tvHeadingValue.text = "$dir ${normalizedBearing.toInt()}°"
         }
 
         if (altitude != 0.0) {
@@ -646,6 +647,8 @@ class KovePresentation(
     override fun onStop() {
         MapStateHolder.removeListener(this)
         try {
+            myLocationOverlay?.disableMyLocation()
+            myLocationOverlay?.disableFollowLocation()
             locationManager?.removeUpdates(this)
         } catch (_: Exception) {}
         try {
