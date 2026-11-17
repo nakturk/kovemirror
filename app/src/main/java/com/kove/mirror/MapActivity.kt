@@ -114,6 +114,81 @@ class MapActivity : AppCompatActivity() {
     private var currentNavigationRoute: NavigationHelper.NavigationRoute? = null
     private var initialTotalDurationSeconds: Double = 0.0
     private var lastKnownSegmentIndex: Int = 0
+    private var isPublishingToStateHolder = false
+
+    private inline fun publishToStateHolder(block: () -> Unit) {
+        isPublishingToStateHolder = true
+        try {
+            block()
+        } finally {
+            isPublishingToStateHolder = false
+        }
+    }
+
+    private val externalStateListener = object : MapStateHolder.StateListener {
+        override fun onNavigationStateChanged(
+            isNavigating: Boolean,
+            route: NavigationHelper.NavigationRoute?
+        ) {
+            if (isPublishingToStateHolder) return
+            val dest = MapStateHolder.selectedDestination
+            runOnUiThread {
+                if (!isNavigating && this@MapActivity.isNavigating) {
+                    stopNavigation()
+                } else if (isNavigating && route != null && this@MapActivity.currentNavigationRoute !== route) {
+                    applyExternalNavigationRoute(route, dest)
+                }
+            }
+        }
+
+        override fun onRoutesChanged(routes: List<MapStateHolder.SharedRoute>) {
+            if (isPublishingToStateHolder) return
+            runOnUiThread {
+                applyExternalRoutesSync(routes)
+            }
+        }
+
+        override fun onLocationUpdated(
+            location: GeoPoint,
+            bearing: Float,
+            speedKmH: Int,
+            altitude: Double
+        ) {
+        }
+
+        override fun onLayerChanged(layer: Int) {
+            if (isPublishingToStateHolder) return
+            runOnUiThread {
+                if (layer != currentLayer && layer != LAYER_3D) {
+                    switchLayer(layer)
+                }
+            }
+        }
+
+        override fun onCameraChanged(center: GeoPoint, zoom: Double, bearing: Float) {}
+
+        override fun onWeatherUpdated(weatherPoints: List<RouteWeatherHelper.RouteWeatherPoint>) {
+            if (isPublishingToStateHolder) return
+            val enabled = MapStateHolder.showRouteWeather
+            runOnUiThread {
+                showRouteWeather = enabled
+                updateWeatherButtonState(enabled)
+                displayWeatherMarkersLocally(if (enabled) weatherPoints else emptyList())
+            }
+        }
+
+        override fun onFuelStationsUpdated(fuelStations: List<RouteFuelHelper.FuelStation>) {
+            if (isPublishingToStateHolder) return
+            val enabled = MapStateHolder.showRouteFuel
+            runOnUiThread {
+                showRouteFuel = enabled
+                updateFuelButtonState(enabled)
+                displayFuelMarkersLocally(if (enabled) fuelStations else emptyList())
+            }
+        }
+
+        override fun onCurvesUpdated(curves: List<CurveWarningHelper.CurvePoint>) {}
+    }
 
     // ─── Route Weather Forecast ──────────────────────────────────
     private val weatherMarkers2d = mutableListOf<Marker>()
@@ -836,10 +911,12 @@ class MapActivity : AppCompatActivity() {
                     initialTotalDurationSeconds = route.totalDurationSeconds
                     isNavigating = true
 
-                    MapStateHolder.isNavigating = true
-                    MapStateHolder.activeNavigationRoute = route
-                    MapStateHolder.selectedDestination = dest
-                    MapStateHolder.notifyNavigationChanged()
+                    publishToStateHolder {
+                        MapStateHolder.isNavigating = true
+                        MapStateHolder.activeNavigationRoute = route
+                        MapStateHolder.selectedDestination = dest
+                        MapStateHolder.notifyNavigationChanged()
+                    }
 
                     map3d?.setNavigationRoute(
                         route.geometryPoints.map { LatLng(it.latitude, it.longitude) }
@@ -899,10 +976,12 @@ class MapActivity : AppCompatActivity() {
         currentNavigationRoute = null
         selectedDestination = null
 
-        MapStateHolder.isNavigating = false
-        MapStateHolder.activeNavigationRoute = null
-        MapStateHolder.selectedDestination = null
-        MapStateHolder.notifyNavigationChanged()
+        publishToStateHolder {
+            MapStateHolder.isNavigating = false
+            MapStateHolder.activeNavigationRoute = null
+            MapStateHolder.selectedDestination = null
+            MapStateHolder.notifyNavigationChanged()
+        }
 
         map3d?.setNavigationRoute(null)
         map3d?.setDestination(null)
@@ -1136,6 +1215,10 @@ class MapActivity : AppCompatActivity() {
                         return@runOnUiThread
                     }
                     currentNavigationRoute = newRoute
+                    publishToStateHolder {
+                        MapStateHolder.activeNavigationRoute = newRoute
+                        MapStateHolder.notifyNavigationChanged()
+                    }
 
                     map3d?.setNavigationRoute(
                         newRoute.geometryPoints.map { LatLng(it.latitude, it.longitude) }
@@ -1325,12 +1408,14 @@ class MapActivity : AppCompatActivity() {
     private fun setupWeatherButtonListener() {
         val prefs = getSharedPreferences("kove_map_prefs", MODE_PRIVATE)
         showRouteWeather = prefs.getBoolean("show_route_weather", true)
+        MapStateHolder.showRouteWeather = showRouteWeather
         updateWeatherButtonState(showRouteWeather)
         updateWeatherButtonVisibility()
 
         findViewById<Button>(R.id.btnWeatherToggle)?.setOnClickListener {
             showRouteWeather = !showRouteWeather
             prefs.edit().putBoolean("show_route_weather", showRouteWeather).apply()
+            MapStateHolder.showRouteWeather = showRouteWeather
             updateWeatherButtonState(showRouteWeather)
 
             if (showRouteWeather) {
@@ -1374,8 +1459,39 @@ class MapActivity : AppCompatActivity() {
     }
 
     private fun renderRouteWeatherMarkers(weatherPoints: List<RouteWeatherHelper.RouteWeatherPoint>) {
-        clearRouteWeatherMarkers()
-        if (!showRouteWeather || weatherPoints.isEmpty()) return
+        if (!showRouteWeather || weatherPoints.isEmpty()) {
+            clearRouteWeatherMarkers()
+            return
+        }
+
+        displayWeatherMarkersLocally(weatherPoints)
+
+        // Sync to MapStateHolder / Presentation
+        publishToStateHolder {
+            MapStateHolder.showRouteWeather = showRouteWeather
+            MapStateHolder.updateWeatherPoints(weatherPoints)
+        }
+    }
+
+    private fun clearRouteWeatherMarkers() {
+        displayWeatherMarkersLocally(emptyList())
+        publishToStateHolder {
+            MapStateHolder.showRouteWeather = showRouteWeather
+            MapStateHolder.updateWeatherPoints(emptyList())
+        }
+    }
+
+    private fun displayWeatherMarkersLocally(weatherPoints: List<RouteWeatherHelper.RouteWeatherPoint>) {
+        for (m in weatherMarkers2d) {
+            mapView.overlays.remove(m)
+        }
+        weatherMarkers2d.clear()
+
+        if (weatherPoints.isEmpty()) {
+            map3d?.setWeatherPoints(emptyList())
+            mapView.invalidate()
+            return
+        }
 
         for (w in weatherPoints) {
             val badgeBitmap = RouteWeatherHelper.createWeatherBadgeBitmap(this, w)
@@ -1400,7 +1516,6 @@ class MapActivity : AppCompatActivity() {
         }
         mapView.invalidate()
 
-        // 3D Map updates
         val weather3d = weatherPoints.map {
             Map3dOverlays.WeatherData(
                 org.maplibre.android.geometry.LatLng(it.point.latitude, it.point.longitude),
@@ -1408,19 +1523,6 @@ class MapActivity : AppCompatActivity() {
             )
         }
         map3d?.setWeatherPoints(weather3d)
-
-        // Sync to MapStateHolder / Presentation
-        MapStateHolder.updateWeatherPoints(weatherPoints)
-    }
-
-    private fun clearRouteWeatherMarkers() {
-        for (m in weatherMarkers2d) {
-            mapView.overlays.remove(m)
-        }
-        weatherMarkers2d.clear()
-        map3d?.setWeatherPoints(emptyList())
-        MapStateHolder.updateWeatherPoints(emptyList())
-        mapView.invalidate()
     }
 
     // ─── Route Fuel Stations System ──────────────────────────────
@@ -1439,6 +1541,7 @@ class MapActivity : AppCompatActivity() {
     private fun setupFuelButtonListener() {
         val prefs = getSharedPreferences("kove_map_prefs", MODE_PRIVATE)
         showRouteFuel = prefs.getBoolean("show_route_fuel", true)
+        MapStateHolder.showRouteFuel = showRouteFuel
         fuelCorridorMeters = prefs.getInt("fuel_corridor_meters", RouteFuelHelper.DEFAULT_CORRIDOR_METERS)
         updateFuelButtonState(showRouteFuel)
         updateWeatherButtonVisibility()
@@ -1447,6 +1550,7 @@ class MapActivity : AppCompatActivity() {
         btnFuel?.setOnClickListener {
             showRouteFuel = !showRouteFuel
             prefs.edit().putBoolean("show_route_fuel", showRouteFuel).apply()
+            MapStateHolder.showRouteFuel = showRouteFuel
             updateFuelButtonState(showRouteFuel)
 
             if (showRouteFuel) {
@@ -1564,8 +1668,38 @@ class MapActivity : AppCompatActivity() {
     }
 
     private fun renderRouteFuelMarkers(stations: List<RouteFuelHelper.FuelStation>) {
-        clearRouteFuelMarkers()
-        if (!showRouteFuel || stations.isEmpty()) return
+        if (!showRouteFuel || stations.isEmpty()) {
+            clearRouteFuelMarkers()
+            return
+        }
+
+        displayFuelMarkersLocally(stations)
+
+        publishToStateHolder {
+            MapStateHolder.showRouteFuel = showRouteFuel
+            MapStateHolder.updateFuelStations(stations)
+        }
+    }
+
+    private fun clearRouteFuelMarkers() {
+        displayFuelMarkersLocally(emptyList())
+        publishToStateHolder {
+            MapStateHolder.showRouteFuel = showRouteFuel
+            MapStateHolder.updateFuelStations(emptyList())
+        }
+    }
+
+    private fun displayFuelMarkersLocally(stations: List<RouteFuelHelper.FuelStation>) {
+        for (m in fuelMarkers2d) {
+            mapView.overlays.remove(m)
+        }
+        fuelMarkers2d.clear()
+
+        if (stations.isEmpty()) {
+            map3d?.setFuelStations(emptyList())
+            mapView.invalidate()
+            return
+        }
 
         for (station in stations) {
             val badgeBitmap = RouteFuelHelper.createFuelBadgeBitmap(this, station)
@@ -1598,18 +1732,6 @@ class MapActivity : AppCompatActivity() {
             )
         }
         map3d?.setFuelStations(fuel3d)
-
-        MapStateHolder.updateFuelStations(stations)
-    }
-
-    private fun clearRouteFuelMarkers() {
-        for (m in fuelMarkers2d) {
-            mapView.overlays.remove(m)
-        }
-        fuelMarkers2d.clear()
-        map3d?.setFuelStations(emptyList())
-        MapStateHolder.updateFuelStations(emptyList())
-        mapView.invalidate()
     }
 
     private fun showFuelStationDialog(station: RouteFuelHelper.FuelStation) {
@@ -1896,8 +2018,10 @@ class MapActivity : AppCompatActivity() {
     private fun switchLayer(layer: Int) {
         val prevLayer = currentLayer
         currentLayer = layer
-        MapStateHolder.currentLayer = layer
-        MapStateHolder.notifyLayerChanged()
+        publishToStateHolder {
+            MapStateHolder.currentLayer = layer
+            MapStateHolder.notifyLayerChanged()
+        }
         if (layer == LAYER_MAPS || layer == LAYER_TOPO || layer == LAYER_SATELLITE ||
             layer == LAYER_GOOGLE_MAPS || layer == LAYER_GOOGLE_SAT || layer == LAYER_GOOGLE_HYBRID ||
             layer == LAYER_OFFLINE
@@ -3567,24 +3691,26 @@ class MapActivity : AppCompatActivity() {
     }
 
     private fun syncRoutesToStateHolder() {
-        MapStateHolder.loadedRoutes.clear()
-        for (r in loadedRoutes) {
-            MapStateHolder.loadedRoutes.add(
-                MapStateHolder.SharedRoute(
-                    id = r.id,
-                    name = r.name,
-                    points = r.points,
-                    color = r.color,
-                    width = r.width,
-                    visible = r.visible,
-                    showDirectionArrows = r.showDirectionArrows,
-                    arrowColor = r.arrowColor,
-                    showDistanceMarkers = r.showDistanceMarkers,
-                    distanceIntervalKm = r.distanceIntervalKm
+        publishToStateHolder {
+            MapStateHolder.loadedRoutes.clear()
+            for (r in loadedRoutes) {
+                MapStateHolder.loadedRoutes.add(
+                    MapStateHolder.SharedRoute(
+                        id = r.id,
+                        name = r.name,
+                        points = r.points,
+                        color = r.color,
+                        width = r.width,
+                        visible = r.visible,
+                        showDirectionArrows = r.showDirectionArrows,
+                        arrowColor = r.arrowColor,
+                        showDistanceMarkers = r.showDistanceMarkers,
+                        distanceIntervalKm = r.distanceIntervalKm
+                    )
                 )
-            )
+            }
+            MapStateHolder.notifyRoutesChanged()
         }
-        MapStateHolder.notifyRoutesChanged()
     }
 
     private fun loadSavedRoutesFromStorage() {
@@ -3990,23 +4116,119 @@ class MapActivity : AppCompatActivity() {
         return super.dispatchKeyEvent(event)
     }
 
+    // ─── Android Auto / External Two-Way Sync ───────────────────
+
+    private fun applyExternalNavigationRoute(
+        route: NavigationHelper.NavigationRoute,
+        dest: GeoPoint?
+    ) {
+        currentNavigationRoute = route
+        selectedDestination = dest ?: route.geometryPoints.lastOrNull()
+        initialTotalDurationSeconds = route.totalDurationSeconds
+        lastKnownSegmentIndex = 0
+        isNavigating = true
+
+        findViewById<LinearLayout>(R.id.destCard).visibility = View.GONE
+        findViewById<LinearLayout>(R.id.navBanner).visibility = View.VISIBLE
+        val prefs = getSharedPreferences("kove_map_prefs", MODE_PRIVATE)
+        findViewById<Button>(R.id.btnTollToggle)?.visibility = View.VISIBLE
+        updateTollButtonState(prefs.getBoolean("nav_avoid_tolls", false))
+
+        map3d?.setNavigationRoute(
+            route.geometryPoints.map { LatLng(it.latitude, it.longitude) }
+        )
+
+        navigationPolyline?.let { mapView.overlays.remove(it) }
+        navigationPolyline = Polyline().apply {
+            setPoints(route.geometryPoints)
+            outlinePaint.color = Color.parseColor("#2563EB")
+            outlinePaint.strokeWidth = getZoomScaledLineWidthPx(5.5f)
+            outlinePaint.strokeCap = android.graphics.Paint.Cap.ROUND
+            outlinePaint.strokeJoin = android.graphics.Paint.Join.ROUND
+            outlinePaint.isAntiAlias = true
+        }
+        mapView.overlays.add(navigationPolyline)
+        mapView.invalidate()
+
+        val loc = locationOverlay?.myLocation ?: MapStateHolder.lastLocation ?: route.geometryPoints.firstOrNull()
+        if (loc != null) {
+            updateNavigationUi(loc)
+        }
+        updateWeatherButtonVisibility()
+        if (showRouteWeather) refreshRouteWeatherForecast(force = true)
+        if (showCurveWarnings) refreshCurveWarnings()
+        if (showRouteFuel) refreshRouteFuelStations(force = true)
+    }
+
+    private fun applyExternalRoutesSync(routes: List<MapStateHolder.SharedRoute>) {
+        var changed = false
+        for (shared in routes) {
+            val local = loadedRoutes.firstOrNull { it.id == shared.id }
+            if (local != null && local.visible != shared.visible) {
+                local.visible = shared.visible
+                updateRouteOverlays(local)
+                changed = true
+            }
+        }
+        if (changed) {
+            mapView.invalidate()
+            refresh3dRoutes()
+            refreshRouteList()
+            if (showCurveWarnings) {
+                refreshCurveWarnings()
+            }
+        }
+    }
+
     // ─── Lifecycle ──────────────────────────────────────────────
 
     override fun onResume() {
         super.onResume()
-        val center = mapView.mapCenter
         MapStateHolder.isMapOpen = true
-        MapStateHolder.currentLayer = currentLayer
-        MapStateHolder.currentZoom = mapView.zoomLevelDouble
-        MapStateHolder.currentCenter = GeoPoint(center.latitude, center.longitude)
-        MapStateHolder.currentBearing = mapView.mapOrientation
-        MapStateHolder.notifyCameraChanged()
-        MapStateHolder.notifyLayerChanged()
+
+        if (MapStateHolder.isCarSessionActive) {
+            val carLayer = MapStateHolder.currentLayer
+            if (carLayer != currentLayer && carLayer != LAYER_3D && currentLayer != LAYER_3D) {
+                publishToStateHolder {
+                    switchLayer(carLayer)
+                }
+            }
+            applyExternalRoutesSync(MapStateHolder.loadedRoutes.toList())
+            val carRoute = MapStateHolder.activeNavigationRoute
+            if (MapStateHolder.isNavigating && carRoute != null && currentNavigationRoute !== carRoute) {
+                applyExternalNavigationRoute(carRoute, MapStateHolder.selectedDestination)
+            } else if (!MapStateHolder.isNavigating && isNavigating) {
+                publishToStateHolder {
+                    stopNavigation()
+                }
+            }
+            showRouteWeather = MapStateHolder.showRouteWeather
+            updateWeatherButtonState(showRouteWeather)
+            displayWeatherMarkersLocally(
+                if (showRouteWeather) MapStateHolder.routeWeatherPoints.toList() else emptyList()
+            )
+            showRouteFuel = MapStateHolder.showRouteFuel
+            updateFuelButtonState(showRouteFuel)
+            displayFuelMarkersLocally(
+                if (showRouteFuel) MapStateHolder.routeFuelStations.toList() else emptyList()
+            )
+        }
+
+        val center = mapView.mapCenter
+        publishToStateHolder {
+            MapStateHolder.currentLayer = currentLayer
+            MapStateHolder.currentZoom = mapView.zoomLevelDouble
+            MapStateHolder.currentCenter = GeoPoint(center.latitude, center.longitude)
+            MapStateHolder.currentBearing = mapView.mapOrientation
+            MapStateHolder.notifyCameraChanged()
+            MapStateHolder.notifyLayerChanged()
+        }
         syncRoutesToStateHolder()
         updateWeatherButtonVisibility()
         if (showCurveWarnings) {
             refreshCurveWarnings()
         }
+        MapStateHolder.addListener(externalStateListener)
         mapView.onResume()
         mapView3d.onResume()
         HandlebarKeyManager.addListener(handlebarKeyListener)
@@ -4023,6 +4245,7 @@ class MapActivity : AppCompatActivity() {
 
     override fun onPause() {
         super.onPause()
+        MapStateHolder.removeListener(externalStateListener)
         try { unregisterReceiver(handlebarActionReceiver) } catch (_: Exception) {}
         HandlebarKeyManager.removeListener(handlebarKeyListener)
         if (currentLayer == LAYER_3D) {

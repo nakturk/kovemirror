@@ -643,9 +643,10 @@ object RouteFuelHelper {
      */
     fun createFuelBadgeBitmap(
         context: Context,
-        station: FuelStation
+        station: FuelStation,
+        scaleFactor: Float = 1.0f
     ): Bitmap {
-        val density = context.resources.displayMetrics.density
+        val density = context.resources.displayMetrics.density * scaleFactor
 
         val emojiText = "⛽"
         val brandText = station.badgeLabel
@@ -682,6 +683,7 @@ object RouteFuelHelper {
         val totalHeight = (30f * density).toInt().coerceAtLeast(1)
 
         val bitmap = Bitmap.createBitmap(totalWidth, totalHeight, Bitmap.Config.ARGB_8888)
+        bitmap.density = context.resources.displayMetrics.densityDpi
         val canvas = Canvas(bitmap)
 
         val bgPaint = Paint(Paint.ANTI_ALIAS_FLAG).apply {

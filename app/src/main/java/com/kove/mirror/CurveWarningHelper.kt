@@ -197,9 +197,10 @@ object CurveWarningHelper {
      */
     fun createCurveBadgeBitmap(
         context: Context,
-        curve: CurvePoint
+        curve: CurvePoint,
+        scaleFactor: Float = 1.0f
     ): Bitmap {
-        val density = context.resources.displayMetrics.density
+        val density = context.resources.displayMetrics.density * scaleFactor
 
         val (icon, bgColor) = when (curve.curveType) {
             CurveType.HAIRPIN -> Pair("⚠️", Color.parseColor("#DC2626")) // Red (Hairpin / U-Turn)
@@ -222,6 +223,7 @@ object CurveWarningHelper {
         val size = ((iconWidth + padding * 2).coerceAtLeast(26f * density)).toInt()
 
         val bitmap = Bitmap.createBitmap(size, size, Bitmap.Config.ARGB_8888)
+        bitmap.density = context.resources.displayMetrics.densityDpi
         val canvas = Canvas(bitmap)
 
         val bgPaint = Paint(Paint.ANTI_ALIAS_FLAG).apply {

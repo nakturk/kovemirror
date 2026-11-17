@@ -219,9 +219,10 @@ object RouteWeatherHelper {
      */
     fun createWeatherBadgeBitmap(
         context: Context,
-        weather: RouteWeatherPoint
+        weather: RouteWeatherPoint,
+        scaleFactor: Float = 1.0f
     ): Bitmap {
-        val density = context.resources.displayMetrics.density
+        val density = context.resources.displayMetrics.density * scaleFactor
 
         // Colors based on precipitation risk
         val bgColor = when {
@@ -264,6 +265,7 @@ object RouteWeatherHelper {
         val totalHeight = (32f * density).toInt()
 
         val bitmap = Bitmap.createBitmap(totalWidth, totalHeight, Bitmap.Config.ARGB_8888)
+        bitmap.density = context.resources.displayMetrics.densityDpi
         val canvas = Canvas(bitmap)
 
         // Background pill

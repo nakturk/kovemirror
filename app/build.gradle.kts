@@ -116,4 +116,8 @@ dependencies {
     // 3D Map - MapLibre GL Native (3D buildings, tilt/rotate camera).
     // v11.0.0 uses kotlin-stdlib 1.9.x, compatible with project's Kotlin 1.9.22.
     implementation("org.maplibre.gl:android-sdk:11.0.0")
+
+    // Android Auto (Android for Cars App Library)
+    implementation("androidx.car.app:app:1.4.0")
+    implementation("androidx.car.app:app-projected:1.4.0")
 }

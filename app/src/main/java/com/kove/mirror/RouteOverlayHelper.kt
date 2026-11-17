@@ -24,13 +24,15 @@ object RouteOverlayHelper {
         mapView: MapView,
         points: List<GeoPoint>,
         arrowColor: Int,
-        intervalMeters: Double = 3000.0
+        intervalMeters: Double = 3000.0,
+        scaleFactor: Float = 1.0f
     ): List<Marker> {
         if (points.size < 2) return emptyList()
         val markers = mutableListOf<Marker>()
-        val density = context.resources.displayMetrics.density
+        val density = context.resources.displayMetrics.density * scaleFactor
+        val targetDpi = context.resources.displayMetrics.densityDpi
 
-        val arrowBmp = createArrowBitmap(density, arrowColor)
+        val arrowBmp = createArrowBitmap(density, arrowColor, targetDpi)
         val arrowDrawable = BitmapDrawable(context.resources, arrowBmp)
 
         var accumulatedDist = 0.0
@@ -73,11 +75,13 @@ object RouteOverlayHelper {
         context: Context,
         mapView: MapView,
         points: List<GeoPoint>,
-        intervalKm: Int = 5
+        intervalKm: Int = 5,
+        scaleFactor: Float = 1.0f
     ): List<Marker> {
         if (points.size < 2 || intervalKm <= 0) return emptyList()
         val markers = mutableListOf<Marker>()
-        val density = context.resources.displayMetrics.density
+        val density = context.resources.displayMetrics.density * scaleFactor
+        val targetDpi = context.resources.displayMetrics.densityDpi
 
         var accumulatedDist = 0.0
         var currentKmTarget = intervalKm
@@ -96,7 +100,7 @@ object RouteOverlayHelper {
                 val pos = GeoPoint(interpLat, interpLon)
 
                 val badgeText = "$currentKmTarget km"
-                val badgeBmp = createDistanceBadgeBitmap(density, badgeText)
+                val badgeBmp = createDistanceBadgeBitmap(density, badgeText, targetDpi)
 
                 val marker = Marker(mapView).apply {
                     position = pos
@@ -113,9 +117,10 @@ object RouteOverlayHelper {
         return markers
     }
 
-    private fun createArrowBitmap(density: Float, color: Int): Bitmap {
+    private fun createArrowBitmap(density: Float, color: Int, targetDpi: Int): Bitmap {
         val size = (24 * density).toInt().coerceAtLeast(20)
         val bmp = Bitmap.createBitmap(size, size, Bitmap.Config.ARGB_8888)
+        bmp.density = targetDpi
         val canvas = Canvas(bmp)
 
         val fillPaint = Paint(Paint.ANTI_ALIAS_FLAG).apply {
@@ -142,7 +147,7 @@ object RouteOverlayHelper {
         return bmp
     }
 
-    private fun createDistanceBadgeBitmap(density: Float, text: String): Bitmap {
+    private fun createDistanceBadgeBitmap(density: Float, text: String, targetDpi: Int): Bitmap {
         val textPaint = Paint(Paint.ANTI_ALIAS_FLAG).apply {
             textSize = 10f * density
             color = Color.WHITE
@@ -158,6 +163,7 @@ object RouteOverlayHelper {
         val height = (textHeight + paddingY * 2).roundToInt().coerceAtLeast(18)
 
         val bmp = Bitmap.createBitmap(width, height, Bitmap.Config.ARGB_8888)
+        bmp.density = targetDpi
         val canvas = Canvas(bmp)
 
         val bgPaint = Paint(Paint.ANTI_ALIAS_FLAG).apply {
