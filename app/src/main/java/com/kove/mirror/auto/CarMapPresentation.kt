@@ -43,8 +43,17 @@ import org.osmdroid.views.overlay.Polyline
 import org.osmdroid.views.overlay.mylocation.GpsMyLocationProvider
 import org.osmdroid.views.overlay.mylocation.MyLocationNewOverlay
 import java.io.File
+import java.util.Calendar
+import java.util.Locale
+import kotlin.math.acos
+import kotlin.math.asin
+import kotlin.math.atan
+import kotlin.math.cos
+import kotlin.math.floor
 import kotlin.math.ln
 import kotlin.math.roundToInt
+import kotlin.math.sin
+import kotlin.math.tan
 
 /**
  * Android Auto VirtualDisplay Presentation rendering osmdroid map, routes,
@@ -62,6 +71,13 @@ class CarMapPresentation(
     private lateinit var safeAreaContainer: View
     private lateinit var tvSpeedValue: TextView
     private lateinit var tvLayerBadge: TextView
+    private lateinit var tvCompassValue: TextView
+    private lateinit var tvAltitudeValue: TextView
+    private lateinit var tvSunTimesValue: TextView
+
+    private var lastSunDayOfYear = -1
+    private var lastSunLocation: GeoPoint? = null
+    private var cachedSunTimesText = "🌅 --:--  🌇 --:--"
 
     private var myLocationOverlay: MyLocationNewOverlay? = null
     private var isFollowing = true
@@ -177,6 +193,9 @@ class CarMapPresentation(
         safeAreaContainer = findViewById(R.id.carSafeAreaContainer)
         tvSpeedValue = findViewById(R.id.tvCarSpeedValue)
         tvLayerBadge = findViewById(R.id.tvCarLayerBadge)
+        tvCompassValue = findViewById(R.id.tvCarCompassValue)
+        tvAltitudeValue = findViewById(R.id.tvCarAltitudeValue)
+        tvSunTimesValue = findViewById(R.id.tvCarSunTimesValue)
 
         setupMap()
         mapView.onResume()
@@ -322,7 +341,12 @@ class CarMapPresentation(
             mapView.controller.setZoom(MapStateHolder.currentZoom.coerceIn(3.0, 20.0))
             mapView.controller.setCenter(center)
         }
-        tvSpeedValue.text = MapStateHolder.lastSpeedKmH.toString()
+        updateTelemetryHud(
+            location = center,
+            bearing = MapStateHolder.lastBearing,
+            speedKmH = MapStateHolder.lastSpeedKmH,
+            altitude = MapStateHolder.lastAltitude
+        )
     }
 
     // ─── Car Surface Controls ──────────────────────────────────
@@ -560,7 +584,7 @@ class CarMapPresentation(
     override fun onLocationUpdated(location: GeoPoint, bearing: Float, speedKmH: Int, altitude: Double) {
         mainHandler.post {
             if (!::mapView.isInitialized) return@post
-            tvSpeedValue.text = speedKmH.toString()
+            updateTelemetryHud(location, bearing, speedKmH, altitude)
 
             if (isFollowing) {
                 mapView.controller.setCenter(location)
@@ -684,6 +708,111 @@ class CarMapPresentation(
         }
         navigationPolyline?.setPoints(remainingPoints)
         mapView.invalidate()
+    }
+
+    private fun updateTelemetryHud(
+        location: GeoPoint?,
+        bearing: Float,
+        speedKmH: Int,
+        altitude: Double
+    ) {
+        tvSpeedValue.text = speedKmH.toString()
+
+        val normalizedBearing = ((bearing % 360f) + 360f) % 360f
+        val dir = getCompassDirection(normalizedBearing.toInt())
+        tvCompassValue.text = "🧭 $dir ${normalizedBearing.toInt()}°"
+
+        tvAltitudeValue.text = if (altitude != 0.0) {
+            "⛰️ ${altitude.toInt()} m"
+        } else {
+            "⛰️ -- m"
+        }
+
+        val sunLoc = location ?: MapStateHolder.currentCenter
+        if (sunLoc != null && (sunLoc.latitude != 0.0 || sunLoc.longitude != 0.0)) {
+            val cal = Calendar.getInstance()
+            val today = cal.get(Calendar.DAY_OF_YEAR)
+            val prevLoc = lastSunLocation
+            val movedEnough = prevLoc == null || prevLoc.distanceToAsDouble(sunLoc) > 5000.0
+            if (today != lastSunDayOfYear || movedEnough) {
+                val sunrise = computeSunTime(sunLoc.latitude, sunLoc.longitude, isSunrise = true, calendar = cal)
+                val sunset = computeSunTime(sunLoc.latitude, sunLoc.longitude, isSunrise = false, calendar = cal)
+                cachedSunTimesText = "🌅 $sunrise  🌇 $sunset"
+                lastSunDayOfYear = today
+                lastSunLocation = GeoPoint(sunLoc.latitude, sunLoc.longitude)
+            }
+        }
+        tvSunTimesValue.text = cachedSunTimesText
+    }
+
+    private fun getCompassDirection(bearing: Int): String {
+        return when (((bearing + 22.5) / 45).toInt() % 8) {
+            0 -> "N"
+            1 -> "NE"
+            2 -> "E"
+            3 -> "SE"
+            4 -> "S"
+            5 -> "SW"
+            6 -> "W"
+            7 -> "NW"
+            else -> "N"
+        }
+    }
+
+    /**
+     * Offline NOAA/USNO astronomical sunrise & sunset calculator (official 90.833° zenith).
+     */
+    private fun computeSunTime(
+        lat: Double,
+        lon: Double,
+        isSunrise: Boolean,
+        calendar: Calendar = Calendar.getInstance()
+    ): String {
+        val dayOfYear = calendar.get(Calendar.DAY_OF_YEAR)
+        val lngHour = lon / 15.0
+        val t = if (isSunrise) {
+            dayOfYear + ((6.0 - lngHour) / 24.0)
+        } else {
+            dayOfYear + ((18.0 - lngHour) / 24.0)
+        }
+
+        val m = (0.9856 * t) - 3.289
+        var l = m + (1.916 * sin(Math.toRadians(m))) + (0.020 * sin(Math.toRadians(2.0 * m))) + 282.634
+        l = ((l % 360.0) + 360.0) % 360.0
+
+        var ra = Math.toDegrees(atan(0.91764 * tan(Math.toRadians(l))))
+        ra = ((ra % 360.0) + 360.0) % 360.0
+        val lQuadrant = floor(l / 90.0) * 90.0
+        val raQuadrant = floor(ra / 90.0) * 90.0
+        ra = (ra + (lQuadrant - raQuadrant)) / 15.0
+
+        val sinDec = 0.39782 * sin(Math.toRadians(l))
+        val cosDec = cos(asin(sinDec))
+
+        val cosH = (cos(Math.toRadians(90.833)) - (sinDec * sin(Math.toRadians(lat)))) /
+            (cosDec * cos(Math.toRadians(lat)))
+        if (cosH > 1.0 || cosH < -1.0) {
+            return "--:--"
+        }
+
+        var h = if (isSunrise) {
+            360.0 - Math.toDegrees(acos(cosH))
+        } else {
+            Math.toDegrees(acos(cosH))
+        }
+        h /= 15.0
+
+        val localMeanTime = h + ra - (0.06571 * t) - 6.622
+        var utc = localMeanTime - lngHour
+        utc = ((utc % 24.0) + 24.0) % 24.0
+
+        val tzOffsetHours = calendar.timeZone.getOffset(calendar.timeInMillis) / 3_600_000.0
+        val localHours = ((utc + tzOffsetHours) % 24.0 + 24.0) % 24.0
+
+        val totalMinutes = (localHours * 60.0).roundToInt() % (24 * 60)
+        val hour = totalMinutes / 60
+        val minute = totalMinutes % 60
+        return String.format(Locale.US, "%02d:%02d", hour, minute)
     }
 
     override fun onStop() {
