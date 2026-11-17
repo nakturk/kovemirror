@@ -68,6 +68,7 @@ class MapActivity : AppCompatActivity() {
         private const val REQ_FILE_PICK = 200
         private const val REQ_LOCATION_PERM = 201
         private const val REQ_MAP_FILE_PICK = 202
+        private const val REQ_POI_FILE_PICK = 203
 
         private const val LAYER_MAPS = 0
         private const val LAYER_TOPO = 1
@@ -118,6 +119,14 @@ class MapActivity : AppCompatActivity() {
     private val weatherMarkers2d = mutableListOf<Marker>()
     private var showRouteWeather: Boolean = false
     private var lastWeatherFetchMs: Long = 0L
+
+    // ─── Route Fuel Stations ─────────────────────────────────────
+    private val fuelMarkers2d = mutableListOf<Marker>()
+    private var showRouteFuel: Boolean = false
+    private var fuelCorridorMeters: Int = RouteFuelHelper.DEFAULT_CORRIDOR_METERS
+    private var lastFuelFetchMs: Long = 0L
+    private var lastFuelFetchLocation: GeoPoint? = null
+    private var settingsPoiButton: Button? = null
 
     // ─── Sharp Curve & Hairpin Warnings ──────────────────────────
     private var showCurveWarnings: Boolean = true
@@ -870,6 +879,9 @@ class MapActivity : AppCompatActivity() {
                     if (showCurveWarnings) {
                         refreshCurveWarnings()
                     }
+                    if (showRouteFuel) {
+                        refreshRouteFuelStations(force = true)
+                    }
                 }
             },
             onError = { error ->
@@ -912,12 +924,16 @@ class MapActivity : AppCompatActivity() {
         if (loadedRoutes.isEmpty()) {
             clearRouteWeatherMarkers()
             clearCurveMarkers()
+            clearRouteFuelMarkers()
         } else {
             if (showRouteWeather) {
                 refreshRouteWeatherForecast(force = true)
             }
             if (showCurveWarnings) {
                 refreshCurveWarnings()
+            }
+            if (showRouteFuel) {
+                refreshRouteFuelStations(force = true)
             }
         }
     }
@@ -1140,6 +1156,9 @@ class MapActivity : AppCompatActivity() {
                     lastKnownSegmentIndex = 0
                     isRecalculatingRoute = false
                     updateNavigationUi(start)
+                    if (showRouteFuel) {
+                        refreshRouteFuelStations(force = true)
+                    }
                 }
             },
             onError = { error ->
@@ -1283,6 +1302,7 @@ class MapActivity : AppCompatActivity() {
 
         setupTollButtonListener()
         setupWeatherButtonListener()
+        setupFuelButtonListener()
     }
 
     private fun updateWeatherButtonState(enabled: Boolean) {
@@ -1299,6 +1319,7 @@ class MapActivity : AppCompatActivity() {
     private fun updateWeatherButtonVisibility() {
         val hasRouteOrNav = isNavigating || loadedRoutes.isNotEmpty()
         findViewById<Button>(R.id.btnWeatherToggle)?.visibility = if (hasRouteOrNav) View.VISIBLE else View.GONE
+        findViewById<Button>(R.id.btnFuelToggle)?.visibility = if (hasRouteOrNav) View.VISIBLE else View.GONE
     }
 
     private fun setupWeatherButtonListener() {
@@ -1400,6 +1421,221 @@ class MapActivity : AppCompatActivity() {
         map3d?.setWeatherPoints(emptyList())
         MapStateHolder.updateWeatherPoints(emptyList())
         mapView.invalidate()
+    }
+
+    // ─── Route Fuel Stations System ──────────────────────────────
+
+    private fun updateFuelButtonState(enabled: Boolean) {
+        val btn = findViewById<Button>(R.id.btnFuelToggle) ?: return
+        if (enabled) {
+            btn.setBackgroundColor(Color.parseColor("#059669")) // Emerald Green
+            btn.alpha = 1.0f
+        } else {
+            btn.setBackgroundColor(Color.parseColor("#CC333333")) // Grey
+            btn.alpha = 0.6f
+        }
+    }
+
+    private fun setupFuelButtonListener() {
+        val prefs = getSharedPreferences("kove_map_prefs", MODE_PRIVATE)
+        showRouteFuel = prefs.getBoolean("show_route_fuel", true)
+        fuelCorridorMeters = prefs.getInt("fuel_corridor_meters", RouteFuelHelper.DEFAULT_CORRIDOR_METERS)
+        updateFuelButtonState(showRouteFuel)
+        updateWeatherButtonVisibility()
+
+        val btnFuel = findViewById<Button>(R.id.btnFuelToggle)
+        btnFuel?.setOnClickListener {
+            showRouteFuel = !showRouteFuel
+            prefs.edit().putBoolean("show_route_fuel", showRouteFuel).apply()
+            updateFuelButtonState(showRouteFuel)
+
+            if (showRouteFuel) {
+                if (RouteFuelHelper.findOfflinePoiFile(this) != null) {
+                    val corridorStr = RouteFuelHelper.formatCorridorDistance(fuelCorridorMeters)
+                    Toast.makeText(this, getString(R.string.toast_route_fuel_on, corridorStr), Toast.LENGTH_SHORT).show()
+                }
+                refreshRouteFuelStations(force = true)
+            } else {
+                Toast.makeText(this, getString(R.string.toast_route_fuel_off), Toast.LENGTH_SHORT).show()
+                clearRouteFuelMarkers()
+            }
+        }
+
+        btnFuel?.setOnLongClickListener {
+            showFuelCorridorDialog { newMeters ->
+                fuelCorridorMeters = newMeters
+                prefs.edit().putInt("fuel_corridor_meters", newMeters).apply()
+                val corridorStr = RouteFuelHelper.formatCorridorDistance(newMeters)
+                Toast.makeText(this, getString(R.string.toast_fuel_corridor_updated, corridorStr), Toast.LENGTH_SHORT).show()
+                if (!showRouteFuel) {
+                    showRouteFuel = true
+                    prefs.edit().putBoolean("show_route_fuel", true).apply()
+                    updateFuelButtonState(true)
+                }
+                refreshRouteFuelStations(force = true)
+            }
+            true
+        }
+    }
+
+    private fun showFuelCorridorDialog(
+        currentMeters: Int = fuelCorridorMeters,
+        onSelected: (Int) -> Unit
+    ) {
+        val options = RouteFuelHelper.CORRIDOR_OPTIONS_METERS
+        val labels = options.map { RouteFuelHelper.formatCorridorDistance(it) }.toTypedArray()
+        val checkedIdx = options.indexOf(currentMeters).let { if (it >= 0) it else 1 }
+
+        androidx.appcompat.app.AlertDialog.Builder(this)
+            .setTitle(R.string.dialog_fuel_corridor_title)
+            .setSingleChoiceItems(labels, checkedIdx) { dialog, which ->
+                val chosen = options[which]
+                onSelected(chosen)
+                dialog.dismiss()
+            }
+            .setNegativeButton(R.string.map_btn_cancel, null)
+            .show()
+    }
+
+    private fun refreshRouteFuelStations(force: Boolean = false) {
+        if (!showRouteFuel) return
+
+        val now = System.currentTimeMillis()
+        val myLoc = locationOverlay?.myLocation
+        if (!force && now - lastFuelFetchMs < 60_000L) {
+            val prevLoc = lastFuelFetchLocation
+            if (myLoc == null || prevLoc == null || myLoc.distanceToAsDouble(prevLoc) < 3000.0) {
+                return
+            }
+        }
+
+        val routePolylines: List<List<GeoPoint>>
+        val navLocation: GeoPoint?
+        if (isNavigating && currentNavigationRoute != null) {
+            val navPts = currentNavigationRoute?.geometryPoints
+            routePolylines = if (!navPts.isNullOrEmpty() && navPts.size >= 2) listOf(navPts) else emptyList()
+            navLocation = myLoc
+        } else if (loadedRoutes.isNotEmpty()) {
+            routePolylines = loadedRoutes.filter { it.visible && it.points.size >= 2 }.map { it.points }
+            navLocation = null
+        } else {
+            routePolylines = emptyList()
+            navLocation = null
+        }
+
+        if (routePolylines.isEmpty()) {
+            clearRouteFuelMarkers()
+            return
+        }
+
+        lastFuelFetchMs = now
+        if (myLoc != null) {
+            lastFuelFetchLocation = GeoPoint(myLoc.latitude, myLoc.longitude)
+        }
+
+        RouteFuelHelper.fetchFuelStationsAlongRoutes(
+            context = this,
+            routePolylines = routePolylines,
+            currentLocation = navLocation,
+            corridorMeters = fuelCorridorMeters
+        ) { stations, hasPoiFile ->
+            runOnUiThread {
+                if (!isFinishing && !isDestroyed) {
+                    if (!hasPoiFile) {
+                        clearRouteFuelMarkers()
+                        if (force) {
+                            Toast.makeText(this@MapActivity, getString(R.string.toast_select_offline_poi), Toast.LENGTH_LONG).show()
+                            selectOfflinePoiFile()
+                        }
+                        return@runOnUiThread
+                    }
+                    renderRouteFuelMarkers(stations)
+                    if (force) {
+                        val msg = if (stations.isNotEmpty()) {
+                            "⛽ ${stations.size} Fuel Station(s)"
+                        } else {
+                            "⛽ 0 Fuel Stations (${RouteFuelHelper.formatCorridorDistance(fuelCorridorMeters)})"
+                        }
+                        Toast.makeText(this@MapActivity, msg, Toast.LENGTH_SHORT).show()
+                    }
+                }
+            }
+        }
+    }
+
+    private fun renderRouteFuelMarkers(stations: List<RouteFuelHelper.FuelStation>) {
+        clearRouteFuelMarkers()
+        if (!showRouteFuel || stations.isEmpty()) return
+
+        for (station in stations) {
+            val badgeBitmap = RouteFuelHelper.createFuelBadgeBitmap(this, station)
+            val detourText = if (station.offRouteMeters < 1000.0) {
+                "${station.offRouteMeters.toInt()} m"
+            } else {
+                String.format(Locale.getDefault(), "%.1f km", station.offRouteMeters / 1000.0)
+            }
+
+            val marker = Marker(mapView).apply {
+                position = station.point
+                icon = android.graphics.drawable.BitmapDrawable(resources, badgeBitmap)
+                setAnchor(Marker.ANCHOR_CENTER, Marker.ANCHOR_CENTER)
+                title = "⛽ ${station.displayName}"
+                snippet = "${getString(R.string.fuel_dialog_distance_along, station.distanceAlongRouteKm)} • ${getString(R.string.fuel_dialog_detour_distance, detourText)}"
+                setOnMarkerClickListener { _, _ ->
+                    showFuelStationDialog(station)
+                    true
+                }
+            }
+            mapView.overlays.add(marker)
+            fuelMarkers2d.add(marker)
+        }
+        mapView.invalidate()
+
+        val fuel3d = stations.map {
+            Map3dOverlays.FuelData(
+                org.maplibre.android.geometry.LatLng(it.point.latitude, it.point.longitude),
+                RouteFuelHelper.createFuelBadgeBitmap(this, it)
+            )
+        }
+        map3d?.setFuelStations(fuel3d)
+
+        MapStateHolder.updateFuelStations(stations)
+    }
+
+    private fun clearRouteFuelMarkers() {
+        for (m in fuelMarkers2d) {
+            mapView.overlays.remove(m)
+        }
+        fuelMarkers2d.clear()
+        map3d?.setFuelStations(emptyList())
+        MapStateHolder.updateFuelStations(emptyList())
+        mapView.invalidate()
+    }
+
+    private fun showFuelStationDialog(station: RouteFuelHelper.FuelStation) {
+        val detourText = if (station.offRouteMeters < 1000.0) {
+            "${station.offRouteMeters.toInt()} m"
+        } else {
+            String.format(Locale.getDefault(), "%.1f km", station.offRouteMeters / 1000.0)
+        }
+
+        val details = buildString {
+            appendLine(getString(R.string.fuel_dialog_distance_along, station.distanceAlongRouteKm))
+            appendLine(getString(R.string.fuel_dialog_detour_distance, detourText))
+            if (station.openingHours.isNotBlank()) {
+                appendLine(getString(R.string.fuel_dialog_opening_hours, station.openingHours))
+            }
+        }.trim()
+
+        androidx.appcompat.app.AlertDialog.Builder(this)
+            .setTitle("⛽ ${station.displayName}")
+            .setMessage(details)
+            .setPositiveButton(R.string.fuel_btn_navigate_here) { _, _ ->
+                selectDestinationPoint(station.point, "⛽ ${station.displayName}")
+                startNavigation()
+            }
+            .setNegativeButton(R.string.map_btn_cancel, null)
+            .show()
     }
 
     // ─── Dangerous & Sharp Curve Warning System ──────────────────
@@ -2160,6 +2396,9 @@ class MapActivity : AppCompatActivity() {
                                 updateNavigationUi(myGeo)
                             }
                         }
+                        if (showRouteFuel && (isNavigating || loadedRoutes.isNotEmpty())) {
+                            refreshRouteFuelStations(force = false)
+                        }
                         if (currentLayer == LAYER_3D) {
                             val bearing = if (location.hasBearing()) location.bearing.toDouble() else null
                             update3dLocationMarker(location.latitude, location.longitude, bearing)
@@ -2573,6 +2812,40 @@ class MapActivity : AppCompatActivity() {
             swWeather?.toggle()
         }
 
+        val swFuel = view.findViewById<androidx.appcompat.widget.SwitchCompat>(R.id.swRouteFuel)
+        val initialFuelVal = prefs.getBoolean("show_route_fuel", true)
+        swFuel?.isChecked = initialFuelVal
+        view.findViewById<View>(R.id.tileRouteFuel)?.setOnClickListener {
+            swFuel?.toggle()
+        }
+
+        var selectedFuelCorridor = prefs.getInt("fuel_corridor_meters", RouteFuelHelper.DEFAULT_CORRIDOR_METERS)
+        val btnFuelCorridor = view.findViewById<Button>(R.id.btnFuelCorridorSelect)
+        fun updateFuelCorridorButton() {
+            val label = RouteFuelHelper.formatCorridorDistance(selectedFuelCorridor)
+            btnFuelCorridor?.text = getString(R.string.btn_fuel_corridor_format, label)
+        }
+        updateFuelCorridorButton()
+        btnFuelCorridor?.setOnClickListener {
+            showFuelCorridorDialog(selectedFuelCorridor) { chosenMeters ->
+                selectedFuelCorridor = chosenMeters
+                updateFuelCorridorButton()
+            }
+        }
+
+        val btnSelectPoi = view.findViewById<Button>(R.id.btnSelectOfflinePoi)
+        settingsPoiButton = btnSelectPoi
+        updateSettingsPoiButtonLabel()
+        btnSelectPoi?.setOnClickListener {
+            selectOfflinePoiFile()
+        }
+
+        dialog.setOnDismissListener {
+            if (settingsPoiButton === btnSelectPoi) {
+                settingsPoiButton = null
+            }
+        }
+
         // TFT Padding Button
         view.findViewById<Button>(R.id.btnOpenTftPadding)?.setOnClickListener {
             showTftPaddingDialog()
@@ -2596,6 +2869,7 @@ class MapActivity : AppCompatActivity() {
         btnSave.setOnClickListener {
             val newCurveVal = swCurve?.isChecked ?: true
             val newWeatherVal = swWeather?.isChecked ?: true
+            val newFuelVal = swFuel?.isChecked ?: true
 
             prefs.edit().apply {
                 putInt("map_theme_mode", selectedTheme)
@@ -2604,6 +2878,8 @@ class MapActivity : AppCompatActivity() {
                 putInt("map_recording_color", selectedTrackColor)
                 putBoolean("show_curve_warnings", newCurveVal)
                 putBoolean("show_route_weather", newWeatherVal)
+                putBoolean("show_route_fuel", newFuelVal)
+                putInt("fuel_corridor_meters", selectedFuelCorridor)
                 apply()
             }
 
@@ -2625,6 +2901,15 @@ class MapActivity : AppCompatActivity() {
                 refreshRouteWeatherForecast(force = true)
             } else {
                 clearRouteWeatherMarkers()
+            }
+
+            showRouteFuel = newFuelVal
+            fuelCorridorMeters = selectedFuelCorridor
+            updateFuelButtonState(showRouteFuel)
+            if (showRouteFuel) {
+                refreshRouteFuelStations(force = true)
+            } else {
+                clearRouteFuelMarkers()
             }
 
             Toast.makeText(this, getString(R.string.toast_tft_fit_saved), Toast.LENGTH_SHORT).show()
@@ -2685,12 +2970,24 @@ class MapActivity : AppCompatActivity() {
         startActivityForResult(intent, REQ_FILE_PICK)
     }
 
+    private fun updateSettingsPoiButtonLabel() {
+        val btn = settingsPoiButton ?: return
+        val poiFile = RouteFuelHelper.findOfflinePoiFile(this)
+        btn.text = if (poiFile != null) {
+            getString(R.string.btn_select_poi_file_loaded, poiFile.name)
+        } else {
+            getString(R.string.btn_select_poi_file_none)
+        }
+    }
+
     private fun selectOfflineMapFile() {
         val intent = Intent(Intent.ACTION_OPEN_DOCUMENT).apply {
             addCategory(Intent.CATEGORY_OPENABLE)
             type = "*/*"
             putExtra(Intent.EXTRA_MIME_TYPES, arrayOf(
                 "application/x-map",
+                "application/zip",
+                "application/x-zip-compressed",
                 "application/octet-stream"
             ))
         }
@@ -2702,21 +2999,61 @@ class MapActivity : AppCompatActivity() {
         Thread {
             try {
                 val mapsDir = java.io.File(getExternalFilesDir(null), "maps").apply { mkdirs() }
-                val fileName = getFileNameFromUri(uri) ?: "offline_map.map"
-                val destFile = java.io.File(mapsDir, fileName)
+                val rawName = getFileNameFromUri(uri) ?: "offline_map.map"
+                val fileName = java.io.File(rawName).name
 
-                contentResolver.openInputStream(uri)?.use { input ->
-                    destFile.outputStream().use { output ->
-                        input.copyTo(output)
+                var importedMapFile: java.io.File? = null
+                var importedPoiFile: java.io.File? = null
+
+                if (fileName.endsWith(".zip", ignoreCase = true)) {
+                    contentResolver.openInputStream(uri)?.use { input ->
+                        java.util.zip.ZipInputStream(input).use { zis ->
+                            var entry = zis.nextEntry
+                            while (entry != null) {
+                                if (!entry.isDirectory) {
+                                    val entryBaseName = java.io.File(entry.name).name
+                                    if (entryBaseName.endsWith(".map", ignoreCase = true)) {
+                                        val outFile = java.io.File(mapsDir, entryBaseName)
+                                        outFile.outputStream().use { zis.copyTo(it) }
+                                        importedMapFile = outFile
+                                    } else if (entryBaseName.endsWith(".poi", ignoreCase = true)) {
+                                        val outFile = java.io.File(mapsDir, entryBaseName)
+                                        outFile.outputStream().use { zis.copyTo(it) }
+                                        importedPoiFile = outFile
+                                    }
+                                }
+                                zis.closeEntry()
+                                entry = zis.nextEntry
+                            }
+                        }
                     }
+                } else {
+                    val destFile = java.io.File(mapsDir, fileName)
+                    contentResolver.openInputStream(uri)?.use { input ->
+                        destFile.outputStream().use { output ->
+                            input.copyTo(output)
+                        }
+                    }
+                    importedMapFile = destFile
                 }
 
-                getSharedPreferences("kove_map_prefs", MODE_PRIVATE).edit()
-                    .putString("offline_map_path", destFile.absolutePath)
-                    .apply()
+                val mapFile = importedMapFile ?: throw IllegalStateException("No .map file found")
+                val editor = getSharedPreferences("kove_map_prefs", MODE_PRIVATE).edit()
+                    .putString("offline_map_path", mapFile.absolutePath)
+                importedPoiFile?.let { poi ->
+                    editor.putString("offline_poi_path", poi.absolutePath)
+                }
+                editor.apply()
 
                 runOnUiThread {
-                    Toast.makeText(this, getString(R.string.toast_offline_map_loaded, destFile.name), Toast.LENGTH_SHORT).show()
+                    Toast.makeText(this, getString(R.string.toast_offline_map_loaded, mapFile.name), Toast.LENGTH_SHORT).show()
+                    importedPoiFile?.let { poi ->
+                        Toast.makeText(this, getString(R.string.toast_poi_file_loaded, poi.name), Toast.LENGTH_SHORT).show()
+                        updateSettingsPoiButtonLabel()
+                        if (showRouteFuel && (isNavigating || loadedRoutes.isNotEmpty())) {
+                            refreshRouteFuelStations(force = true)
+                        }
+                    }
                     switchLayer(LAYER_OFFLINE)
                 }
             } catch (e: Exception) {
@@ -2724,6 +3061,82 @@ class MapActivity : AppCompatActivity() {
                     Toast.makeText(this, getString(R.string.error_invalid_map_file), Toast.LENGTH_LONG).show()
                 }
                 DebugLogger.error("❌ Failed to import map file: ${e.message}")
+            }
+        }.start()
+    }
+
+    private fun selectOfflinePoiFile() {
+        val intent = Intent(Intent.ACTION_OPEN_DOCUMENT).apply {
+            addCategory(Intent.CATEGORY_OPENABLE)
+            type = "*/*"
+        }
+        @Suppress("DEPRECATION")
+        startActivityForResult(intent, REQ_POI_FILE_PICK)
+    }
+
+    private fun importPoiFileFromUri(uri: Uri) {
+        Thread {
+            try {
+                val mapsDir = java.io.File(getExternalFilesDir(null), "maps").apply { mkdirs() }
+                val rawName = getFileNameFromUri(uri) ?: "offline_pois.poi"
+                val fileName = java.io.File(rawName).name
+
+                var importedPoiFile: java.io.File? = null
+
+                if (fileName.endsWith(".zip", ignoreCase = true)) {
+                    contentResolver.openInputStream(uri)?.use { input ->
+                        java.util.zip.ZipInputStream(input).use { zis ->
+                            var entry = zis.nextEntry
+                            while (entry != null) {
+                                if (!entry.isDirectory) {
+                                    val entryBaseName = java.io.File(entry.name).name
+                                    if (entryBaseName.endsWith(".poi", ignoreCase = true)) {
+                                        val outFile = java.io.File(mapsDir, entryBaseName)
+                                        outFile.outputStream().use { zis.copyTo(it) }
+                                        importedPoiFile = outFile
+                                        break
+                                    }
+                                }
+                                zis.closeEntry()
+                                entry = zis.nextEntry
+                            }
+                        }
+                    }
+                } else {
+                    val destFile = java.io.File(mapsDir, fileName)
+                    contentResolver.openInputStream(uri)?.use { input ->
+                        destFile.outputStream().use { output ->
+                            input.copyTo(output)
+                        }
+                    }
+                    importedPoiFile = destFile
+                }
+
+                val poiFile = importedPoiFile
+                if (poiFile == null || !poiFile.exists() || poiFile.length() == 0L) {
+                    throw IllegalStateException("Empty or missing .poi file")
+                }
+
+                getSharedPreferences("kove_map_prefs", MODE_PRIVATE).edit()
+                    .putString("offline_poi_path", poiFile.absolutePath)
+                    .apply()
+
+                runOnUiThread {
+                    if (!isFinishing && !isDestroyed) {
+                        Toast.makeText(this, getString(R.string.toast_poi_file_loaded, poiFile.name), Toast.LENGTH_SHORT).show()
+                        updateSettingsPoiButtonLabel()
+                        if (showRouteFuel && (isNavigating || loadedRoutes.isNotEmpty())) {
+                            refreshRouteFuelStations(force = true)
+                        }
+                    }
+                }
+            } catch (e: Exception) {
+                runOnUiThread {
+                    if (!isFinishing && !isDestroyed) {
+                        Toast.makeText(this, getString(R.string.error_invalid_poi_file), Toast.LENGTH_LONG).show()
+                    }
+                }
+                DebugLogger.error("❌ Failed to import POI file: ${e.message}")
             }
         }.start()
     }
@@ -2749,6 +3162,8 @@ class MapActivity : AppCompatActivity() {
             data?.data?.let { uri -> showStyleDialogThenImport(uri) }
         } else if (requestCode == REQ_MAP_FILE_PICK && resultCode == Activity.RESULT_OK) {
             data?.data?.let { uri -> importMapFileFromUri(uri) }
+        } else if (requestCode == REQ_POI_FILE_PICK && resultCode == Activity.RESULT_OK) {
+            data?.data?.let { uri -> importPoiFileFromUri(uri) }
         }
     }
 
@@ -2878,6 +3293,15 @@ class MapActivity : AppCompatActivity() {
                         btnRouteList.visibility = if (loadedRoutes.isNotEmpty()) View.VISIBLE else View.GONE
                         Toast.makeText(this, getString(R.string.map_import_success, importedCount), Toast.LENGTH_SHORT).show()
                         refreshRouteList()
+                        if (showRouteWeather && loadedRoutes.isNotEmpty()) {
+                            refreshRouteWeatherForecast(force = true)
+                        }
+                        if (showCurveWarnings && loadedRoutes.isNotEmpty()) {
+                            refreshCurveWarnings()
+                        }
+                        if (showRouteFuel && loadedRoutes.isNotEmpty()) {
+                            refreshRouteFuelStations(force = true)
+                        }
                     }
                     return@Thread
                 }
@@ -2931,6 +3355,15 @@ class MapActivity : AppCompatActivity() {
                     ).show()
 
                     refreshRouteList()
+                    if (showRouteWeather && loadedRoutes.isNotEmpty()) {
+                        refreshRouteWeatherForecast(force = true)
+                    }
+                    if (showCurveWarnings && loadedRoutes.isNotEmpty()) {
+                        refreshCurveWarnings()
+                    }
+                    if (showRouteFuel && loadedRoutes.isNotEmpty()) {
+                        refreshRouteFuelStations(force = true)
+                    }
                 }
             } catch (e: Exception) {
                 runOnUiThread {
@@ -3269,6 +3702,9 @@ class MapActivity : AppCompatActivity() {
         if (showCurveWarnings && loadedRoutes.isNotEmpty()) {
             refreshCurveWarnings()
         }
+        if (showRouteFuel && loadedRoutes.isNotEmpty()) {
+            refreshRouteFuelStations()
+        }
         val btnRouteList = findViewById<Button>(R.id.btnRouteList)
         btnRouteList.visibility = if (loadedRoutes.isNotEmpty()) View.VISIBLE else View.GONE
     }
@@ -3489,6 +3925,9 @@ class MapActivity : AppCompatActivity() {
 
         clearRouteWeatherMarkers()
         clearCurveMarkers()
+        if (!isNavigating) {
+            clearRouteFuelMarkers()
+        }
 
         mapView.invalidate()
         refresh3dRoutes()

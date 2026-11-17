@@ -64,6 +64,11 @@ class Map3dOverlays(private val map: MapLibreMap, private val density: Float) {
         val bitmap: Bitmap
     )
 
+    data class FuelData(
+        val latLng: LatLng,
+        val bitmap: Bitmap
+    )
+
     private var pois: List<PoiData> = emptyList()
     private var poisSource: GeoJsonSource? = null
 
@@ -72,6 +77,9 @@ class Map3dOverlays(private val map: MapLibreMap, private val density: Float) {
 
     private var curvePoints: List<CurveData> = emptyList()
     private var curvesSource: GeoJsonSource? = null
+
+    private var fuelPoints: List<FuelData> = emptyList()
+    private var fuelSource: GeoJsonSource? = null
 
     fun setPois(poiList: List<PoiData>) {
         pois = poiList
@@ -86,6 +94,11 @@ class Map3dOverlays(private val map: MapLibreMap, private val density: Float) {
     fun setCurvePoints(list: List<CurveData>) {
         curvePoints = list
         refreshCurves()
+    }
+
+    fun setFuelStations(list: List<FuelData>) {
+        fuelPoints = list
+        refreshFuelStations()
     }
 
     fun onStyleLoaded(style: Style) {
@@ -205,6 +218,19 @@ class Map3dOverlays(private val map: MapLibreMap, private val density: Float) {
                 )
         )
 
+        // Fuel Station Layer
+        fuelSource = GeoJsonSource("kove-fuel-3d").also { style.addSource(it) }
+        style.addLayer(
+            SymbolLayer("kove-fuel-layer", "kove-fuel-3d")
+                .withProperties(
+                    PropertyFactory.iconImage(Expression.get("iconId")),
+                    PropertyFactory.iconSize(1f),
+                    PropertyFactory.iconAnchor(Property.ICON_ANCHOR_CENTER),
+                    PropertyFactory.iconAllowOverlap(true),
+                    PropertyFactory.iconIgnorePlacement(true)
+                )
+        )
+
         refreshRoutes()
         refreshPois()
         refreshNav()
@@ -213,6 +239,7 @@ class Map3dOverlays(private val map: MapLibreMap, private val density: Float) {
         refreshDestination()
         refreshWeather()
         refreshCurves()
+        refreshFuelStations()
     }
 
     fun isReady(): Boolean = style != null
@@ -365,6 +392,22 @@ class Map3dOverlays(private val map: MapLibreMap, private val density: Float) {
             val iconId = "kove-curve-icon-$index"
             currentStyle.addImage(iconId, c.bitmap)
             val point = Point.fromLngLat(c.latLng.longitude, c.latLng.latitude)
+            val feature = Feature.fromGeometry(point)
+            feature.addStringProperty("iconId", iconId)
+            features.add(feature)
+        }
+        source.setGeoJson(FeatureCollection.fromFeatures(features))
+    }
+
+    private fun refreshFuelStations() {
+        val source = fuelSource ?: return
+        val currentStyle = style ?: return
+        val features = mutableListOf<Feature>()
+
+        fuelPoints.forEachIndexed { index, f ->
+            val iconId = "kove-fuel-icon-$index"
+            currentStyle.addImage(iconId, f.bitmap)
+            val point = Point.fromLngLat(f.latLng.longitude, f.latLng.latitude)
             val feature = Feature.fromGeometry(point)
             feature.addStringProperty("iconId", iconId)
             features.add(feature)

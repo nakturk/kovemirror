@@ -38,6 +38,7 @@ object MapStateHolder {
     val loadedRoutes = CopyOnWriteArrayList<SharedRoute>()
     val routeWeatherPoints = CopyOnWriteArrayList<RouteWeatherHelper.RouteWeatherPoint>()
     val detectedCurves = CopyOnWriteArrayList<CurveWarningHelper.CurvePoint>()
+    val routeFuelStations = CopyOnWriteArrayList<RouteFuelHelper.FuelStation>()
 
     interface StateListener {
         fun onNavigationStateChanged(isNavigating: Boolean, route: NavigationHelper.NavigationRoute?)
@@ -47,6 +48,7 @@ object MapStateHolder {
         fun onCameraChanged(center: GeoPoint, zoom: Double, bearing: Float)
         fun onWeatherUpdated(weatherPoints: List<RouteWeatherHelper.RouteWeatherPoint>)
         fun onCurvesUpdated(curves: List<CurveWarningHelper.CurvePoint>)
+        fun onFuelStationsUpdated(fuelStations: List<RouteFuelHelper.FuelStation>) {}
     }
 
     private val listeners = CopyOnWriteArrayList<StateListener>()
@@ -117,6 +119,16 @@ object MapStateHolder {
         for (l in listeners) {
             try {
                 l.onCurvesUpdated(curves)
+            } catch (_: Exception) {}
+        }
+    }
+
+    fun updateFuelStations(stations: List<RouteFuelHelper.FuelStation>) {
+        routeFuelStations.clear()
+        routeFuelStations.addAll(stations)
+        for (l in listeners) {
+            try {
+                l.onFuelStationsUpdated(stations)
             } catch (_: Exception) {}
         }
     }

@@ -315,6 +315,7 @@ class KovePresentation(
 
     private val weatherMarkers = mutableListOf<Marker>()
     private val curveMarkers = mutableListOf<Marker>()
+    private val fuelMarkers = mutableListOf<Marker>()
 
     override fun onWeatherUpdated(weatherPoints: List<RouteWeatherHelper.RouteWeatherPoint>) {
         mainHandler.post {
@@ -360,6 +361,28 @@ class KovePresentation(
         }
     }
 
+    override fun onFuelStationsUpdated(fuelStations: List<RouteFuelHelper.FuelStation>) {
+        mainHandler.post {
+            for (m in fuelMarkers) {
+                mapView.overlays.remove(m)
+            }
+            fuelMarkers.clear()
+
+            for (f in fuelStations) {
+                val badgeBitmap = RouteFuelHelper.createFuelBadgeBitmap(context, f)
+                val marker = Marker(mapView).apply {
+                    position = f.point
+                    icon = android.graphics.drawable.BitmapDrawable(context.resources, badgeBitmap)
+                    setAnchor(Marker.ANCHOR_CENTER, Marker.ANCHOR_CENTER)
+                }
+                mapView.overlays.add(marker)
+                fuelMarkers.add(marker)
+            }
+            mapView.invalidate()
+            DebugLogger.info("⛽ [TFT Presentation] Displaying ${fuelStations.size} fuel station badge(s)")
+        }
+    }
+
     private fun syncStateFromHolder() {
         DebugLogger.info("🔄 [TFT Presentation] Syncing state from MapStateHolder (layer=${MapStateHolder.currentLayer}, routes=${MapStateHolder.loadedRoutes.size}, navigating=${MapStateHolder.isNavigating})")
         // 1. Sync loaded routes
@@ -373,6 +396,9 @@ class KovePresentation(
 
         // 4. Sync detected curves
         onCurvesUpdated(MapStateHolder.detectedCurves.toList())
+
+        // 4b. Sync fuel stations
+        onFuelStationsUpdated(MapStateHolder.routeFuelStations.toList())
 
         // 5. Sync camera position (center / zoom)
         val center = MapStateHolder.currentCenter ?: MapStateHolder.lastLocation

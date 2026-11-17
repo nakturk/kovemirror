@@ -361,6 +361,22 @@
             android:layout_marginTop="8dp"
             android:visibility="gone" />
 
+        <!-- Route Fuel Stations Toggle Button (Long press for corridor distance) -->
+        <Button
+            android:id="@+id/btnFuelToggle"
+            android:layout_width="44dp"
+            android:layout_height="44dp"
+            android:text="⛽"
+            android:textSize="18sp"
+            android:textColor="#FFFFFF"
+            android:background="#CC333333"
+            android:elevation="4dp"
+            android:minWidth="0dp"
+            android:minHeight="0dp"
+            android:padding="0dp"
+            android:layout_marginTop="8dp"
+            android:visibility="gone" />
+
         <!-- Toll Road Toggle Button (Shown only during active navigation) -->
         <Button
             android:id="@+id/btnTollToggle"
