@@ -6,9 +6,9 @@
 
 (Bu metin ve program AI tarafından geliştirilmiştir.)
 
-KoveMirror, Kove 800 (800X Pro vb.) model motosikletlerin TFT ekranlarına telefonunuzun ekranını yansıtmanızı (Screen Mirroring) sağlayan açık kaynaklı bir Android uygulamasıdır. Orijinal ThinkerRide sistemine alternatif olarak geliştirilmiş olup, tamamen yerel ağ üzerinden bağımsız çalışır. 
+KoveMirror, Kove 800 (800X Pro vb.) model motosikletlerin TFT ekranlarına telefonunuzun ekranını yansıtmanızı (Screen Mirroring) sağlayan açık kaynaklı bir Android uygulamasıdır. Orijinal ThinkerRide sistemine alternatif olarak geliştirilmiş olup, tamamen yerel ağ üzerinden bağımsız çalışır.
 
-Motosikletin navigasyon için TFT ekranında gösterdiği görüntüyü, herhangi bir üçüncü taraf uygulamaya bağımlı kalmadan Google Maps, Yandex Navigasyon, Kurviger gibi kendi istediğiniz uygulamalarla kullanabilmenizi sağlar. Ayrıca uygulama içinde motosiklet sürüşü için optimize edilmiş yerleşik **2D/3D Harita, Rota Import (GPX/KML/KMZ), Canlı Rota Hava Durumu, Sert Viraj İkazları, Adım Adım Navigasyon ve Ekran Kapalıyken Kesintisiz TFT Haritası** özellikleri bulunur.
+Motosikletin navigasyon için TFT ekranında gösterdiği görüntüyü, herhangi bir üçüncü taraf uygulamaya bağımlı kalmadan Google Maps, Yandex Navigasyon, Kurviger gibi kendi istediğiniz uygulamalarla kullanabilmenizi sağlar. Ayrıca uygulama içinde motosiklet sürüşü için optimize edilmiş yerleşik **Android Auto Desteği, 2D/3D & Çevrimdışı Harita (`.map`), Rota Üstü Çevrimdışı Benzin İstasyonları (`.poi`), Rota Import (GPX/KML/KMZ), Canlı Rota Hava Durumu, Sert Viraj İkazları, Adım Adım Navigasyon, Gün Doğumu/Batımı – Pusula – Rakım Telemetri Kartı ve Ekran Kapalıyken Kesintisiz TFT Haritası** özellikleri bulunur.
 
 <p align="center">
   <img src="screenshots/main_screen.png" width="32%" alt="KoveMirror Ana Ekran" />
@@ -22,47 +22,64 @@ Motosikletin navigasyon için TFT ekranında gösterdiği görüntüyü, herhang
 
 Uygulama içinde **"Harita & Rota"** butonu ile erişilebilen gelişmiş harita modülü şu özellikleri sunar:
 
-1. **4 Harita Katmanı Seçeneği (2D & 3D)**:
-   - **Harita (OSM)**: OpenStreetMap Mapnik standart vektör haritası.
-   - **Topo**: OpenTopoMap arazi ve topografya haritası.
-   - **Uydu (Sat)**: ESRI World Imagery yüksek çözünürlüklü uydu görüntüsü katmanı.
-   - **🌐 3D Vektör & Arazi Haritası (MapLibre)**: 3 boyutlu bina, arazi ve sürüş perspektifi sunan modern 3D harita katmanı. Gidon tuşu veya ekrandan tek tıkla 2D/3D arasında anında geçiş.
+1. **Çoklu Harita Katmanları (2D, 3D & Çevrimdışı MapsForge)**:
+   - **Harita (OSM):** OpenStreetMap Mapnik standart harita katmanı.
+   - **Topo:** OpenTopoMap arazi ve topografya haritası.
+   - **Uydu (Sat):** ESRI World Imagery yüksek çözünürlüklü uydu görüntüsü katmanı.
+   - **Google Katmanları:** Google Maps, Google Satellite ve Google Hybrid katmanları.
+   - **Çevrimdışı Vektör Harita (`.map`):** OpenAndroMaps / MapsForge `.map` dosyalarını internet olmadan doğrudan açabilme ve harita etiketi ölçekleme (%100 – %200).
+   - **🌐 3D Vektör & Arazi Haritası (MapLibre):** 3 boyutlu bina, arazi ve sürüş perspektifi sunan modern 3D harita katmanı. Gidon tuşu veya ekrandan tek tıkla 2D/3D arasında anında geçiş.
 
-2. **📱 Ekran Kapalıyken Kesintisiz TFT Navigasyonu (Virtual Display Presentation)**:
-   - Telefon ekranı kapandığında / kilitlendiğinde bile arka planda çalışan sanal ekran mimarisi (`VirtualDisplay` & `KovePresentation`) sayesinde motosikletin TFT kadranına kesintisiz harita, canlı GPS takibi, yüklü rotalar ve adım adım navigasyon akmaya devam eder.
+2. **🚗 Android Auto Desteği (`androidx.car.app`)**:
+   - KoveMirror Harita ve Navigasyon modülü doğrudan **Android Auto** uyumlu araç/motosiklet ekranlarında da çalışır (`NavigationTemplate`).
+   - **Bağımsız & Çift Yönlü Senkron:** Telefonda *Harita & Rota* ekranı kapalı olsa bile GPS, adım adım dönüş yönlendirmesi (Valhalla / OSRM), mesafe/ETA bilgisi, harita katmanları ve kayıtlı rotalar Android Auto'da çalışır; telefon ekranı açıldığında durumlar iki taraf arasında anlık senkronize olur.
+   - **Ekran Üstü Kontroller:** Android Auto üzerinden parmakla sürükleme (harita açısına göre uyumlu kaydırma), yakınlaştırma/uzaklaştırma (`+`/`−`), konuma odaklama, harita katmanı değiştirme, **⛽ Benzin İstasyonları** ve **🌤️ Hava Durumu** katmanlarını açıp kapatma.
+   - **Rotalar & Favoriler Menüsü:** Kayıtlı GPX/KML rotalarını haritada açıp kapatma ve favori konumlara tek dokunuşla adım adım navigasyon başlatma.
+   - **Okunaklı Araç Ekranı Ölçeklemesi & Telemetri:** Araç ekranı DPI değerine göre otomatik büyütülen rota rozetleri, km işaretleri, yön okları ve sağ alt köşede hız, katman, pusula, rakım ile gün doğumu/batımı kartı.
+   - *APK Kurulum Notu:* Uygulama doğrudan APK ile yüklendiyse telefonunuzda **Android Auto > Ayarlar > Sürüm** alanına art arda dokunarak **Geliştirici Modu > Bilinmeyen Kaynaklar** seçeneğini aktif etmeniz gerekir.
+
+3. **📱 Ekran Kapalıyken Kesintisiz TFT Navigasyonu (Virtual Display Presentation)**:
+   - Telefon ekranı kapandığında / kilitlendiğinde bile arka planda çalışan sanal ekran mimarisi (`VirtualDisplay` & `KovePresentation`) sayesinde motosikletin TFT kadranına kesintisiz harita, canlı GPS takibi, hız/pusula/rakım telemetrisi, yüklü rotalar ve adım adım navigasyon akmaya devam eder.
    - Telefonu tekrar açtığınızda telefon ile TFT harita durumları kusursuz olarak çift yönlü senkronize olur.
 
-3. **🌤️ Canlı Rota Hava Durumu (Route Weather Forecast)**:
-   - Rota güzergahı boyunca açık kaynaklı Open-Meteo entegrasyonu ile sıcaklık (°C), yağış türü, yağış ihtimali (%) ve rüzgar hızı rozetleri harita üzerinde gösterilir.
-   - Rozetler 2D ve 3D haritalarda rota çizgisinin en üstünde net okunur şekilde konumlanır; dokunulduğunda detaylı hava durumu bilgisi verir.
+4. **⛽ Rota Üstü Çevrimdışı Benzin İstasyonları (`.poi`)**:
+   - OpenAndroMaps `.poi` SQLite veritabanını kullanarak aktif navigasyon veya yüklü GPX/KML rotaları üzerindeki benzin istasyonlarını %100 çevrimdışı olarak bulur.
+   - Uzun basarak koridor genişliği seçilebilir (`500 m`, `1 km`, `2 km`, `5 km`, `10 km`, `50 km`).
+   - Harita üzerinde marka ve rota mesafesi rozetleri gösterir; istasyona dokunarak açılış saati/sapma mesafesi detaylarını görebilir ve tek tıkla navigasyon başlatabilirsiniz.
 
-4. **⚡ Sert Viraj & U-Dönüş Uyarı Sistemi (Sharp Curve & Hairpin Warnings)**:
+5. **🌤️ Canlı Rota Hava Durumu (Route Weather Forecast)**:
+   - Rota güzergahı boyunca açık kaynaklı Open-Meteo entegrasyonu ile sıcaklık (°C), yağış ihtimali (%), yağış miktarı (mm) ve rüzgar hızı rozetleri harita üzerinde gösterilir.
+   - Rozetler 2D, 3D, Kove TFT ve Android Auto haritalarında rota çizgisinin üstünde net okunur şekilde konumlanır; telefondan dokunulduğunda detaylı hava durumu bilgisi verir.
+
+6. **⚡ Sert Viraj & U-Dönüş Uyarı Sistemi (Sharp Curve & Hairpin Warnings)**:
    - %100 çevrimdışı geometrik analiz: İnternet gerektirmeden rota geometrisindeki açı değişimleri ve viraj yarıçapını anında analiz eder.
    - Harita üzerinde viraj başlarında renk kodlu kompakt rozetler gösterir:
      - 🔴 **Kırmızı (`⚠️`):** U-Viraj / Hairpin ($180^\circ$ dönüşler / İğne deliği)
      - 🟠 **Turuncu (`⬅️` / `➡️`):** Sert Viraj ($90^\circ$ ve üzeri keskin virajlar)
      - 🟡 **Sarı (`↖️` / `↗️`):** Orta Sertlikte Viraj
 
-5. **KML / KMZ / GPX Rota Import & Takip**:
-   - GPX, KML ve KMZ formatındaki sürüş rotalarını harita üzerine yükleme.
+7. **KML / KMZ / GPX Rota Import & Takip**:
+   - GPX, KML ve KMZ formatındaki sürüş rotalarını ve KML yer işaretlerini/poligonlarını harita üzerine yükleme.
    - Renk ve çizgi kalınlığı ile özelleştirme, yön okları ve km mesafe taşları ekleme.
-   - Birden fazla rotayı aynı anda yükleme, görünürlüklerini açıp kapama, yönünü tersine çevirme (Reverse Route) veya silme.
+   - Birden fazla rotayı aynı anda grup halinde yönetme, görünürlüklerini açıp kapama, yönünü tersine çevirme (Reverse Route) veya silme.
 
-6. **📍 Haritada Uzun Basarak Navigasyon (OSRM Routing)**:
-   - Harita üzerinde herhangi bir yere **uzun basarak (long press)** hedef pini bırakma ve **"Navigasyonu Başlat"** seçeneği.
-   - Canlı **Turn Banner**: Sıradaki dönüş yönü, manevraya kalan mesafe ve toplam kalan süre/km takibi.
+8. **📍 Valhalla & OSRM Adım Adım Navigasyon + Favoriler / Adres Arama**:
+   - Harita üzerinde herhangi bir yere **uzun basarak (long press)** veya **Favoriler / Adres Arama (`⭐`)** üzerinden hedef belirleyip navigasyon başlatma.
+   - **Rota Tercihleri & Otomatik Yeniden Hesaplama:** Ücretli yollardan kaçınma, otoyoldan kaçınma, en kısa rota seçenekleri ve rotadan sapıldığında otomatik yeniden rota hesaplama.
+   - **Canlı Turn Banner:** Sıradaki dönüş yönü, manevraya kalan mesafe ve toplam kalan süre/km takibi.
 
-7. **🏎️ Canlı Hız Göstergesi ve Hız Limiti Uyarısı**:
-   - Anlık GPS hızını gösteren dinamik hız göstergesi.
-   - Bulunduğunuz yolun yasal hız sınırını tespit etme ve hız aşıldığında dinamik görsel ikaz.
+9. **🏎️ Gelişmiş Telemetri HUD (Hız, Hız Limiti, Pusula, Rakım, Gün Doğumu & Batımı)**:
+   - Anlık GPS hız göstergesi ve OpenStreetMap / Overpass verisiyle yasal hız sınırı tespiti (hız aşıldığında kırmızı görsel ikaz).
+   - Hem telefon harita ekranında hem Android Auto ekranında anlık **Pusula (`🧭`)**, **Rakım (`⛰️ m`)** ve %100 çevrimdışı astronomik **Gün Doğumu / Gün Batımı (`🌅 / 🌇`)** saatleri.
 
-8. **🔴 GPX Canlı Rota Kaydedici (Track Recorder)**:
-   - Sürüşünüzü harita üzerinden takip ederken gerçek zamanlı olarak GPX formatında cihazınıza kaydetme.
+10. **🔄 Akıllı Dikey/Yatay Ekran Modu & Otomatik Gizlenen Üst Bar**:
+    - **Dinamik Yön Kilidi:** Kove TFT ekran yansıtması aktifken telefon otomatik olarak dikey (`Portrait`) modda kilitlenir; yansıtma kapalıyken telefon serbestçe yatay (`Landscape`) ve dikey dönebilir.
+    - **Yatay Moda Uyumlu Sağ Kontrol Paneli:** Dikey modda tek sütun, yatay modda ise tüm butonlara kolayca erişilebilmesi için otomatik 2 sütunlu ve kaydırılabilir (`ScrollView`) yerleşim.
+    - **Otomatik Gizlenen Üst Bar:** Harita ekranındaki üst bar 5 saniye işlem yapılmadığında otomatik gizlenerek harita alanını büyütür; ekrana tekrar dokunulduğunda geri gelir.
 
-9. **⚙️ Yenilenen Profesyonel Harita Ayarları (Map Settings)**:
-   - **Canlı Önizleme Kutusu:** Seçilen temayı, imleci ve iz rengini anında simüle eden Hero Preview kartı.
-   - **Segmented Butonlar:** Gündüz / Gece / Otomatik tema seçimi (`☀️ Gündüz | 🌙 Gece | 🔄 Otomatik`).
-   - **Görsel İmleç Kartları:** 5 farklı konum imleci (`⬆️ Ok`, `🏍️ Motor`, `🔵 Nokta`, `🎯 Hedef`, `📍 İğne`) ve 7 renkli palet.
+11. **🔴 GPX Canlı Rota Kaydedici & Profesyonel Harita Ayarları**:
+    - Sürüşünüzü harita üzerinden takip ederken gerçek zamanlı olarak GPX formatında cihazınıza kaydetme.
+    - **Canlı Önizleme Kutusu:** Gündüz / Gece / Otomatik harita temasını, 5 farklı konum imlecini (`⬆️ Ok`, `🏍️ Motor`, `🔵 Nokta`, `🎯 Hedef`, `📍 İğne`), 7 renkli paleti ve iz rengini anında simüle eden ayarlar penceresi.
 
 ---
 
@@ -123,7 +140,7 @@ Projeyi Android Studio'da açıp `Build -> Make Project` diyerek ya da komut sat
 
 KoveMirror is an open-source Android application that enables screen mirroring from your smartphone directly to the TFT dashboard of Kove 800 motorcycles (like the 800X Pro). Built as an alternative to the official ThinkerRide system, it operates entirely locally over the motorcycle's network.
 
-This allows you to project any navigation or media app of your choice (such as Google Maps, Waze, Kurviger, or Spotify) onto your motorcycle’s screen without restrictions. It also includes an offline-friendly, motorcycle-optimized built-in **2D/3D Map, Route Import (GPX/KML/KMZ), Live Route Weather, Sharp Curve Warnings, Turn-by-Turn Navigation, and Screen-Off Seamless TFT Display** module.
+This allows you to project any navigation or media app of your choice (such as Google Maps, Waze, Kurviger, or Spotify) onto your motorcycle’s screen without restrictions. It also includes an offline-friendly, motorcycle-optimized built-in **Android Auto Support, 2D/3D & Offline Maps (`.map`), Offline Route Fuel Stations (`.poi`), Route Import (GPX/KML/KMZ), Live Route Weather, Sharp Curve Warnings, Turn-by-Turn Navigation, Sunrise/Sunset – Compass – Altitude Telemetry HUD, and Screen-Off Seamless TFT Display** module.
 
 <p align="center">
   <img src="screenshots/main_screen.png" width="32%" alt="KoveMirror Main Screen" />
@@ -137,47 +154,64 @@ This allows you to project any navigation or media app of your choice (such as G
 
 Accessible via the **"Map & Route"** button on the main screen:
 
-1. **4 Map Layer Options (2D & 3D)**:
-   - **Maps (OSM)**: OpenStreetMap Mapnik standard vector map.
-   - **Topo**: OpenTopoMap terrain and topographic contours.
-   - **Satellite (Sat)**: ESRI World Imagery high-resolution satellite imagery.
-   - **🌐 3D Vector & Terrain Map (MapLibre)**: Dynamic 3D building, terrain elevation, and riding perspective layer. Switch instantly between 2D and 3D via handlebar buttons or on-screen toggle.
+1. **Multi-Layer Maps (2D, 3D & Offline MapsForge)**:
+   - **Maps (OSM):** OpenStreetMap Mapnik standard map layer.
+   - **Topo:** OpenTopoMap terrain and topographic contours.
+   - **Satellite (Sat):** ESRI World Imagery high-resolution satellite imagery.
+   - **Google Layers:** Google Maps, Google Satellite, and Google Hybrid tile layers.
+   - **Offline Vector Maps (`.map`):** Load OpenAndroMaps / MapsForge `.map` files completely offline with customizable map label scaling (100% – 200%).
+   - **🌐 3D Vector & Terrain Map (MapLibre):** Dynamic 3D building, terrain elevation, and riding perspective layer. Switch instantly between 2D and 3D via handlebar buttons or on-screen toggle.
 
-2. **📱 Screen-Off Seamless TFT Navigation (Virtual Display Presentation)**:
-   - Even when your phone screen is turned off or locked, KoveMirror runs an independent background `VirtualDisplay` and `Presentation` map, streaming live GPS positioning, imported routes, and turn-by-turn navigation directly to the motorcycle's TFT screen.
+2. **🚗 Android Auto Integration (`androidx.car.app`)**:
+   - Run KoveMirror's map and navigation module directly on **Android Auto** head units (`NavigationTemplate`).
+   - **Standalone & Bi-Directional Sync:** GPS tracking, turn-by-turn navigation (Valhalla / OSRM), distance/ETA cards, map layers, and saved routes run even when the phone's *Map & Route* screen is closed, and stay seamlessly synchronized when you open it on the phone.
+   - **On-Screen Controls:** Rotation-aware touch panning, zoom in/out (`+`/`−`), recenter on GPS, map layer cycling, and direct **⛽ Fuel Stations** and **🌤️ Route Weather** toggles right from the car display.
+   - **Routes & Favorites Screen:** Toggle visibility of saved GPX/KML routes and launch turn-by-turn navigation to any Favorite location with a single tap.
+   - **High-Legibility Scaling & Telemetry HUD:** Auto-scaled route badges, distance markers, direction arrows, and a safe-area HUD showing speed, layer, compass, altitude, and sunrise/sunset times.
+   - *Sideload APK Note:* If installed outside Google Play, enable **Android Auto > Settings > Version** (tap repeatedly for Developer Mode) **> Unknown Sources**.
+
+3. **📱 Screen-Off Seamless TFT Navigation (Virtual Display Presentation)**:
+   - Even when your phone screen is turned off or locked, KoveMirror runs an independent background `VirtualDisplay` and `Presentation` map, streaming live GPS positioning, speed/compass/altitude telemetry, imported routes, and turn-by-turn navigation directly to the motorcycle's TFT screen.
    - Seamless, real-time bi-directional synchronization when you turn your phone screen back on.
 
-3. **🌤️ Live Route Weather Forecast**:
-   - Integrates with the open-source Open-Meteo API to fetch temperature (°C), rain probability (%), precipitation amount (mm), and wind speed badges along your route.
-   - Badges are layered on top in 2D and 3D maps for crisp readability with tap-for-details support.
+4. **⛽ Offline Route Fuel Stations (`.poi`)**:
+   - Scans local OpenAndroMaps `.poi` SQLite databases 100% offline to locate fuel stations along active navigation or loaded GPX/KML routes.
+   - Long-press the fuel toggle to configure the search corridor (`500 m`, `1 km`, `2 km`, `5 km`, `10 km`, `50 km`).
+   - Displays brand and distance-along-route badges on the map with tap-to-view opening hours/detour distance and one-tap navigation.
 
-4. **⚡ Sharp Curve & Hairpin Warnings**:
+5. **🌤️ Live Route Weather Forecast**:
+   - Integrates with the open-source Open-Meteo API to fetch temperature (°C), rain probability (%), precipitation amount (mm), and wind speed badges along your route.
+   - Badges are layered cleanly across 2D, 3D, Kove TFT, and Android Auto maps with tap-for-details support on the phone.
+
+6. **⚡ Sharp Curve & Hairpin Warnings**:
    - 100% offline geometric scan: Analyzes angular deflection and curve radius without internet connection.
    - Displays color-coded badges directly on curve apexes:
      - 🔴 **Red (`⚠️`):** Hairpin / U-Turn ($180^\circ$ sharp turns)
      - 🟠 **Orange (`⬅️` / `➡️`):** Sharp Curve ($90^\circ+$ angles)
      - 🟡 **Yellow (`↖️` / `↗️`):** Medium Curve
 
-5. **KML / KMZ / GPX Route Import & Tracking**:
-   - Import riding routes in GPX, KML, and KMZ formats.
+7. **KML / KMZ / GPX Route Import & Tracking**:
+   - Import riding routes, KML placemarks, and polygons in GPX, KML, and KMZ formats.
    - Customize route lines with 10 preset colors, stroke widths, directional arrows, and kilometer distance markers.
-   - Manage multiple imported routes simultaneously (visibility toggle, reverse route direction, or delete).
+   - Manage multiple imported routes grouped cleanly (visibility toggle, reverse route direction, or delete).
 
-6. **📍 Long-Press Destination Selection & Navigation (OSRM Engine)**:
-   - **Long press** anywhere on the map to drop a destination pin and tap **"Start Navigation"**.
-   - **Live Top Turn Banner**: Displays upcoming turn direction arrows (left/right/uturn), distance to next maneuver, and remaining trip distance/ETA.
+8. **📍 Valhalla & OSRM Turn-by-Turn Navigation + Favorites / Address Search**:
+   - **Long press** anywhere on the map or pick from **Favorites / Address Search (`⭐`)** to drop a destination pin and start navigation.
+   - **Route Options & Off-Route Rerouting:** Avoid Tolls, Avoid Highways, Shortest/Fastest route options, plus automatic route recalculation when going off-route.
+   - **Live Top Turn Banner:** Displays upcoming turn direction arrows, distance to next maneuver, and remaining trip distance/ETA.
 
-7. **🏎️ Real-Time Speedometer & Speed Limit Alerts**:
-   - Dynamic real-time GPS speed indicator.
-   - Automatic detection of road speed limits using OpenStreetMap / Overpass data and speeding alert cards.
+9. **🏎️ Telemetry HUD (Speed, Speed Limit, Compass, Altitude, Sunrise & Sunset)**:
+   - Real-time GPS speedometer with automatic road speed limit detection using OpenStreetMap / Overpass data and overspeed visual alerts.
+   - Live **Compass (`🧭`)**, **GPS Altitude (`⛰️ m`)**, and 100% offline NOAA/USNO astronomical **Sunrise / Sunset (`🌅 / 🌇`)** times displayed on both the phone map screen and Android Auto.
 
-8. **🔴 Live GPX Track Recorder**:
-   - Record your real-time rides directly into standard GPX files saved on your device.
+10. **🔄 Dynamic Portrait/Landscape Mode & Auto-Hide Top Bar**:
+    - **Smart Orientation Lock:** Automatically locks to `Portrait` while Kove TFT screen mirroring is active, and unlocks free `Portrait / Landscape` rotation whenever mirroring is off.
+    - **Landscape-Ready Side Controls:** Right-side map controls switch automatically from 1 column (portrait) to a 2-column scrollable (`ScrollView`) layout in landscape so every button remains easily reachable.
+    - **Auto-Hide Top Bar:** The top toolbar automatically fades out after 5 seconds of inactivity for an unobstructed map view and reappears smoothly on touch.
 
-9. **⚙️ Redesigned Professional Map Settings**:
-   - **Hero Live Preview:** Simulates theme, location cursor shape/color, and GPX track line in real-time.
-   - **Segmented Pill Selector:** Day / Night / Auto map theme (`☀️ Day | 🌙 Night | 🔄 Auto`).
-   - **Visual Cursor Chips:** 5 distinct cursor shapes (`⬆️ Arrow`, `🏍️ Moto`, `🔵 Dot`, `🎯 Target`, `📍 Pin`) with a 7-color palette.
+11. **🔴 Live GPX Track Recorder & Redesigned Professional Map Settings**:
+    - Record your real-time rides directly into standard GPX files saved on your device.
+    - **Hero Live Preview:** Simulates Day/Night/Auto theme, 5 location cursor shapes (`⬆️ Arrow`, `🏍️ Moto`, `🔵 Dot`, `🎯 Target`, `📍 Pin`), 7-color palette, and GPX track line in real-time.
 
 ---
 
