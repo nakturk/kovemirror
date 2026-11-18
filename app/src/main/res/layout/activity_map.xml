@@ -229,189 +229,216 @@
         </LinearLayout>
     </LinearLayout>
 
-    <!-- Right side controls: Zoom + Location + GPS + Record + Import -->
-    <LinearLayout
+    <!-- Right side controls: Scrollable + 1-col Portrait / 2-col Landscape -->
+    <ScrollView
+        android:id="@+id/rightControlsScroll"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_gravity="end|center_vertical"
-        android:orientation="vertical"
-        android:layout_marginEnd="10dp">
+        android:layout_marginTop="48dp"
+        android:layout_marginBottom="12dp"
+        android:layout_marginEnd="10dp"
+        android:scrollbars="none"
+        android:overScrollMode="never"
+        android:elevation="4dp">
 
-        <!-- Zoom In -->
-        <Button
-            android:id="@+id/btnZoomIn"
-            android:layout_width="44dp"
-            android:layout_height="44dp"
-            android:text="+"
-            android:textSize="22sp"
-            android:textColor="#FFFFFF"
-            android:textStyle="bold"
-            android:background="#CC333333"
-            android:layout_marginBottom="4dp"
-            android:elevation="4dp"
-            android:minWidth="0dp"
-            android:minHeight="0dp"
-            android:padding="0dp" />
+        <LinearLayout
+            android:id="@+id/rightControlsContainer"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:orientation="vertical"
+            android:gravity="end">
 
-        <!-- Zoom Out -->
-        <Button
-            android:id="@+id/btnZoomOut"
-            android:layout_width="44dp"
-            android:layout_height="44dp"
-            android:text="−"
-            android:textSize="22sp"
-            android:textColor="#FFFFFF"
-            android:textStyle="bold"
-            android:background="#CC333333"
-            android:layout_marginBottom="8dp"
-            android:elevation="4dp"
-            android:minWidth="0dp"
-            android:minHeight="0dp"
-            android:padding="0dp" />
+            <LinearLayout
+                android:id="@+id/rightControlsColPrimary"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:orientation="vertical">
 
-        <!-- My Location (center on GPS) -->
-        <Button
-            android:id="@+id/btnMyLocation"
-            android:layout_width="44dp"
-            android:layout_height="44dp"
-            android:text="◎"
-            android:textSize="20sp"
-            android:textColor="#FFFFFF"
-            android:textStyle="bold"
-            android:background="#CC1565C0"
-            android:layout_marginBottom="8dp"
-            android:elevation="4dp"
-            android:minWidth="0dp"
-            android:minHeight="0dp"
-            android:padding="0dp" />
+                <!-- Zoom In -->
+                <Button
+                    android:id="@+id/btnZoomIn"
+                    android:layout_width="44dp"
+                    android:layout_height="44dp"
+                    android:text="+"
+                    android:textSize="22sp"
+                    android:textColor="#FFFFFF"
+                    android:textStyle="bold"
+                    android:background="#CC333333"
+                    android:layout_marginBottom="4dp"
+                    android:elevation="4dp"
+                    android:minWidth="0dp"
+                    android:minHeight="0dp"
+                    android:padding="0dp" />
 
-        <!-- GPS Toggle Button -->
-        <Button
-            android:id="@+id/btnGpsToggle"
-            android:layout_width="44dp"
-            android:layout_height="44dp"
-            android:text="📡"
-            android:textSize="18sp"
-            android:textColor="#FFFFFF"
-            android:background="#CC333333"
-            android:layout_marginBottom="8dp"
-            android:elevation="4dp"
-            android:minWidth="0dp"
-            android:minHeight="0dp"
-            android:padding="0dp" />
+                <!-- Zoom Out -->
+                <Button
+                    android:id="@+id/btnZoomOut"
+                    android:layout_width="44dp"
+                    android:layout_height="44dp"
+                    android:text="−"
+                    android:textSize="22sp"
+                    android:textColor="#FFFFFF"
+                    android:textStyle="bold"
+                    android:background="#CC333333"
+                    android:layout_marginBottom="8dp"
+                    android:elevation="4dp"
+                    android:minWidth="0dp"
+                    android:minHeight="0dp"
+                    android:padding="0dp" />
 
-        <!-- Record Track Button -->
-        <TextView
-            android:id="@+id/btnRecordTrack"
-            android:layout_width="44dp"
-            android:layout_height="44dp"
-            android:text="●"
-            android:textSize="32sp"
-            android:textColor="#FFFFFF"
-            android:background="#CC333333"
-            android:gravity="center"
-            android:includeFontPadding="false"
-            android:clickable="true"
-            android:focusable="true"
-            android:layout_marginBottom="8dp"
-            android:elevation="4dp" />
+                <!-- My Location (center on GPS) -->
+                <Button
+                    android:id="@+id/btnMyLocation"
+                    android:layout_width="44dp"
+                    android:layout_height="44dp"
+                    android:text="◎"
+                    android:textSize="20sp"
+                    android:textColor="#FFFFFF"
+                    android:textStyle="bold"
+                    android:background="#CC1565C0"
+                    android:layout_marginBottom="8dp"
+                    android:elevation="4dp"
+                    android:minWidth="0dp"
+                    android:minHeight="0dp"
+                    android:padding="0dp" />
 
-        <!-- Import Route Button -->
-        <Button
-            android:id="@+id/btnImportRoute"
-            android:layout_width="44dp"
-            android:layout_height="44dp"
-            android:text="📥"
-            android:textSize="18sp"
-            android:textColor="#FFFFFF"
-            android:background="#CC333333"
-            android:elevation="4dp"
-            android:minWidth="0dp"
-            android:minHeight="0dp"
-            android:padding="0dp" />
+                <!-- GPS Toggle Button -->
+                <Button
+                    android:id="@+id/btnGpsToggle"
+                    android:layout_width="44dp"
+                    android:layout_height="44dp"
+                    android:text="📡"
+                    android:textSize="18sp"
+                    android:textColor="#FFFFFF"
+                    android:background="#CC333333"
+                    android:layout_marginBottom="8dp"
+                    android:elevation="4dp"
+                    android:minWidth="0dp"
+                    android:minHeight="0dp"
+                    android:padding="0dp" />
 
-        <!-- Favorites & Address Search Button -->
-        <Button
-            android:id="@+id/btnFavorites"
-            android:layout_width="44dp"
-            android:layout_height="44dp"
-            android:text="⭐"
-            android:textSize="18sp"
-            android:textColor="#FFFFFF"
-            android:background="#CC333333"
-            android:elevation="4dp"
-            android:minWidth="0dp"
-            android:minHeight="0dp"
-            android:padding="0dp"
-            android:layout_marginTop="8dp" />
+                <!-- Record Track Button -->
+                <TextView
+                    android:id="@+id/btnRecordTrack"
+                    android:layout_width="44dp"
+                    android:layout_height="44dp"
+                    android:text="●"
+                    android:textSize="32sp"
+                    android:textColor="#FFFFFF"
+                    android:background="#CC333333"
+                    android:gravity="center"
+                    android:includeFontPadding="false"
+                    android:clickable="true"
+                    android:focusable="true"
+                    android:layout_marginBottom="8dp"
+                    android:elevation="4dp" />
 
-        <!-- Route Weather Forecast Toggle Button -->
-        <Button
-            android:id="@+id/btnWeatherToggle"
-            android:layout_width="44dp"
-            android:layout_height="44dp"
-            android:text="🌤️"
-            android:textSize="18sp"
-            android:textColor="#FFFFFF"
-            android:background="#CC333333"
-            android:elevation="4dp"
-            android:minWidth="0dp"
-            android:minHeight="0dp"
-            android:padding="0dp"
-            android:layout_marginTop="8dp"
-            android:visibility="gone" />
+                <!-- Import Route Button -->
+                <Button
+                    android:id="@+id/btnImportRoute"
+                    android:layout_width="44dp"
+                    android:layout_height="44dp"
+                    android:text="📥"
+                    android:textSize="18sp"
+                    android:textColor="#FFFFFF"
+                    android:background="#CC333333"
+                    android:elevation="4dp"
+                    android:minWidth="0dp"
+                    android:minHeight="0dp"
+                    android:padding="0dp" />
+            </LinearLayout>
 
-        <!-- Route Fuel Stations Toggle Button (Long press for corridor distance) -->
-        <Button
-            android:id="@+id/btnFuelToggle"
-            android:layout_width="44dp"
-            android:layout_height="44dp"
-            android:text="⛽"
-            android:textSize="18sp"
-            android:textColor="#FFFFFF"
-            android:background="#CC333333"
-            android:elevation="4dp"
-            android:minWidth="0dp"
-            android:minHeight="0dp"
-            android:padding="0dp"
-            android:layout_marginTop="8dp"
-            android:visibility="gone" />
+            <LinearLayout
+                android:id="@+id/rightControlsColSecondary"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="8dp"
+                android:orientation="vertical">
 
-        <!-- Toll Road Toggle Button (Shown only during active navigation) -->
-        <Button
-            android:id="@+id/btnTollToggle"
-            android:layout_width="44dp"
-            android:layout_height="44dp"
-            android:text="$"
-            android:textSize="20sp"
-            android:textColor="#FFFFFF"
-            android:textStyle="bold"
-            android:background="#CC16A34A"
-            android:elevation="4dp"
-            android:minWidth="0dp"
-            android:minHeight="0dp"
-            android:padding="0dp"
-            android:layout_marginTop="8dp"
-            android:visibility="gone" />
+                <!-- Favorites & Address Search Button -->
+                <Button
+                    android:id="@+id/btnFavorites"
+                    android:layout_width="44dp"
+                    android:layout_height="44dp"
+                    android:text="⭐"
+                    android:textSize="18sp"
+                    android:textColor="#FFFFFF"
+                    android:background="#CC333333"
+                    android:elevation="4dp"
+                    android:minWidth="0dp"
+                    android:minHeight="0dp"
+                    android:padding="0dp" />
 
-        <!-- Loaded Routes List Button -->
-        <Button
-            android:id="@+id/btnRouteList"
-            android:layout_width="44dp"
-            android:layout_height="44dp"
-            android:text="📋"
-            android:textSize="18sp"
-            android:textColor="#FFFFFF"
-            android:background="#1565C0"
-            android:elevation="4dp"
-            android:minWidth="0dp"
-            android:minHeight="0dp"
-            android:padding="0dp"
-            android:layout_marginTop="8dp"
-            android:visibility="gone" />
-    </LinearLayout>
+                <!-- Route Weather Forecast Toggle Button -->
+                <Button
+                    android:id="@+id/btnWeatherToggle"
+                    android:layout_width="44dp"
+                    android:layout_height="44dp"
+                    android:text="🌤️"
+                    android:textSize="18sp"
+                    android:textColor="#FFFFFF"
+                    android:background="#CC333333"
+                    android:elevation="4dp"
+                    android:minWidth="0dp"
+                    android:minHeight="0dp"
+                    android:padding="0dp"
+                    android:layout_marginTop="8dp"
+                    android:visibility="gone" />
 
-    <!-- Bottom-Left Speedometer & Speed Limit Sign -->
+                <!-- Route Fuel Stations Toggle Button (Long press for corridor distance) -->
+                <Button
+                    android:id="@+id/btnFuelToggle"
+                    android:layout_width="44dp"
+                    android:layout_height="44dp"
+                    android:text="⛽"
+                    android:textSize="18sp"
+                    android:textColor="#FFFFFF"
+                    android:background="#CC333333"
+                    android:elevation="4dp"
+                    android:minWidth="0dp"
+                    android:minHeight="0dp"
+                    android:padding="0dp"
+                    android:layout_marginTop="8dp"
+                    android:visibility="gone" />
+
+                <!-- Toll Road Toggle Button (Shown only during active navigation) -->
+                <Button
+                    android:id="@+id/btnTollToggle"
+                    android:layout_width="44dp"
+                    android:layout_height="44dp"
+                    android:text="$"
+                    android:textSize="20sp"
+                    android:textColor="#FFFFFF"
+                    android:textStyle="bold"
+                    android:background="#CC16A34A"
+                    android:elevation="4dp"
+                    android:minWidth="0dp"
+                    android:minHeight="0dp"
+                    android:padding="0dp"
+                    android:layout_marginTop="8dp"
+                    android:visibility="gone" />
+
+                <!-- Loaded Routes List Button -->
+                <Button
+                    android:id="@+id/btnRouteList"
+                    android:layout_width="44dp"
+                    android:layout_height="44dp"
+                    android:text="📋"
+                    android:textSize="18sp"
+                    android:textColor="#FFFFFF"
+                    android:background="#1565C0"
+                    android:elevation="4dp"
+                    android:minWidth="0dp"
+                    android:minHeight="0dp"
+                    android:padding="0dp"
+                    android:layout_marginTop="8dp"
+                    android:visibility="gone" />
+            </LinearLayout>
+        </LinearLayout>
+    </ScrollView>
+
+    <!-- Bottom-Left Speedometer, Speed Limit, Compass, Altitude & Sunrise/Sunset -->
     <LinearLayout
         android:id="@+id/gpsInfoCard"
         android:layout_width="wrap_content"
@@ -420,13 +447,13 @@
         android:orientation="horizontal"
         android:gravity="center_vertical"
         android:background="@drawable/bg_speedometer_card"
-        android:paddingStart="8dp"
+        android:paddingStart="10dp"
         android:paddingEnd="12dp"
-        android:paddingTop="6dp"
-        android:paddingBottom="6dp"
+        android:paddingTop="7dp"
+        android:paddingBottom="7dp"
         android:layout_marginStart="10dp"
         android:layout_marginBottom="12dp"
-        android:visibility="gone"
+        android:visibility="visible"
         android:elevation="8dp">
 
         <!-- European Speed Limit Sign (Red Circle with White Center) -->
@@ -450,46 +477,85 @@
                 android:includeFontPadding="false" />
         </FrameLayout>
 
-        <!-- Current Speed & Altitude Column -->
+        <!-- Left Speed Column -->
         <LinearLayout
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
+            android:gravity="center"
+            android:minWidth="46dp"
+            android:orientation="vertical">
+
+            <TextView
+                android:id="@+id/tvGpsSpeed"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="0"
+                android:textColor="#38BDF8"
+                android:textSize="24sp"
+                android:textStyle="bold"
+                android:includeFontPadding="false" />
+
+            <TextView
+                android:id="@+id/tvGpsSpeedUnit"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="KM/H"
+                android:textColor="#94A3B8"
+                android:textSize="10sp"
+                android:textStyle="bold"
+                android:includeFontPadding="false" />
+        </LinearLayout>
+
+        <View
+            android:layout_width="1dp"
+            android:layout_height="36dp"
+            android:layout_marginHorizontal="10dp"
+            android:background="#334155" />
+
+        <!-- Right Telemetry Column: Compass, Altitude & Sunrise/Sunset -->
+        <LinearLayout
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:gravity="start|center_vertical"
             android:orientation="vertical">
 
             <LinearLayout
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:orientation="horizontal"
-                android:gravity="center_vertical">
+                android:gravity="center_vertical"
+                android:orientation="horizontal">
 
                 <TextView
-                    android:id="@+id/tvGpsSpeed"
+                    android:id="@+id/tvGpsCompass"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
-                    android:text="0"
-                    android:textColor="#38BDF8"
-                    android:textSize="20sp"
+                    android:text="🧭 N 0°"
+                    android:textColor="#F59E0B"
+                    android:textSize="12sp"
                     android:textStyle="bold"
                     android:includeFontPadding="false" />
 
                 <TextView
-                    android:id="@+id/tvGpsSpeedUnit"
+                    android:id="@+id/tvGpsAltitude"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
-                    android:text=" km/h"
-                    android:textColor="#94A3B8"
-                    android:textSize="11sp"
+                    android:layout_marginStart="8dp"
+                    android:text="⛰️ -- m"
+                    android:textColor="#10B981"
+                    android:textSize="12sp"
                     android:textStyle="bold"
                     android:includeFontPadding="false" />
             </LinearLayout>
 
             <TextView
-                android:id="@+id/tvGpsAltitude"
+                android:id="@+id/tvGpsSunTimes"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:text="--- m"
-                android:textColor="#94A3B8"
-                android:textSize="10sp"
+                android:layout_marginTop="3dp"
+                android:text="🌅 --:--  🌇 --:--"
+                android:textColor="#FDE047"
+                android:textSize="11sp"
+                android:textStyle="bold"
                 android:includeFontPadding="false" />
         </LinearLayout>
     </LinearLayout>

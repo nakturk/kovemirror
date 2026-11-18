@@ -190,6 +190,17 @@ class MapActivity : AppCompatActivity() {
         override fun onCurvesUpdated(curves: List<CurveWarningHelper.CurvePoint>) {}
     }
 
+    // ─── Auto-Hide Top Bar ──────────────────────────────────────
+    private val topBarHideHandler = android.os.Handler(android.os.Looper.getMainLooper())
+    private val TOP_BAR_AUTO_HIDE_DELAY_MS = 5000L
+    private var isTopBarHiding = false
+    private val hideTopBarRunnable = Runnable { hideTopBar() }
+
+    // ─── Phone Telemetry HUD (Compass, Altitude, Sunrise/Sunset) ──
+    private var lastPhoneSunDayOfYear = -1
+    private var lastPhoneSunLocation: GeoPoint? = null
+    private var cachedPhoneSunTimesText = "🌅 --:--  🌇 --:--"
+
     // ─── Route Weather Forecast ──────────────────────────────────
     private val weatherMarkers2d = mutableListOf<Marker>()
     private var showRouteWeather: Boolean = false
@@ -348,6 +359,7 @@ class MapActivity : AppCompatActivity() {
         MapLibre.getInstance(applicationContext)
 
         setContentView(R.layout.activity_map)
+        updateRightControlsOrientation()
 
         // Keep screen on
         window.addFlags(android.view.WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON)
@@ -391,6 +403,14 @@ class MapActivity : AppCompatActivity() {
             btnRecord?.setTextColor(Color.parseColor("#FF0000"))
             btnRecord?.setBackgroundColor(Color.parseColor("#CC333333"))
         }
+
+        val initialCenter = MapStateHolder.lastLocation ?: GeoPoint(mapView.mapCenter.latitude, mapView.mapCenter.longitude)
+        updatePhoneTelemetryHud(
+            location = initialCenter,
+            bearing = MapStateHolder.lastBearing,
+            speedKmH = MapStateHolder.lastSpeedKmH,
+            altitude = MapStateHolder.lastAltitude.takeIf { it != 0.0 }
+        )
     }
 
     // ─── Map Setup ──────────────────────────────────────────────
@@ -993,7 +1013,7 @@ class MapActivity : AppCompatActivity() {
         destinationMarker = null
 
         findViewById<LinearLayout>(R.id.navBanner).visibility = View.GONE
-        findViewById<View>(R.id.topBar).visibility = View.VISIBLE
+        showTopBarAndScheduleHide()
         findViewById<LinearLayout>(R.id.destCard).visibility = View.GONE
         findViewById<Button>(R.id.btnTollToggle)?.visibility = View.GONE
 
@@ -2457,7 +2477,16 @@ class MapActivity : AppCompatActivity() {
             mapView.mapOrientation = 0f
             btnGps.text = "📡"
             btnGps.setBackgroundColor(Color.parseColor("#CC333333"))
-            findViewById<View>(R.id.gpsInfoCard)?.visibility = View.GONE
+            findViewById<View>(R.id.layoutSpeedLimitSign)?.visibility = View.GONE
+            findViewById<View>(R.id.gpsInfoCard)?.setBackgroundResource(R.drawable.bg_speedometer_card)
+            findViewById<TextView>(R.id.tvGpsSpeed)?.setTextColor(Color.parseColor("#38BDF8"))
+            findViewById<TextView>(R.id.tvGpsSpeedUnit)?.setTextColor(Color.parseColor("#94A3B8"))
+            updatePhoneTelemetryHud(
+                location = GeoPoint(mapView.mapCenter.latitude, mapView.mapCenter.longitude),
+                bearing = 0f,
+                speedKmH = 0,
+                altitude = null
+            )
         } else {
             val provider = GpsMyLocationProvider(this)
             provider.locationUpdateMinTime = 2000
@@ -2473,13 +2502,15 @@ class MapActivity : AppCompatActivity() {
                             }
                         }
                         val speedKmH = (location.speed * 3.6f).toInt().coerceAtLeast(0)
-                        val altText = if (location.hasAltitude()) "${location.altitude.toInt()} m" else "--- m"
+                        val bearingVal = if (location.hasBearing()) location.bearing else 0f
+                        val altVal = if (location.hasAltitude()) location.altitude else null
+                        val geoLoc = GeoPoint(location.latitude, location.longitude)
 
                         MapStateHolder.updateLocation(
-                            GeoPoint(location.latitude, location.longitude),
-                            if (location.hasBearing()) location.bearing else 0f,
+                            geoLoc,
+                            bearingVal,
                             speedKmH,
-                            if (location.hasAltitude()) location.altitude else 0.0
+                            altVal ?: 0.0
                         )
 
                         SpeedLimitHelper.getSpeedLimit(location.latitude, location.longitude) { speedLimit ->
@@ -2510,8 +2541,7 @@ class MapActivity : AppCompatActivity() {
                         }
 
                         runOnUiThread {
-                            findViewById<TextView>(R.id.tvGpsSpeed)?.text = "$speedKmH"
-                            findViewById<TextView>(R.id.tvGpsAltitude)?.text = altText
+                            updatePhoneTelemetryHud(geoLoc, bearingVal, speedKmH, altVal)
                         }
                         val myGeo = GeoPoint(location.latitude, location.longitude)
 
@@ -4180,10 +4210,224 @@ class MapActivity : AppCompatActivity() {
         }
     }
 
+    private val mirrorStateListener: (Boolean) -> Unit = { applyMirrorOrientationLock() }
+
+    private fun applyMirrorOrientationLock() {
+        val target = if (MirrorService.isMirroringActive) {
+            android.content.pm.ActivityInfo.SCREEN_ORIENTATION_PORTRAIT
+        } else {
+            android.content.pm.ActivityInfo.SCREEN_ORIENTATION_UNSPECIFIED
+        }
+        if (requestedOrientation != target) {
+            requestedOrientation = target
+        }
+    }
+
+    private fun showTopBarAndScheduleHide() {
+        val topBar = findViewById<View>(R.id.topBar) ?: return
+        topBarHideHandler.removeCallbacks(hideTopBarRunnable)
+        val needsShow = topBar.visibility != View.VISIBLE || topBar.alpha < 1f || topBar.translationY != 0f || isTopBarHiding
+        isTopBarHiding = false
+        if (needsShow) {
+            topBar.animate().cancel()
+            topBar.visibility = View.VISIBLE
+            topBar.animate()
+                .alpha(1f)
+                .translationY(0f)
+                .setDuration(180L)
+                .start()
+            updateNavBannerTopMargin(48)
+        }
+        topBarHideHandler.postDelayed(hideTopBarRunnable, TOP_BAR_AUTO_HIDE_DELAY_MS)
+    }
+
+    private fun hideTopBar() {
+        val topBar = findViewById<View>(R.id.topBar) ?: return
+        if (topBar.visibility != View.VISIBLE || isTopBarHiding) return
+        isTopBarHiding = true
+        topBar.animate().cancel()
+        val slideOffset = -(topBar.height.takeIf { it > 0 }?.toFloat() ?: (48f * resources.displayMetrics.density))
+        topBar.animate()
+            .alpha(0f)
+            .translationY(slideOffset)
+            .setDuration(250L)
+            .withEndAction {
+                if (isTopBarHiding) {
+                    topBar.visibility = View.GONE
+                    isTopBarHiding = false
+                }
+            }
+            .start()
+        updateNavBannerTopMargin(8)
+    }
+
+    private fun updateNavBannerTopMargin(topDp: Int) {
+        val navBanner = findViewById<View>(R.id.navBanner) ?: return
+        val lp = navBanner.layoutParams as? android.widget.FrameLayout.LayoutParams ?: return
+        val targetMarginPx = (topDp * resources.displayMetrics.density).toInt()
+        if (lp.topMargin != targetMarginPx) {
+            lp.topMargin = targetMarginPx
+            navBanner.layoutParams = lp
+        }
+    }
+
+    override fun dispatchTouchEvent(ev: android.view.MotionEvent?): Boolean {
+        val handled = super.dispatchTouchEvent(ev)
+        if (ev != null) {
+            when (ev.actionMasked) {
+                android.view.MotionEvent.ACTION_DOWN,
+                android.view.MotionEvent.ACTION_MOVE,
+                android.view.MotionEvent.ACTION_UP,
+                android.view.MotionEvent.ACTION_CANCEL -> showTopBarAndScheduleHide()
+            }
+        }
+        return handled
+    }
+
+    private fun updateRightControlsOrientation(
+        config: android.content.res.Configuration = resources.configuration
+    ) {
+        val container = findViewById<LinearLayout>(R.id.rightControlsContainer) ?: return
+        val secondaryCol = findViewById<LinearLayout>(R.id.rightControlsColSecondary) ?: return
+        val isLandscape = config.orientation == android.content.res.Configuration.ORIENTATION_LANDSCAPE
+        val density = resources.displayMetrics.density
+
+        container.orientation = if (isLandscape) LinearLayout.HORIZONTAL else LinearLayout.VERTICAL
+        val lp = secondaryCol.layoutParams as? LinearLayout.LayoutParams ?: return
+        if (isLandscape) {
+            lp.topMargin = 0
+            lp.marginStart = (6 * density).toInt()
+        } else {
+            lp.topMargin = (8 * density).toInt()
+            lp.marginStart = 0
+        }
+        secondaryCol.layoutParams = lp
+    }
+
+    override fun onConfigurationChanged(newConfig: android.content.res.Configuration) {
+        super.onConfigurationChanged(newConfig)
+        updateRightControlsOrientation(newConfig)
+    }
+
+    private fun updatePhoneTelemetryHud(
+        location: GeoPoint?,
+        bearing: Float,
+        speedKmH: Int,
+        altitude: Double?
+    ) {
+        findViewById<TextView>(R.id.tvGpsSpeed)?.text = speedKmH.toString()
+
+        val normalizedBearing = ((bearing % 360f) + 360f) % 360f
+        val dir = getCompassDirection(normalizedBearing.toInt())
+        findViewById<TextView>(R.id.tvGpsCompass)?.text = "🧭 $dir ${normalizedBearing.toInt()}°"
+
+        findViewById<TextView>(R.id.tvGpsAltitude)?.text = if (altitude != null && altitude != 0.0) {
+            "⛰️ ${altitude.toInt()} m"
+        } else {
+            "⛰️ -- m"
+        }
+
+        val sunLoc = location ?: GeoPoint(mapView.mapCenter.latitude, mapView.mapCenter.longitude)
+        if (sunLoc.latitude != 0.0 || sunLoc.longitude != 0.0) {
+            val cal = java.util.Calendar.getInstance()
+            val today = cal.get(java.util.Calendar.DAY_OF_YEAR)
+            val prevLoc = lastPhoneSunLocation
+            val movedEnough = prevLoc == null || prevLoc.distanceToAsDouble(sunLoc) > 5000.0
+            if (today != lastPhoneSunDayOfYear || movedEnough) {
+                val sunrise = computeSunTime(sunLoc.latitude, sunLoc.longitude, isSunrise = true, calendar = cal)
+                val sunset = computeSunTime(sunLoc.latitude, sunLoc.longitude, isSunrise = false, calendar = cal)
+                cachedPhoneSunTimesText = "🌅 $sunrise  🌇 $sunset"
+                lastPhoneSunDayOfYear = today
+                lastPhoneSunLocation = GeoPoint(sunLoc.latitude, sunLoc.longitude)
+            }
+        }
+        findViewById<TextView>(R.id.tvGpsSunTimes)?.text = cachedPhoneSunTimesText
+    }
+
+    private fun getCompassDirection(bearing: Int): String {
+        return when (((bearing + 22.5) / 45).toInt() % 8) {
+            0 -> "N"
+            1 -> "NE"
+            2 -> "E"
+            3 -> "SE"
+            4 -> "S"
+            5 -> "SW"
+            6 -> "W"
+            7 -> "NW"
+            else -> "N"
+        }
+    }
+
+    private fun computeSunTime(
+        lat: Double,
+        lon: Double,
+        isSunrise: Boolean,
+        calendar: java.util.Calendar = java.util.Calendar.getInstance()
+    ): String {
+        val dayOfYear = calendar.get(java.util.Calendar.DAY_OF_YEAR)
+        val lngHour = lon / 15.0
+        val t = if (isSunrise) {
+            dayOfYear + ((6.0 - lngHour) / 24.0)
+        } else {
+            dayOfYear + ((18.0 - lngHour) / 24.0)
+        }
+
+        val m = (0.9856 * t) - 3.289
+        var l = m + (1.916 * kotlin.math.sin(Math.toRadians(m))) + (0.020 * kotlin.math.sin(Math.toRadians(2.0 * m))) + 282.634
+        l = ((l % 360.0) + 360.0) % 360.0
+
+        var ra = Math.toDegrees(kotlin.math.atan(0.91764 * kotlin.math.tan(Math.toRadians(l))))
+        ra = ((ra % 360.0) + 360.0) % 360.0
+        val lQuadrant = kotlin.math.floor(l / 90.0) * 90.0
+        val raQuadrant = kotlin.math.floor(ra / 90.0) * 90.0
+        ra = (ra + (lQuadrant - raQuadrant)) / 15.0
+
+        val sinDec = 0.39782 * kotlin.math.sin(Math.toRadians(l))
+        val cosDec = kotlin.math.cos(kotlin.math.asin(sinDec))
+
+        val cosH = (kotlin.math.cos(Math.toRadians(90.833)) - (sinDec * kotlin.math.sin(Math.toRadians(lat)))) /
+            (cosDec * kotlin.math.cos(Math.toRadians(lat)))
+        if (cosH > 1.0 || cosH < -1.0) {
+            return "--:--"
+        }
+
+        var h = if (isSunrise) {
+            360.0 - Math.toDegrees(kotlin.math.acos(cosH))
+        } else {
+            Math.toDegrees(kotlin.math.acos(cosH))
+        }
+        h /= 15.0
+
+        val localMeanTime = h + ra - (0.06571 * t) - 6.622
+        var utc = localMeanTime - lngHour
+        utc = ((utc % 24.0) + 24.0) % 24.0
+
+        val tzOffsetHours = calendar.timeZone.getOffset(calendar.timeInMillis) / 3_600_000.0
+        val localHours = ((utc + tzOffsetHours) % 24.0 + 24.0) % 24.0
+
+        val totalMinutes = kotlin.math.round(localHours * 60.0).toInt() % (24 * 60)
+        val hour = totalMinutes / 60
+        val minute = totalMinutes % 60
+        return String.format(Locale.US, "%02d:%02d", hour, minute)
+    }
+
     // ─── Lifecycle ──────────────────────────────────────────────
 
     override fun onResume() {
         super.onResume()
+        updateRightControlsOrientation()
+        MirrorService.addStateListener(mirrorStateListener)
+        applyMirrorOrientationLock()
+        showTopBarAndScheduleHide()
+        val resumeLoc = locationOverlay?.myLocation
+            ?: MapStateHolder.lastLocation
+            ?: GeoPoint(mapView.mapCenter.latitude, mapView.mapCenter.longitude)
+        updatePhoneTelemetryHud(
+            location = resumeLoc,
+            bearing = MapStateHolder.lastBearing,
+            speedKmH = if (isGpsEnabled) MapStateHolder.lastSpeedKmH else 0,
+            altitude = MapStateHolder.lastAltitude.takeIf { it != 0.0 }
+        )
         MapStateHolder.isMapOpen = true
 
         if (MapStateHolder.isCarSessionActive) {
@@ -4245,6 +4489,8 @@ class MapActivity : AppCompatActivity() {
 
     override fun onPause() {
         super.onPause()
+        topBarHideHandler.removeCallbacks(hideTopBarRunnable)
+        MirrorService.removeStateListener(mirrorStateListener)
         MapStateHolder.removeListener(externalStateListener)
         try { unregisterReceiver(handlebarActionReceiver) } catch (_: Exception) {}
         HandlebarKeyManager.removeListener(handlebarKeyListener)

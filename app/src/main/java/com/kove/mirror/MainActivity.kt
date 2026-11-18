@@ -44,6 +44,7 @@ class MainActivity : AppCompatActivity() {
     private var logListener: ((LogEntry) -> Unit)? = null
 
     private val uiHandler = Handler(Looper.getMainLooper())
+    private val mirrorStateListener: (Boolean) -> Unit = { applyMirrorOrientationLock() }
 
     private val languageCodes = listOf("tr", "en", "el", "es", "it", "fr")
     private val languageNames = listOf("Türkçe", "English", "Ελληνικά", "Español", "Italiano", "Français")
@@ -124,6 +125,19 @@ class MainActivity : AppCompatActivity() {
         refreshWifiStatus()
         updatePermissionButtonStates()
         syncStreamingStateWithService()
+        MirrorService.addStateListener(mirrorStateListener)
+        applyMirrorOrientationLock()
+    }
+
+    private fun applyMirrorOrientationLock() {
+        val target = if (MirrorService.isMirroringActive) {
+            android.content.pm.ActivityInfo.SCREEN_ORIENTATION_PORTRAIT
+        } else {
+            android.content.pm.ActivityInfo.SCREEN_ORIENTATION_UNSPECIFIED
+        }
+        if (requestedOrientation != target) {
+            requestedOrientation = target
+        }
     }
 
     private fun syncStreamingStateWithService() {
@@ -148,6 +162,7 @@ class MainActivity : AppCompatActivity() {
     }
 
     override fun onPause() {
+        MirrorService.removeStateListener(mirrorStateListener)
         super.onPause()
     }
 
@@ -752,6 +767,7 @@ private fun showTftPaddingDialog() {
                         HandlebarOverlayService.startService(this)
                     }
                     MirrorService.startService(this, resultCode, data)
+                    requestedOrientation = android.content.pm.ActivityInfo.SCREEN_ORIENTATION_PORTRAIT
                 } catch (e: Exception) {
                     val errMsg = getString(R.string.log_service_start_failed, e.message ?: "")
                     DebugLogger.error(errMsg)
@@ -772,10 +788,12 @@ private fun showTftPaddingDialog() {
         DebugLogger.info(getString(R.string.log_stopped_by_user))
         restoreScreenBrightness()
         resetToStopped()
+        requestedOrientation = android.content.pm.ActivityInfo.SCREEN_ORIENTATION_UNSPECIFIED
     }
 
     private fun resetToStopped() {
         isStreaming = false
+        applyMirrorOrientationLock()
         binding.btnScreenDim.visibility = View.GONE
         if (currentAppMode == APP_MODE_CONTROL_ONLY) {
             binding.btnStartStop.text = getString(R.string.btn_start_controller)

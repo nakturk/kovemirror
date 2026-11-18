@@ -80,6 +80,32 @@ class MirrorService : Service() {
                 Intent(context, MirrorService::class.java).apply { action = ACTION_STOP }
             )
         }
+
+        val isMirroringActive: Boolean
+            get() = runningInstance?.let { !it.isControlOnly } == true
+
+        private val stateListeners = java.util.concurrent.CopyOnWriteArrayList<(Boolean) -> Unit>()
+
+        fun addStateListener(listener: (Boolean) -> Unit) {
+            if (!stateListeners.contains(listener)) {
+                stateListeners.add(listener)
+            }
+        }
+
+        fun removeStateListener(listener: (Boolean) -> Unit) {
+            stateListeners.remove(listener)
+        }
+
+        private fun notifyStateListeners() {
+            val active = isMirroringActive
+            Handler(Looper.getMainLooper()).post {
+                for (l in stateListeners) {
+                    try {
+                        l(active)
+                    } catch (_: Exception) {}
+                }
+            }
+        }
     }
 
     private var tcpServer:           TcpServer?           = null
@@ -161,6 +187,7 @@ class MirrorService : Service() {
                         startForeground(NOTIF_ID, buildNotif(getString(R.string.notif_waiting_tft)))
                     }
                     startMirroring(code, data)
+                    notifyStateListeners()
                 } else {
                     DebugLogger.error("❌ Invalid MediaProjection data: code=$code, data=$data")
                     stopSelf()
@@ -178,9 +205,12 @@ class MirrorService : Service() {
                     startForeground(NOTIF_ID, buildNotif(getString(R.string.notif_control_only_active)))
                 }
                 startControlOnly()
+                notifyStateListeners()
             }
             ACTION_STOP -> {
                 stopMirroring()
+                runningInstance = null
+                notifyStateListeners()
                 stopSelf()
             }
         }
@@ -192,6 +222,7 @@ class MirrorService : Service() {
     override fun onDestroy() {
         stopMirroring()
         runningInstance = null
+        notifyStateListeners()
         super.onDestroy()
     }
 
